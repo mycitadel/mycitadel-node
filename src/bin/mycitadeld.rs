@@ -31,7 +31,7 @@ extern crate log;
 use clap::Clap;
 
 use mycitadel::daemon::{self, Opts};
-use mycitadel::{Config, LogStyle};
+use mycitadel::Config;
 
 fn main() {
     println!("mycitadeld: MyCitadel wallet node/backend service");
@@ -43,11 +43,7 @@ fn main() {
 
     let config: Config = opts.shared.clone().into();
     trace!("Daemon configuration: {:?}", &config);
-    debug!("MSG RPC socket {}", &config.msg_endpoint);
-    debug!("CTL RPC socket {}", &config.ctl_endpoint);
-
-    let node_id = opts.key_opts.local_node().node_id();
-    info!("{}: {}", "Local node id".ended(), node_id.addr());
+    debug!("RPC API socket {}", &config.rpc_endpoint);
 
     /*
     use self::internal::ResultExt;
@@ -59,7 +55,7 @@ fn main() {
      */
 
     debug!("Starting runtime ...");
-    daemon::run(config, node_id).expect("Error running mycitadeld runtime");
+    daemon::run(config).expect("Error running mycitadeld runtime");
 
     unreachable!()
 }

@@ -11,9 +11,6 @@
 // along with this software.
 // If not, see <https://www.gnu.org/licenses/agpl-3.0-standalone.html>.
 
-#[macro_use]
-extern crate amplify_derive;
-
 use clap::IntoApp;
 use clap_generate::{generate_to, generators::*};
 
@@ -31,12 +28,7 @@ pub mod daemon {
 fn main() -> Result<(), configure_me_codegen::Error> {
     let outdir = "./shell";
 
-    for app in [
-        daemon::Opts::into_app(),
-        cli::Opts::into_app(),
-    ]
-    .iter_mut()
-    {
+    for app in [daemon::Opts::into_app(), cli::Opts::into_app()].iter_mut() {
         let name = app.get_name().to_string();
         generate_to::<Bash, _, _>(app, &name, &outdir);
         generate_to::<PowerShell, _, _>(app, &name, &outdir);

@@ -1,0 +1,47 @@
+#compdef mycitadeld
+
+autoload -U is-at-least
+
+_mycitadeld() {
+    typeset -A opt_args
+    typeset -a _arguments_options
+    local ret=1
+
+    if is-at-least 5.2; then
+        _arguments_options=(-s -S -C)
+    else
+        _arguments_options=(-s -C)
+    fi
+
+    local context curcontext="$curcontext" state line
+    _arguments "${_arguments_options[@]}" \
+'-d+[Data directory path]: :_files -/' \
+'--data-dir=[Data directory path]: :_files -/' \
+'*-T+[Use Tor]: :_hosts' \
+'*--tor-proxy=[Use Tor]: :_hosts' \
+'-x+[ZMQ socket name/address for daemon RPC interface]: :_files' \
+'--rpc-socket=[ZMQ socket name/address for daemon RPC interface]: :_files' \
+'-n+[Blockchain to use]' \
+'--chain=[Blockchain to use]' \
+'-c+[Path to the configuration file]: :_files' \
+'--config=[Path to the configuration file]: :_files' \
+'--init[Initializes config file with the default values]' \
+'*-v[Set verbosity level]' \
+'*--verbose[Set verbosity level]' \
+'-h[Prints help information]' \
+'--help[Prints help information]' \
+'-V[Prints version information]' \
+'--version[Prints version information]' \
+&& ret=0
+    
+}
+
+(( $+functions[_mycitadeld_commands] )) ||
+_mycitadeld_commands() {
+    local commands; commands=(
+        
+    )
+    _describe -t commands 'mycitadeld commands' commands "$@"
+}
+
+_mycitadeld "$@"

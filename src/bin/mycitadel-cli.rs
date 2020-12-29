@@ -33,7 +33,7 @@ use clap::Clap;
 use lnpbp_services::shell::Exec;
 use mycitadel::cli::Opts;
 use mycitadel::rpc::Client;
-use mycitadel::{Config, LogStyle};
+use mycitadel::Config;
 
 fn main() {
     println!(
@@ -47,14 +47,12 @@ fn main() {
 
     let config: Config = opts.shared.clone().into();
     trace!("Tool configuration: {:?}", &config);
-    debug!("MSG RPC socket {}", &config.msg_endpoint);
-    debug!("CTL RPC socket {}", &config.ctl_endpoint);
+    debug!("RPC API socket {}", &config.rpc_endpoint);
 
-    let mut client = Client::with(config, opts.shared.chain)
-        .expect("Error initializing client");
+    let mut client = Client::with(config).expect("Error initializing client");
 
     trace!("Executing command: {:?}", opts.command);
     opts.command
         .exec(&mut client)
-        .unwrap_or_else(|err| eprintln!("{}", err.err()));
+        .unwrap_or_else(|err| eprintln!("{}", err));
 }
