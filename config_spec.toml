@@ -1,0 +1,27 @@
+[general]
+env_prefix = "MYCITADEL"
+conf_file_param = "config"
+doc = """
+"""
+
+[[param]]
+name = "data_dir"
+type = "std::path::PathBuf"
+abbr = "d"
+doc = "Path to the directory that contains MyCitadel account & wallet data, and where ZMQ RPC socket files are located"
+
+[[param]]
+name = "tor_proxy"
+type = "std::net::SocketAddr"
+abbr = "T"
+doc = """
+SOCKS5 proxy used for Tor connectivity and directs all network traffic through Tor network.
+If the argument is provided in form of flag, without value, uses `127.0.0.1:9050` as default Tor proxy address.
+"""
+default = "std::net::SocketAddr::from_str(\"127.0.0.1:9050\").unwrap()"
+
+[[param]]
+name = "rpc_socket"
+type = "lnpbp::lnp::transport::zmq::SocketLocator"
+abbr = "r"
+doc = "ZMQ socket name/address for RPC API"
