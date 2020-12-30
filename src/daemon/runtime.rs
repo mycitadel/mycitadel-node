@@ -13,11 +13,10 @@
 
 use std::any::Any;
 
-use lnpbp::lnp::presentation::Encode;
 use lnpbp::lnp::zmqsocket::{self, ZmqType};
 use lnpbp::lnp::{
-    session, CreateUnmarshaller, PlainTranscoder, Session, Unmarshall,
-    Unmarshaller,
+    session, CreateUnmarshaller, PlainTranscoder, Session, TypedEnum,
+    Unmarshall, Unmarshaller,
 };
 use lnpbp_services::node::TryService;
 
@@ -91,7 +90,7 @@ impl Runtime {
         let raw = self.session_rpc.recv_raw_message()?;
         let reply = self.rpc_process(raw).unwrap_or_else(|err| err);
         trace!("Preparing ZMQ RPC reply: {:?}", reply);
-        let data = reply.encode()?;
+        let data = reply.serialize();
         trace!(
             "Sending {} bytes back to the client over ZMQ RPC",
             data.len()

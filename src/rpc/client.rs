@@ -11,11 +11,10 @@
 // along with this software.
 // If not, see <https://www.gnu.org/licenses/agpl-3.0-standalone.html>.
 
-use lnpbp::lnp::presentation::Encode;
 use lnpbp::lnp::zmqsocket::{self, ZmqType};
 use lnpbp::lnp::{
-    session, CreateUnmarshaller, PlainTranscoder, Session, Unmarshall,
-    Unmarshaller,
+    session, CreateUnmarshaller, PlainTranscoder, Session, TypedEnum,
+    Unmarshall, Unmarshaller,
 };
 
 use crate::rpc::{Reply, Request};
@@ -47,7 +46,7 @@ impl Client {
 
     pub fn request(&mut self, request: Request) -> Result<Reply, Error> {
         trace!("Sending request to the server: {:?}", request);
-        let data = request.encode()?;
+        let data = request.serialize();
         trace!("Raw request data ({} bytes): {:?}", data.len(), data);
         self.session_rpc.send_raw_message(&data)?;
         trace!("Awaiting reply");
