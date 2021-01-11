@@ -28,6 +28,8 @@ extern crate amplify;
 extern crate amplify_derive;
 #[macro_use]
 extern crate lnpbp_derive;
+#[macro_use]
+extern crate lnpbp;
 
 #[cfg(feature = "serde")]
 extern crate serde_crate as serde;

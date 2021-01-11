@@ -104,7 +104,7 @@ impl Runtime {
         let message = (&*self.unmarshaller.unmarshall(&raw)?).clone();
         debug!("Received ZMQ RPC request: {:?}", message.type_id());
         match message {
-            Request::List => unimplemented!(),
+            _ => unimplemented!(),
         }
     }
 }
