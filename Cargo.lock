@@ -905,7 +905,7 @@ checksum = "7fb9b38af92608140b86b693604b9ffcc5824240a484d1ecd4795bacb2fe88f3"
 [[package]]
 name = "lnpbp"
 version = "0.3.0-alpha.1"
-source = "git+https://github.com/LNP-BP/rust-lnpbp#b13c5f9d504e768ca1d7a4b488721bc5cc81db5d"
+source = "git+https://github.com/LNP-BP/rust-lnpbp#e35da7d534250ac7c52ebfae45c8bd772400a7ab"
 dependencies = [
  "amplify",
  "amplify_derive",
@@ -942,7 +942,7 @@ dependencies = [
 [[package]]
 name = "lnpbp_derive"
 version = "0.3.0-alpha.1"
-source = "git+https://github.com/LNP-BP/rust-lnpbp#b13c5f9d504e768ca1d7a4b488721bc5cc81db5d"
+source = "git+https://github.com/LNP-BP/rust-lnpbp#e35da7d534250ac7c52ebfae45c8bd772400a7ab"
 dependencies = [
  "amplify",
  "proc-macro2 1.0.24",
@@ -953,7 +953,7 @@ dependencies = [
 [[package]]
 name = "lnpbp_services"
 version = "0.3.0-alpha.1"
-source = "git+https://github.com/LNP-BP/rust-lnpbp#b13c5f9d504e768ca1d7a4b488721bc5cc81db5d"
+source = "git+https://github.com/LNP-BP/rust-lnpbp#e35da7d534250ac7c52ebfae45c8bd772400a7ab"
 dependencies = [
  "amplify",
  "amplify_derive",
