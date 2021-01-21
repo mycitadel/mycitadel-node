@@ -11,10 +11,11 @@
 // along with this software.
 // If not, see <https://www.gnu.org/licenses/agpl-3.0-standalone.html>.
 
-use lnpbp::bp::descriptor;
-use lnpbp::lnp::{ChannelId, RemoteNodeAddr};
+use internet2::RemoteNodeAddr;
+use lnp::ChannelId;
 #[cfg(feature = "serde")]
 use serde_with::DisplayFromStr;
+use wallet::descriptor;
 
 #[cfg_attr(
     feature = "serde",
@@ -104,6 +105,7 @@ pub enum ContractType {
     derive(Serialize, Deserialize),
     serde(crate = "serde_crate", rename = "lowercase")
 )]
+#[strict_encoding_crate(lnpbp::strict_encoding)]
 #[non_exhaustive]
 pub enum WalletContract {
     #[display("current:{0}")]
@@ -143,6 +145,7 @@ impl WalletContract {
     StrictEncode,
     StrictDecode,
 )]
+#[strict_encoding_crate(lnpbp::strict_encoding)]
 #[display("{channel_id}")]
 pub struct InstantContract {
     channel_id: ChannelId,
@@ -170,6 +173,7 @@ pub struct InstantContract {
     StrictEncode,
     StrictDecode,
 )]
+#[strict_encoding_crate(lnpbp::strict_encoding)]
 #[non_exhaustive]
 pub enum SavingContract {
     #[display(inner)]

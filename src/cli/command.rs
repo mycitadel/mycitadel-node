@@ -11,7 +11,7 @@
 // along with this software.
 // If not, see <https://www.gnu.org/licenses/agpl-3.0-standalone.html>.
 
-use lnpbp_services::shell::Exec;
+use microservices::shell::Exec;
 
 use super::Command;
 use crate::rpc;

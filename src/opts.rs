@@ -16,9 +16,9 @@ use std::fs;
 use std::net::SocketAddr;
 use std::path::PathBuf;
 
-use lnpbp::bp;
-use lnpbp::lnp::PartialNodeAddr;
-use lnpbp_services::shell::LogLevel;
+use internet2::PartialNodeAddr;
+use lnpbp::Chain;
+use microservices::shell::LogLevel;
 
 #[cfg(any(target_os = "linux"))]
 pub const MYCITADEL_DATA_DIR: &'static str = "~/.mycitadel";
@@ -106,7 +106,7 @@ pub struct Opts {
     )]
     // TODO: Put it back to `signet` default network once rust-bitcoin will
     //       release signet support
-    pub chain: bp::Chain,
+    pub chain: Chain,
 }
 
 impl Opts {

@@ -12,13 +12,13 @@
 // If not, see <https://www.gnu.org/licenses/agpl-3.0-standalone.html>.
 
 use clap::{AppSettings, Clap, ValueHint};
-use lnpbp_services::format::FileStorage;
+use microservices::FileFormat;
 
 pub const MYCITADEL_CONFIG: &'static str = "{data_dir}/mycitadeld.toml";
 #[cfg(feature = "serde_yaml")]
-pub const MYCITADEL_STORAGE_FORMAT: FileStorage = FileStorage::Yaml;
+pub const MYCITADEL_STORAGE_FORMAT: FileFormat = FileFormat::Yaml;
 #[cfg(not(feature = "serde_yaml"))]
-pub const MYCITADEL_STORAGE_FORMAT: FileStorage = FileStorage::StrictEncoded;
+pub const MYCITADEL_STORAGE_FORMAT: FileFormat = FileFormat::StrictEncoded;
 pub const MYCITADEL_STORAGE_FILE: &'static str = "accounts.yaml";
 
 #[derive(Clap, Clone, PartialEq, Eq, Hash, Debug)]

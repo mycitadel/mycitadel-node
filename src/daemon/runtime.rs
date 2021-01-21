@@ -13,12 +13,12 @@
 
 use std::any::Any;
 
-use lnpbp::lnp::zmqsocket::{self, ZmqType};
-use lnpbp::lnp::{
+use internet2::zmqsocket::{self, ZmqType};
+use internet2::{
     session, CreateUnmarshaller, PlainTranscoder, Session, TypedEnum,
     Unmarshall, Unmarshaller,
 };
-use lnpbp_services::node::TryService;
+use microservices::node::TryService;
 
 use crate::rpc::{Reply, Request};
 use crate::Storage;

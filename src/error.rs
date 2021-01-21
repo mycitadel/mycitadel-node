@@ -15,10 +15,10 @@ use std::io;
 
 use amplify::IoError;
 #[cfg(any(feature = "node", feature = "client"))]
-use lnpbp::lnp::TypeId;
-use lnpbp::lnp::{presentation, transport};
+use internet2::TypeId;
+use internet2::{presentation, transport};
 #[cfg(any(feature = "node", feature = "client"))]
-use lnpbp_services::{esb, rpc};
+use microservices::{esb, rpc};
 
 use crate::storage;
 
@@ -46,7 +46,6 @@ pub enum Error {
 
     /// Bridge interface error: {0}
     #[cfg(any(feature = "node", feature = "client"))]
-    #[from(zmq::Error)]
     #[from]
     Bridge(transport::Error),
 
@@ -69,11 +68,10 @@ pub enum Error {
 
     /// Other error type with string explanation
     #[display(inner)]
-    #[from(amplify::internet::NoOnionSupportError)]
     Other(String),
 }
 
-impl lnpbp_services::error::Error for Error {}
+impl microservices::error::Error for Error {}
 
 #[cfg(any(feature = "node", feature = "client"))]
 impl From<Error> for esb::Error {

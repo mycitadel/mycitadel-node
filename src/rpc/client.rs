@@ -11,8 +11,8 @@
 // along with this software.
 // If not, see <https://www.gnu.org/licenses/agpl-3.0-standalone.html>.
 
-use lnpbp::lnp::zmqsocket::{self, ZmqType};
-use lnpbp::lnp::{
+use internet2::zmqsocket::{self, ZmqType};
+use internet2::{
     session, CreateUnmarshaller, PlainTranscoder, Session, TypedEnum,
     Unmarshall, Unmarshaller,
 };

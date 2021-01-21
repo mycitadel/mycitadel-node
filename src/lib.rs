@@ -18,18 +18,20 @@
     non_camel_case_types,
     non_snake_case,
     unused_mut,
-    // unused_imports,
+    unused_imports,
     // dead_code
     // missing_docs,
 )]
 
-extern crate amplify;
 #[macro_use]
 extern crate amplify_derive;
 #[macro_use]
-extern crate lnpbp_derive;
-#[macro_use]
 extern crate lnpbp;
+#[cfg_attr(feature = "_rpc", macro_use)]
+extern crate internet2;
+
+#[macro_use]
+extern crate log;
 
 #[cfg(feature = "serde")]
 extern crate serde_crate as serde;
@@ -37,20 +39,14 @@ extern crate serde_crate as serde;
 #[macro_use]
 extern crate serde_with;
 
-#[cfg(feature = "shell")]
-extern crate clap;
-#[cfg(feature = "shell")]
-#[macro_use]
-extern crate log;
-
 #[cfg(feature = "cli")]
 pub mod cli;
-#[cfg(any(feature = "node", feature = "client"))]
+#[cfg(feature = "_rpc")]
 mod config;
 mod error;
 #[cfg(feature = "shell")]
 pub mod opts;
-#[cfg(any(feature = "node", feature = "client"))]
+#[cfg(feature = "_rpc")]
 pub mod rpc;
 
 #[cfg(feature = "node")]
@@ -59,7 +55,7 @@ pub mod data;
 #[cfg(feature = "node")]
 pub mod storage;
 
-#[cfg(any(feature = "node", feature = "client"))]
+#[cfg(feature = "_rpc")]
 pub use config::Config;
 pub use error::Error;
 #[cfg(feature = "node")]

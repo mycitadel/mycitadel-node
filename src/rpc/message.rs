@@ -11,11 +11,11 @@
 // along with this software.
 // If not, see <https://www.gnu.org/licenses/agpl-3.0-standalone.html>.
 
-use core::ops::RangeInclusive;
 use std::io;
+use std::ops::RangeInclusive;
 
-use lnpbp::bp::descriptor;
 use lnpbp::strict_encoding::{self, StrictDecode, StrictEncode};
+use wallet::descriptor;
 
 #[derive(Clone, Eq, PartialEq, Hash, Debug, Display)]
 #[display("{key}")]

@@ -14,9 +14,9 @@
 use std::convert::TryInto;
 use std::path::PathBuf;
 
-use lnpbp::bp::Chain;
-use lnpbp::lnp::zmqsocket::ZmqSocketAddr;
-use lnpbp_services::format::FileStorage;
+use internet2::zmqsocket::ZmqSocketAddr;
+use lnpbp::Chain;
+use microservices::FileFormat;
 
 #[cfg(feature = "shell")]
 use crate::opts::Opts;
@@ -42,7 +42,7 @@ impl Config {
     pub fn storage_conf(&self) -> storage::driver::Config {
         storage::driver::Config::File(storage::file_driver::Config {
             location: self.data_dir.to_string_lossy().to_string(),
-            format: FileStorage::StrictEncoded,
+            format: FileFormat::StrictEncode,
         })
     }
 }

@@ -19,7 +19,7 @@ use std::path::Path;
 use std::{fs, io};
 
 use lnpbp::strict_encoding::{StrictDecode, StrictEncode};
-use lnpbp_services::format::FileStorage;
+use microservices::FileFormat;
 
 use super::{driver, Driver};
 use crate::Error;
@@ -35,7 +35,7 @@ pub struct FileDriver {
 #[serde(crate = "serde_crate")]
 pub struct Config {
     pub location: String,
-    pub format: FileStorage,
+    pub format: FileFormat,
 }
 
 impl Driver for FileDriver {
@@ -69,19 +69,17 @@ impl Driver for FileDriver {
         self.fd.seek(io::SeekFrom::Start(0))?;
         trace!("Parsing data (expected format {})", self.config.format);
         let accounts = match self.config.format {
-            FileStorage::StrictEncoded => {
-                Vec::<u8>::strict_decode(&mut self.fd)?
-            }
+            FileFormat::StrictEncode => Vec::<u8>::strict_decode(&mut self.fd)?,
             #[cfg(feature = "serde_yaml")]
-            FileStorage::Yaml => serde_yaml::from_reader(&mut self.fd)?,
+            FileFormat::Yaml => serde_yaml::from_reader(&mut self.fd)?,
             #[cfg(feature = "toml")]
-            FileStorage::Toml => {
+            FileFormat::Toml => {
                 let mut data: Vec<u8> = vec![];
                 self.fd.read_to_end(&mut data)?;
                 toml::from_slice(&data)?
             }
             #[cfg(feature = "serde_json")]
-            FileStorage::Json => serde_json::from_reader(&mut self.fd)?,
+            FileFormat::Json => serde_json::from_reader(&mut self.fd)?,
             _ => unimplemented!(),
         };
         trace!("Data loaded from storage: {:?}", accounts);
@@ -97,20 +95,20 @@ impl Driver for FileDriver {
         self.fd.seek(io::SeekFrom::Start(0))?;
         self.fd.set_len(0)?;
         match self.config.format {
-            FileStorage::StrictEncoded => {
+            FileFormat::StrictEncode => {
                 data.strict_encode(&mut self.fd)?;
             }
             #[cfg(feature = "serde_yaml")]
-            FileStorage::Yaml => {
+            FileFormat::Yaml => {
                 serde_yaml::to_writer(&mut self.fd, data)?;
             }
             #[cfg(feature = "toml")]
-            FileStorage::Toml => {
+            FileFormat::Toml => {
                 let data = toml::to_vec(data)?;
                 self.fd.write_all(&data)?;
             }
             #[cfg(feature = "serde_json")]
-            FileStorage::Json => {
+            FileFormat::Json => {
                 serde_json::to_writer(&mut self.fd, data)?;
             }
             _ => unimplemented!(),

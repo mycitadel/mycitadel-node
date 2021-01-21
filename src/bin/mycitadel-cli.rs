@@ -30,7 +30,7 @@ extern crate log;
 
 use clap::Clap;
 
-use lnpbp_services::shell::Exec;
+use microservices::shell::Exec;
 use mycitadel::cli::Opts;
 use mycitadel::rpc::Client;
 use mycitadel::Config;

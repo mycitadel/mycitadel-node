@@ -22,6 +22,6 @@ default = "std::net::SocketAddr::from_str(\"127.0.0.1:9050\").unwrap()"
 
 [[param]]
 name = "rpc_socket"
-type = "lnpbp::lnp::transport::zmq::SocketLocator"
+type = "internet2::transport::zmq::SocketLocator"
 abbr = "r"
 doc = "ZMQ socket name/address for RPC API"

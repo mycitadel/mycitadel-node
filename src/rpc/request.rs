@@ -11,13 +11,14 @@
 // along with this software.
 // If not, see <https://www.gnu.org/licenses/agpl-3.0-standalone.html>.
 
-use lnpbp::rgb::Genesis;
+use rgb::Genesis;
 
 use super::message::{IdentityInfo, SignerAccount};
 use crate::data::WalletContract;
 
 #[derive(Clone, Debug, Display, LnpApi)]
 #[lnp_api(encoding = "strict")]
+#[encoding_crate(lnpbp::strict_encoding)]
 #[non_exhaustive]
 pub enum Request {
     #[lnp_api(type = 0x0010)]
