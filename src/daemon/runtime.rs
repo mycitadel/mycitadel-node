@@ -19,6 +19,7 @@ use internet2::{
     Unmarshall, Unmarshaller,
 };
 use microservices::node::TryService;
+use rgb_node::util::ToBech32Data;
 
 use crate::rpc::{Reply, Request};
 use crate::Storage;
@@ -100,11 +101,43 @@ impl Runtime {
     }
 
     fn rpc_process(&mut self, raw: Vec<u8>) -> Result<Reply, Reply> {
-        trace!("Got {} bytes over ZMQ RPC", raw.len());
+        trace!(
+            "Got {} bytes over ZMQ RPC: {}",
+            raw.len(),
+            raw.to_bech32data()
+        );
         let message = (&*self.unmarshaller.unmarshall(&raw)?).clone();
-        debug!("Received ZMQ RPC request: {:?}", message.type_id());
+        debug!(
+            "Received ZMQ RPC request #{}: {}",
+            message.type_id(),
+            message
+        );
         match message {
-            _ => unimplemented!(),
+            Request::ListWallets => {
+                return self.storage.wallets().map(|list| Reply::Wallets(list))
+            }
+            Request::ListIdentities => {
+                return self
+                    .storage
+                    .identities()
+                    .map(|list| Reply::Identities(list))
+            }
+            Request::ListAssets => {
+                return self.storage.assets().map(|list| Reply::Assets(list))
+            }
+            Request::AddWallet(contract) => {
+                self.storage.add_wallet(contract)?;
+            }
+            Request::AddSigner(account) => {
+                self.storage.add_signer(account)?;
+            }
+            Request::AddIdentity(identity) => {
+                self.storage.add_identity(identity)?;
+            }
+            Request::AddAsset(genesis) => {
+                self.storage.add_asset(genesis)?;
+            }
         }
+        Ok(Reply::Success)
     }
 }

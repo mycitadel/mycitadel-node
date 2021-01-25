@@ -12,6 +12,7 @@
 // If not, see <https://www.gnu.org/licenses/agpl-3.0-standalone.html>.
 
 use clap::{AppSettings, Clap, ValueHint};
+use wallet::descriptor;
 
 pub const MYCITADEL_CLI_CONFIG: &'static str = "{data_dir}/mycitadel-cli.toml";
 
@@ -53,5 +54,44 @@ impl Opts {
     }
 }
 
-#[derive(Clap, Clone, Debug)]
-pub enum Command {}
+#[derive(Clap, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Debug, Display)]
+pub enum Command {
+    /// Wallet management commands
+    #[display("wallet {subcommand}")]
+    Wallet {
+        #[clap(subcommand)]
+        subcommand: WalletCommand,
+    },
+}
+
+#[derive(Clap, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Debug, Display)]
+pub enum WalletCommand {
+    /// Creates wallet with a given name and descriptor parameters
+    #[display("create {subcommand}")]
+    Create {
+        #[clap(subcommand)]
+        subcommand: WalletCreateCommand,
+    },
+
+    /// Lists existing wallets
+    #[display("list")]
+    List,
+}
+
+#[derive(Clap, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Debug, Display)]
+pub enum WalletCreateCommand {
+    /// Creates current wallet account
+    #[display("current {name} {template} --variants {variants}")]
+    Current {
+        /// Wallet name
+        #[clap()]
+        name: String,
+
+        #[clap(long, default_value = "segwit")]
+        variants: descriptor::Variants,
+
+        #[clap()]
+        /// Wallet descriptor template
+        template: descriptor::Template,
+    },
+}

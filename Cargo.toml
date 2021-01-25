@@ -38,7 +38,7 @@ rgb20 = { version = "0.3", optional = true }
 # rgb23 = { version = "0.3.0-beta.3", optional = true }
 rgb_node = { version = "0.3", default-features = false, features = ["fungibles"] }
 internet2 = { version = "0.3.9", default-features = false, features = ["derive", "descriptor-wallet", "bitcoin-ext"] }
-microservices = { version = "0.3.9", default-features = false }
+microservices = { version = "0.4.0-alpha.1", default-features = false, path = "../../internet2/rust-internet2/microservices" }
 # Bitcoin
 bitcoin = "0.26"
 electrum-client = { version = "0.6", optional = true }
@@ -67,8 +67,9 @@ shellexpand = { version = "2", optional = true }
 amplify = "3"
 amplify_derive = "2.4.2"
 lnpbp = "0.3"
+descriptor-wallet = "0.3.3"
 internet2 = { version = "0.3.7", default-features = false, features = ["derive", "descriptor-wallet"] }
-microservices = { version = "0.3.7", default-features = false }
+microservices = { version = "0.4.0-alpha.1", default-features = false, path = "../../internet2/rust-internet2/microservices" }
 lazy_static = "1.4"
 clap = "3.0.0-beta.2"
 clap_generate = "3.0.0-beta.2"

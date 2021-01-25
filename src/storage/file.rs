@@ -21,28 +21,43 @@ use std::{fs, io};
 use lnpbp::strict_encoding::{StrictDecode, StrictEncode};
 use microservices::FileFormat;
 
-use super::{driver, Driver};
-use crate::Error;
+use super::{Driver, Error};
+use crate::data::WalletContract;
+use crate::rpc::message::{IdentityInfo, SignerAccount};
+
+use rgb::Genesis;
+use rgb20::Asset;
 
 #[derive(Debug, Display)]
-#[display(Debug)]
 pub struct FileDriver {
     fd: fs::File,
-    config: Config,
+    config: FileConfig,
+    data: Data,
 }
 
-#[derive(Clone, PartialEq, Eq, Hash, Debug, Serialize, Deserialize)]
+#[derive(
+    Clone,
+    PartialEq,
+    Eq,
+    PartialOrd,
+    Ord,
+    Hash,
+    Debug,
+    Default,
+    Serialize,
+    Deserialize,
+    StrictEncode,
+    StrictDecode,
+)]
+#[strict_encoding_crate(lnpbp::strict_encoding)]
 #[serde(crate = "serde_crate")]
-pub struct Config {
+pub struct FileConfig {
     pub location: String,
     pub format: FileFormat,
 }
 
-impl Driver for FileDriver {
-    fn init(config: &dyn Any) -> Result<Self, Error> {
-        let config = config.downcast_ref::<Config>().expect(
-            "`FileDriver` must be configured with `file_driver::Config` object",
-        );
+impl FileDriver {
+    pub fn with(config: FileConfig) -> Result<Self, Error> {
         info!(
             "Initializing file driver for data in {:?}",
             &config.location
@@ -115,5 +130,48 @@ impl Driver for FileDriver {
         };
         trace!("Vault data stored");
         Ok(())
+    }
+}
+
+impl Driver for FileDriver {
+    fn wallets(&self) -> Result<Vec<WalletContract>, Error> {
+        unimplemented!()
+    }
+
+    fn add_wallet(
+        &mut self,
+        contract: WalletContract,
+    ) -> Result<(), Self::Error> {
+        unimplemented!()
+    }
+
+    fn signers(&self) -> Result<Vec<SignerAccount>, Error> {
+        unimplemented!()
+    }
+
+    fn add_signer(
+        &mut self,
+        account: SignerAccount,
+    ) -> Result<(), Self::Error> {
+        unimplemented!()
+    }
+
+    fn identities(&self) -> Result<Vec<IdentityInfo>, Error> {
+        unimplemented!()
+    }
+
+    fn add_idenity(
+        &mut self,
+        identity: IdentityInfo,
+    ) -> Result<(), Self::Error> {
+        unimplemented!()
+    }
+
+    fn assets(&self) -> Result<Vec<Asset>, Error> {
+        unimplemented!()
+    }
+
+    fn add_asset(&mut self, genesis: Genesis) -> Result<(), Error> {
+        unimplemented!()
     }
 }

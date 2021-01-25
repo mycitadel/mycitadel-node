@@ -26,7 +26,7 @@ use crate::storage;
 #[display(doc_comments)]
 #[non_exhaustive]
 pub enum Error {
-    /// I/O error: {0:?}
+    /// Generic I/O error: {0:?}
     #[from(io::Error)]
     Io(IoError),
 
@@ -40,35 +40,23 @@ pub enum Error {
     #[from]
     Rpc(rpc::Error),
 
-    /// Peer interface error: {0}
+    /// General networking error: {0}
     #[from]
-    Peer(presentation::Error),
+    Networking(presentation::Error),
 
-    /// Bridge interface error: {0}
+    /// Transport-level interface error: {0}
     #[cfg(any(feature = "node", feature = "client"))]
     #[from]
     Bridge(transport::Error),
 
-    /// Provided RPC request is not supported for the used type of endpoint
+    /// Provided RPC request (type id {0}) is not supported
     #[cfg(any(feature = "node", feature = "client"))]
     NotSupported(TypeId),
 
-    /// Peer does not respond to ping messages
-    NotResponding,
-
-    /// Peer has misbehaved LN peer protocol rules
-    Misbehaving,
-
-    /// unrecoverable error "{0}"
-    Terminate(String),
-
+    /// Storage-level error:\n {0}
     #[cfg(any(feature = "server", feature = "embedded"))]
     #[from]
     StorageDriver(storage::driver::Error),
-
-    /// Other error type with string explanation
-    #[display(inner)]
-    Other(String),
 }
 
 impl microservices::error::Error for Error {}

@@ -12,17 +12,81 @@
 // If not, see <https://www.gnu.org/licenses/agpl-3.0-standalone.html>.
 
 use microservices::shell::Exec;
+use wallet::descriptor;
 
-use super::Command;
+use super::{Command, Wallet, WalletCommand, WalletCreateCommand};
+use crate::data::WalletContract;
 use crate::rpc;
+use crate::rpc::Reply;
 use crate::Error;
 
+impl rpc::Reply {
+    pub fn report_failure(&self, prefix: &str) -> Option<&rpc::Reply> {
+        match self {
+            Reply::Success => Some(self),
+            Reply::Failure(failure) => {
+                eprintln!(
+                    "Error #{} {}: {}",
+                    failure.code, prefix, failure.info
+                );
+                None
+            }
+        }
+    }
+}
+
 impl Exec for Command {
-    type Runtime = rpc::Client;
+    type Client = rpc::Client;
     type Error = Error;
 
     #[inline]
-    fn exec(&self, _runtime: &mut rpc::Client) -> Result<(), Self::Error> {
-        unimplemented!()
+    fn exec(self, client: &mut rpc::Client) -> Result<(), Self::Error> {
+        match self {
+            Command::Wallet(cmd) => cmd.exec(client),
+        }
+    }
+}
+
+impl Exec for WalletCommand {
+    type Client = rpc::Client;
+    type Error = Error;
+
+    fn exec(self, client: &mut Self::Runtime) -> Result<(), Self::Error> {
+        match self {
+            WalletCommand::Create(cmd) => cmd.exec(client),
+            WalletCommand::List => client
+                .wallet_list()?
+                .report_error("listing wallets")
+                .map(|list| {
+                    eprintln!("Known wallets:");
+                    println!("{}", serde_yaml::to_string(list)?);
+                }),
+        }
+    }
+}
+
+impl Exec for WalletCreateCommand {
+    type Client = rpc::Client;
+    type Error = Error;
+
+    fn exec(self, client: &mut Self::Runtime) -> Result<(), Self::Error> {
+        match self {
+            WalletCreateCommand::Current {
+                name,
+                variants,
+                template,
+            } => {
+                let descriptor = descriptor::Generator { variants, template };
+                info!("Creating current wallet with descriptor {}", descriptor);
+                client.wallet_create_current(WalletContract::Current {
+                    name,
+                    descriptor,
+                })?.report_error("during wallet creation").map(|_| {
+                    eprint!("Wallet named '{}' was successfully created.\nUse the following string as the wallet id: ", name);
+                    println!("{}", descriptor);
+                });
+            }
+        }
+        Ok(())
     }
 }

@@ -11,6 +11,9 @@
 // along with this software.
 // If not, see <https://www.gnu.org/licenses/agpl-3.0-standalone.html>.
 
+#[macro_use]
+extern crate amplify_derive;
+
 use clap::IntoApp;
 use clap_generate::{generate_to, generators::*};
 

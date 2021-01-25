@@ -17,6 +17,7 @@ use internet2::{
     Unmarshall, Unmarshaller,
 };
 
+use crate::data::WalletContract;
 use crate::rpc::{Reply, Request};
 use crate::{Config, Error};
 
@@ -55,5 +56,14 @@ impl Client {
         let reply = self.unmarshaller.unmarshall(&raw)?;
         trace!("Reply: {:?}", reply);
         Ok((&*reply).clone())
+    }
+}
+
+impl Client {
+    pub fn wallet_create_current(
+        &mut self,
+        contract: WalletContract,
+    ) -> Result<Reply, Error> {
+        self.request(Request::AddWallet(contract))
     }
 }
