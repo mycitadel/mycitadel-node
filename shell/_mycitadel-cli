@@ -32,16 +32,168 @@ _mycitadel-cli() {
 '--help[Prints help information]' \
 '-V[Prints version information]' \
 '--version[Prints version information]' \
+":: :_mycitadel-cli_commands" \
+"*::: :->mycitadel-cli" \
 && ret=0
-    
+    case $state in
+    (mycitadel-cli)
+        words=($line[1] "${words[@]}")
+        (( CURRENT += 1 ))
+        curcontext="${curcontext%:*:*}:mycitadel-cli-command-$line[1]:"
+        case $line[1] in
+            (wallet)
+_arguments "${_arguments_options[@]}" \
+'-d+[Data directory path]: :_files -/' \
+'--data-dir=[Data directory path]: :_files -/' \
+'*-T+[Use Tor]: :_hosts' \
+'*--tor-proxy=[Use Tor]: :_hosts' \
+'-x+[ZMQ socket name/address for daemon RPC interface]: :_files' \
+'--rpc-socket=[ZMQ socket name/address for daemon RPC interface]: :_files' \
+'-n+[Blockchain to use]' \
+'--chain=[Blockchain to use]' \
+'*-v[Set verbosity level]' \
+'*--verbose[Set verbosity level]' \
+'-h[Prints help information]' \
+'--help[Prints help information]' \
+'-V[Prints version information]' \
+'--version[Prints version information]' \
+":: :_mycitadel-cli__wallet_commands" \
+"*::: :->wallet" \
+&& ret=0
+case $state in
+    (wallet)
+        words=($line[1] "${words[@]}")
+        (( CURRENT += 1 ))
+        curcontext="${curcontext%:*:*}:mycitadel-cli-wallet-command-$line[1]:"
+        case $line[1] in
+            (create)
+_arguments "${_arguments_options[@]}" \
+'-d+[Data directory path]: :_files -/' \
+'--data-dir=[Data directory path]: :_files -/' \
+'*-T+[Use Tor]: :_hosts' \
+'*--tor-proxy=[Use Tor]: :_hosts' \
+'-x+[ZMQ socket name/address for daemon RPC interface]: :_files' \
+'--rpc-socket=[ZMQ socket name/address for daemon RPC interface]: :_files' \
+'-n+[Blockchain to use]' \
+'--chain=[Blockchain to use]' \
+'*-v[Set verbosity level]' \
+'*--verbose[Set verbosity level]' \
+'-h[Prints help information]' \
+'--help[Prints help information]' \
+'-V[Prints version information]' \
+'--version[Prints version information]' \
+":: :_mycitadel-cli__wallet__create_commands" \
+"*::: :->create" \
+&& ret=0
+case $state in
+    (create)
+        words=($line[1] "${words[@]}")
+        (( CURRENT += 1 ))
+        curcontext="${curcontext%:*:*}:mycitadel-cli-wallet-create-command-$line[1]:"
+        case $line[1] in
+            (current)
+_arguments "${_arguments_options[@]}" \
+'--variants=[]' \
+'-d+[Data directory path]: :_files -/' \
+'--data-dir=[Data directory path]: :_files -/' \
+'*-T+[Use Tor]: :_hosts' \
+'*--tor-proxy=[Use Tor]: :_hosts' \
+'-x+[ZMQ socket name/address for daemon RPC interface]: :_files' \
+'--rpc-socket=[ZMQ socket name/address for daemon RPC interface]: :_files' \
+'-n+[Blockchain to use]' \
+'--chain=[Blockchain to use]' \
+'*-v[Set verbosity level]' \
+'*--verbose[Set verbosity level]' \
+'-h[Prints help information]' \
+'--help[Prints help information]' \
+'-V[Prints version information]' \
+'--version[Prints version information]' \
+':name -- Wallet name:' \
+':template -- Wallet descriptor template:' \
+&& ret=0
+;;
+        esac
+    ;;
+esac
+;;
+(list)
+_arguments "${_arguments_options[@]}" \
+'-d+[Data directory path]: :_files -/' \
+'--data-dir=[Data directory path]: :_files -/' \
+'*-T+[Use Tor]: :_hosts' \
+'*--tor-proxy=[Use Tor]: :_hosts' \
+'-x+[ZMQ socket name/address for daemon RPC interface]: :_files' \
+'--rpc-socket=[ZMQ socket name/address for daemon RPC interface]: :_files' \
+'-n+[Blockchain to use]' \
+'--chain=[Blockchain to use]' \
+'*-v[Set verbosity level]' \
+'*--verbose[Set verbosity level]' \
+'-h[Prints help information]' \
+'--help[Prints help information]' \
+'-V[Prints version information]' \
+'--version[Prints version information]' \
+&& ret=0
+;;
+        esac
+    ;;
+esac
+;;
+(help)
+_arguments "${_arguments_options[@]}" \
+'-h[Prints help information]' \
+'--help[Prints help information]' \
+'-V[Prints version information]' \
+'--version[Prints version information]' \
+&& ret=0
+;;
+        esac
+    ;;
+esac
 }
 
 (( $+functions[_mycitadel-cli_commands] )) ||
 _mycitadel-cli_commands() {
     local commands; commands=(
-        
+        "wallet:Wallet management commands" \
+"help:Prints this message or the help of the given subcommand(s)" \
     )
     _describe -t commands 'mycitadel-cli commands' commands "$@"
+}
+(( $+functions[_mycitadel-cli__wallet__create_commands] )) ||
+_mycitadel-cli__wallet__create_commands() {
+    local commands; commands=(
+        "current:Creates current wallet account" \
+    )
+    _describe -t commands 'mycitadel-cli wallet create commands' commands "$@"
+}
+(( $+functions[_mycitadel-cli__wallet__create__current_commands] )) ||
+_mycitadel-cli__wallet__create__current_commands() {
+    local commands; commands=(
+        
+    )
+    _describe -t commands 'mycitadel-cli wallet create current commands' commands "$@"
+}
+(( $+functions[_mycitadel-cli__help_commands] )) ||
+_mycitadel-cli__help_commands() {
+    local commands; commands=(
+        
+    )
+    _describe -t commands 'mycitadel-cli help commands' commands "$@"
+}
+(( $+functions[_mycitadel-cli__wallet__list_commands] )) ||
+_mycitadel-cli__wallet__list_commands() {
+    local commands; commands=(
+        
+    )
+    _describe -t commands 'mycitadel-cli wallet list commands' commands "$@"
+}
+(( $+functions[_mycitadel-cli__wallet_commands] )) ||
+_mycitadel-cli__wallet_commands() {
+    local commands; commands=(
+        "create:Creates wallet with a given name and descriptor parameters" \
+"list:Lists existing wallets" \
+    )
+    _describe -t commands 'mycitadel-cli wallet commands' commands "$@"
 }
 
 _mycitadel-cli "$@"

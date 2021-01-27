@@ -11,13 +11,15 @@
 // along with this software.
 // If not, see <https://www.gnu.org/licenses/agpl-3.0-standalone.html>.
 
+#[cfg(feature = "serde")]
+use serde_with::{As, DisplayFromStr};
 use std::collections::BTreeMap;
 use std::fmt::{Debug, Display};
 use std::hash::Hash;
 use std::io;
 
 use bitcoin::hashes::{sha256, sha256t};
-use bitcoin::{BlockHash, Transaction, Txid};
+use bitcoin::{BlockHash, OutPoint, Transaction, Txid};
 use chrono::NaiveDateTime;
 use internet2::RemoteNodeAddr;
 use lnp::channel::TxRole;
@@ -28,8 +30,7 @@ use lnpbp::client_side_validation::{
 use lnpbp::commit_verify::CommitVerify;
 use lnpbp::strict_encoding::StrictEncode;
 use lnpbp::tagged_hash::{self, TaggedHash};
-#[cfg(feature = "serde")]
-use serde_with::DisplayFromStr;
+use rgb20::Invoice;
 use wallet::{descriptor, Psbt};
 
 // --- Wallet primitives
@@ -48,7 +49,7 @@ use wallet::{descriptor, Psbt};
     StrictDecode,
 )]
 #[strict_encoding_crate(lnpbp::strict_encoding)]
-#[display("{height}:{block_hadh}@{timestamp}")]
+#[display("{height}:{block_hash}@{timestamp}")]
 pub struct BlockchainTimepair {
     timestamp: NaiveDateTime,
     height: u32,
@@ -73,68 +74,11 @@ pub struct BlockchainTimepair {
     StrictDecode,
 )]
 #[strict_encoding_crate(lnpbp::strict_encoding)]
-#[display("{0}:\t{1}\n")]
-pub struct TimestampedData<T>(NaiveDateTime, T)
-where
-    T: Sized + Clone + Eq + Ord + Hash + Debug + Display;
-
-impl<T> TimestampedData<T>
-where
-    T: Sized + Clone + Eq + Ord + Hash + Debug + Display,
-{
-    pub fn timestamp(&self) -> NaiveDateTime {
-        self.0
-    }
-
-    pub fn data(&self) -> &T {
-        &self.1
-    }
-}
-
-#[cfg_attr(
-    feature = "serde",
-    derive(Serialize, Deserialize),
-    serde(crate = "serde_crate")
-)]
-#[derive(
-    Clone,
-    Ord,
-    PartialOrd,
-    Eq,
-    PartialEq,
-    Hash,
-    Debug,
-    Display,
-    StrictEncode,
-    StrictDecode,
-)]
-#[strict_encoding_crate(lnpbp::strict_encoding)]
-#[display("{0}:\t{1}\n")]
-pub struct VerifiedTx(Transaction, TxConfirmation);
-
-#[cfg_attr(
-    feature = "serde",
-    derive(Serialize, Deserialize),
-    serde(crate = "serde_crate")
-)]
-#[derive(
-    Clone,
-    Ord,
-    PartialOrd,
-    Eq,
-    PartialEq,
-    Hash,
-    Debug,
-    Display,
-    StrictEncode,
-    StrictDecode,
-)]
-#[strict_encoding_crate(lnpbp::strict_encoding)]
 pub enum TxConfirmation {
     #[display("{height}:{block_hash}")]
     Blockchain { height: u32, block_hash: BlockHash },
 
-    #[display("{state_no}@{channel_id}}")]
+    #[display("{state_no}@{channel_id}")]
     Lightning {
         channel_id: ChannelId,
         state_no: u64,
@@ -181,6 +125,38 @@ where
     }
 }
 
+// --- Payment slip
+
+pub enum PaymentConfirmation {
+    Txid(Txid),
+}
+
+#[cfg_attr(
+    feature = "serde",
+    serde_as,
+    derive(Serialize, Deserialize),
+    serde(crate = "serde_crate")
+)]
+#[derive(
+    Getters,
+    Clone,
+    Ord,
+    PartialOrd,
+    Eq,
+    PartialEq,
+    Hash,
+    Debug,
+    Display,
+    StrictEncode,
+    StrictDecode,
+)]
+#[strict_encoding_crate(lnpbp::strict_encoding)]
+#[display("{confirmation}@{paid}")]
+pub struct PaymentSlip {
+    paid: BlockchainTimepair,
+    confirmation: PaymentConfirmation,
+}
+
 // --- Wallet data structure
 
 #[cfg_attr(
@@ -202,23 +178,58 @@ where
     StrictEncode,
     StrictDecode,
 )]
+#[strict_encoding_crate(lnpbp::strict_encoding)]
+#[display("{id}:{contract}")]
 pub struct Wallet {
+    /// Unique wallet id used to identify wallet accross different application
+    /// instances. Created as a taproot-style bitcoin tagged hash out of
+    /// strict-encoded wallet contract data: when contract changes walled id
+    /// changes; if two wallets on different devices have the same underlying
+    /// contract they will have the same id.
+    ///
+    /// The id is kept pre-computed: the wallet contract can't be changed after
+    /// the creation, so there is no need to perform expensive commitment
+    /// process each time we need wallet id
     id: WalletId,
 
     #[cfg_attr(feature = "serde", serde(flatten))]
     contract: WalletContract,
 
-    #[cfg_attr(feature = "serde", serde_as("BTreeMap<_, DisplayFromStr>"))]
-    drafts: BTreeMap<Txid, Psbt>,
+    #[cfg_attr(feature = "serde", serde(with = "As::<DisplayFromStr>"))]
+    created_at: BlockchainTimepair,
 
-    #[cfg_attr(feature = "serde", serde_as("BTreeMap<_, DisplayFromStr>"))]
-    history: BTreeMap<Txid, TimestampedData<Transaction>>,
+    #[cfg_attr(feature = "serde", serde(with = "As::<DisplayFromStr>"))]
+    checked_at: BlockchainTimepair,
 
-    #[cfg_attr(feature = "serde", serde_as("DisplayFromStr"))]
-    verified_at: BlockchainTimepair,
+    #[cfg_attr(
+        feature = "serde",
+        serde(with = "As::<BTreeMap<DisplayFromStr, _>>")
+    )]
+    blinding_factors: BTreeMap<OutPoint, u64>,
 
-    #[cfg_attr(feature = "serde", serde_as("BTreeMap<_, DisplayFromStr>"))]
-    cache: BTreeMap<Txid, TimestampedData<VerifiedTx>>,
+    #[cfg_attr(feature = "serde", serde(with = "As::<Vec<DisplayFromStr>>"))]
+    sent_invoices: Vec<Invoice>,
+
+    #[cfg_attr(feature = "serde", serde(with = "As::<Vec<DisplayFromStr>>"))]
+    received_invoices: Vec<Invoice>,
+
+    #[cfg_attr(
+        feature = "serde",
+        serde(with = "As::<BTreeMap<DisplayFromStr, DisplayFromStr>>")
+    )]
+    paid_invoices: BTreeMap<Invoice, PaymentSlip>,
+
+    #[cfg_attr(
+        feature = "serde",
+        serde(with = "As::<BTreeMap<_, DisplayFromStr>>")
+    )]
+    transactions: BTreeMap<Txid, Psbt>,
+
+    #[cfg_attr(
+        feature = "serde",
+        serde(with = "As::<BTreeMap<_, DisplayFromStr>>")
+    )]
+    operations: BTreeMap<BlockchainTimepair, Operation>,
 }
 
 impl ConsensusCommit for Wallet {

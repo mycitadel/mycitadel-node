@@ -19,8 +19,6 @@ pub use file::{FileConfig, FileDriver};
 
 // -----------------------------------------------------------------------------
 
-use std::any::Any;
-
 use rgb::Genesis;
 use rgb20::Asset;
 

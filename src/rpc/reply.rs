@@ -16,16 +16,16 @@ use microservices::{rpc, rpc_connection};
 
 use crate::Error;
 
-#[derive(Clone, Debug, Display, LnpApi)]
-#[encoding_crate(lnpbp::strict_encoding)]
-#[lnp_api(encoding = "strict")]
+#[derive(Clone, Debug, Display, Api)]
+#[strict_encoding_crate(lnpbp::strict_encoding)]
+#[api(encoding = "strict")]
 #[non_exhaustive]
 pub enum Reply {
-    #[lnp_api(type = 0x0100)]
+    #[api(type = 0x0100)]
     #[display("success()")]
     Success,
 
-    #[lnp_api(type = 0x0102)]
+    #[api(type = 0x0102)]
     #[display("failure({0})")]
     Failure(microservices::rpc::Failure),
 }

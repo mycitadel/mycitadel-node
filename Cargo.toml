@@ -27,18 +27,18 @@ required-features = ["cli"]
 # LNP/BP crates
 amplify = "3"
 amplify_derive = "2.4.4"
-lnpbp = "0.3"
-descriptor-wallet = "0.3.3"
-slip132 = "0.3"
-lnp-core = "0.3"
-rgb-core = "0.3"
-rgb20 = { version = "0.3", optional = true }
+slip132 = "0.3.2"
+descriptor-wallet = { git = "https://github.com/LNP-BP/descriptor-wallet" }
+lnpbp = { git = "https://github.com/LNP-BP/rust-lnpbp" }
+lnp-core = { git = "https://github.com/LNP-BP/lnp-core" }
+rgb-core = { git = "https://github.com/rgb-org/rgb-core" }
+rgb20 = { git = "https://github.com/rgb-org/rgb-core", optional = true }
 # rgb21 = { version = "0.3.0-beta.3", optional = true }
 # rgb22 = { version = "0.3.0-beta.3", optional = true }
 # rgb23 = { version = "0.3.0-beta.3", optional = true }
-rgb_node = { version = "0.3", default-features = false, features = ["fungibles"] }
-internet2 = { version = "0.3.9", default-features = false, features = ["derive", "descriptor-wallet", "bitcoin-ext"] }
-microservices = { version = "0.4.0-alpha.1", default-features = false, path = "../../internet2/rust-internet2/microservices" }
+rgb_node = { git = "https://github.com/rgb-org/rgb-node", default-features = false, features = ["fungibles"] }
+internet2 = { git = "https://github.com/internet2-org/rust-internet2" }
+microservices = { git = "https://github.com/internet2-org/rust-internet2", default-features = false }
 # Bitcoin
 bitcoin = "0.26"
 electrum-client = { version = "0.6", optional = true }
@@ -66,10 +66,10 @@ shellexpand = { version = "2", optional = true }
 [build-dependencies]
 amplify = "3"
 amplify_derive = "2.4.2"
-lnpbp = "0.3"
-descriptor-wallet = "0.3.3"
-internet2 = { version = "0.3.7", default-features = false, features = ["derive", "descriptor-wallet"] }
-microservices = { version = "0.4.0-alpha.1", default-features = false, path = "../../internet2/rust-internet2/microservices" }
+descriptor-wallet = { git = "https://github.com/LNP-BP/descriptor-wallet" }
+lnpbp = { git = "https://github.com/LNP-BP/rust-lnpbp" }
+internet2 = { git = "https://github.com/internet2-org/rust-internet2" }
+microservices = { git = "https://github.com/internet2-org/rust-internet2", default-features = false }
 lazy_static = "1.4"
 clap = "3.0.0-beta.2"
 clap_generate = "3.0.0-beta.2"
