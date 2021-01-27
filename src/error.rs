@@ -56,7 +56,7 @@ pub enum Error {
     /// Storage-level error:\n {0}
     #[cfg(any(feature = "server", feature = "embedded"))]
     #[from]
-    StorageDriver(storage::driver::Error),
+    StorageDriver(storage::Error),
 }
 
 impl microservices::error::Error for Error {}

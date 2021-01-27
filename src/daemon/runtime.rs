@@ -11,8 +11,6 @@
 // along with this software.
 // If not, see <https://www.gnu.org/licenses/agpl-3.0-standalone.html>.
 
-use std::any::Any;
-
 use internet2::zmqsocket::{self, ZmqType};
 use internet2::{
     session, CreateUnmarshaller, PlainTranscoder, Session, TypedEnum,
@@ -22,7 +20,7 @@ use microservices::node::TryService;
 use rgb_node::util::ToBech32Data;
 
 use crate::rpc::{Reply, Request};
-use crate::Storage;
+use crate::storage::{Driver, FileDriver};
 use crate::{Config, Error};
 
 pub fn run(config: Config) -> Result<(), Error> {
@@ -41,7 +39,7 @@ pub struct Runtime {
     session_rpc: session::Raw<PlainTranscoder, zmqsocket::Connection>,
 
     /// Secure key vault
-    storage: Storage,
+    storage: FileDriver,
 
     /// Unmarshaller instance used for parsing RPC request
     unmarshaller: Unmarshaller<Request>,
@@ -49,8 +47,8 @@ pub struct Runtime {
 
 impl Runtime {
     pub fn init(config: Config) -> Result<Self, Error> {
-        debug!("Initializing data storage {}", config.storage_conf());
-        let storage = Storage::with(&config.storage_conf())?;
+        debug!("Initializing data storage {:?}", config.storage_conf());
+        let storage = FileDriver::with(config.storage_conf())?;
 
         debug!("Opening ZMQ socket {}", config.rpc_endpoint);
         let session_rpc = session::Raw::with_zmq_unencrypted(
@@ -109,7 +107,7 @@ impl Runtime {
         let message = (&*self.unmarshaller.unmarshall(&raw)?).clone();
         debug!(
             "Received ZMQ RPC request #{}: {}",
-            message.type_id(),
+            message.get_type(),
             message
         );
         match message {

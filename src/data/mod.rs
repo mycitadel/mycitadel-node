@@ -15,13 +15,16 @@ pub mod identity;
 pub mod signer;
 pub mod wallet;
 
-pub use wallet::{Wallet, WalletContract, WalletId};
+pub use self::wallet::{Wallet, WalletContract, WalletId};
 
 // -----------------------------------------------------------------------------
 
+use rgb20::Asset;
 #[cfg(feature = "serde")]
 use serde_with::DisplayFromStr;
 use std::collections::BTreeMap;
+
+use crate::rpc::message::{IdentityInfo, SignerAccount};
 
 #[cfg_attr(
     feature = "serde",
@@ -36,7 +39,6 @@ use std::collections::BTreeMap;
     Ord,
     Hash,
     Debug,
-    Display,
     Default,
     StrictEncode,
     StrictDecode,

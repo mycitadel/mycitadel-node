@@ -13,7 +13,6 @@
 
 //! File storage driver
 
-use std::any::Any;
 use std::io::{Read, Seek, Write};
 use std::path::Path;
 use std::{fs, io};
@@ -21,14 +20,14 @@ use std::{fs, io};
 use lnpbp::strict_encoding::{StrictDecode, StrictEncode};
 use microservices::FileFormat;
 
-use super::{Driver, Error};
-use crate::data::WalletContract;
-use crate::rpc::message::{IdentityInfo, SignerAccount};
-
 use rgb::Genesis;
 use rgb20::Asset;
 
-#[derive(Debug, Display)]
+use super::{Driver, Error};
+use crate::data::{Data, WalletContract};
+use crate::rpc::message::{IdentityInfo, SignerAccount};
+
+#[derive(Debug)]
 pub struct FileDriver {
     fd: fs::File,
     config: FileConfig,
@@ -43,7 +42,6 @@ pub struct FileDriver {
     Ord,
     Hash,
     Debug,
-    Default,
     Serialize,
     Deserialize,
     StrictEncode,
@@ -71,6 +69,7 @@ impl FileDriver {
         let mut me = Self {
             fd,
             config: config.clone(),
+            data: Default::default(),
         };
         if !exists {
             warn!("Data file does not exist: initializing empty vault");
@@ -79,7 +78,7 @@ impl FileDriver {
         Ok(me)
     }
 
-    fn load(&mut self) -> Result<Vec<u8>, driver::Error> {
+    fn load(&mut self) -> Result<Vec<u8>, Error> {
         debug!("Loading data from {}", self.config.location);
         self.fd.seek(io::SeekFrom::Start(0))?;
         trace!("Parsing data (expected format {})", self.config.format);
@@ -101,7 +100,7 @@ impl FileDriver {
         Ok(accounts)
     }
 
-    fn store(&mut self, data: &Vec<u8>) -> Result<(), driver::Error> {
+    fn store(&mut self, data: &Vec<u8>) -> Result<(), Error> {
         debug!(
             "Storing data to the file {} in {} format",
             self.config.location, self.config.format
@@ -138,10 +137,7 @@ impl Driver for FileDriver {
         unimplemented!()
     }
 
-    fn add_wallet(
-        &mut self,
-        contract: WalletContract,
-    ) -> Result<(), Self::Error> {
+    fn add_wallet(&mut self, contract: WalletContract) -> Result<(), Error> {
         unimplemented!()
     }
 
@@ -149,10 +145,7 @@ impl Driver for FileDriver {
         unimplemented!()
     }
 
-    fn add_signer(
-        &mut self,
-        account: SignerAccount,
-    ) -> Result<(), Self::Error> {
+    fn add_signer(&mut self, account: SignerAccount) -> Result<(), Error> {
         unimplemented!()
     }
 
@@ -160,10 +153,7 @@ impl Driver for FileDriver {
         unimplemented!()
     }
 
-    fn add_idenity(
-        &mut self,
-        identity: IdentityInfo,
-    ) -> Result<(), Self::Error> {
+    fn add_idenity(&mut self, identity: IdentityInfo) -> Result<(), Error> {
         unimplemented!()
     }
 

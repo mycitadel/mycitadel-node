@@ -14,7 +14,7 @@
 use microservices::shell::Exec;
 use wallet::descriptor;
 
-use super::{Command, Wallet, WalletCommand, WalletCreateCommand};
+use super::{Command, WalletCommand, WalletCreateCommand};
 use crate::data::WalletContract;
 use crate::rpc;
 use crate::rpc::Reply;
@@ -42,7 +42,7 @@ impl Exec for Command {
     #[inline]
     fn exec(self, client: &mut rpc::Client) -> Result<(), Self::Error> {
         match self {
-            Command::Wallet(cmd) => cmd.exec(client),
+            Command::Wallet { subcommand } => subcommand.exec(client),
         }
     }
 }
@@ -51,9 +51,9 @@ impl Exec for WalletCommand {
     type Client = rpc::Client;
     type Error = Error;
 
-    fn exec(self, client: &mut Self::Runtime) -> Result<(), Self::Error> {
+    fn exec(self, client: &mut Self::Client) -> Result<(), Self::Error> {
         match self {
-            WalletCommand::Create(cmd) => cmd.exec(client),
+            WalletCommand::Create { subcommand } => subcommand.exec(client),
             WalletCommand::List => client
                 .wallet_list()?
                 .report_error("listing wallets")
@@ -69,7 +69,7 @@ impl Exec for WalletCreateCommand {
     type Client = rpc::Client;
     type Error = Error;
 
-    fn exec(self, client: &mut Self::Runtime) -> Result<(), Self::Error> {
+    fn exec(self, client: &mut Self::Client) -> Result<(), Self::Error> {
         match self {
             WalletCreateCommand::Current {
                 name,

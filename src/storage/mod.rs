@@ -19,30 +19,23 @@ pub use file::{FileConfig, FileDriver};
 
 // -----------------------------------------------------------------------------
 
-use rgb::Genesis;
+use rgb::{ContractId, Genesis};
 use rgb20::Asset;
 
-use crate::data::WalletContract;
+use crate::data::{WalletContract, WalletId};
 use crate::rpc::message::{IdentityInfo, SignerAccount};
 
 pub trait Driver {
     fn wallets(&self) -> Result<Vec<WalletContract>, Error>;
-    fn add_wallet(
-        &mut self,
-        contract: WalletContract,
-    ) -> Result<(), Self::Error>;
+    fn add_wallet(&mut self, contract: WalletContract) -> Result<(), Error>;
 
     fn signers(&self) -> Result<Vec<SignerAccount>, Error>;
-    fn add_signer(&mut self, account: SignerAccount)
-        -> Result<(), Self::Error>;
+    fn add_signer(&mut self, account: SignerAccount) -> Result<(), Error>;
 
     fn identities(&self) -> Result<Vec<IdentityInfo>, Error>;
-    fn add_idenity(
-        &mut self,
-        identity: IdentityInfo,
-    ) -> Result<(), Self::Error>;
+    fn add_idenity(&mut self, identity: IdentityInfo) -> Result<(), Error>;
 
-    fn assets(&self) -> Result<Vec<Asset>, Self::Error>;
+    fn assets(&self) -> Result<Vec<Asset>, Error>;
     fn add_asset(&mut self, genesis: Genesis) -> Result<(), Error>;
 }
 
@@ -71,11 +64,11 @@ pub enum Error {
     ///
     /// Details on existing wallet: {0}
     #[from]
-    WalletExists(WalletContract),
+    WalletExists(WalletId),
 
     #[from]
-    SignerExists(SignerAccount),
+    SignerExists(SignerId),
 
     #[from]
-    IdentityExists(IdentityInfo),
+    IdentityExists(ContractId),
 }

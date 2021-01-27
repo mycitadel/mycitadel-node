@@ -58,5 +58,3 @@ pub mod storage;
 #[cfg(feature = "_rpc")]
 pub use config::Config;
 pub use error::Error;
-#[cfg(feature = "node")]
-pub use storage::Storage;

@@ -39,11 +39,11 @@ pub struct Config {
 }
 
 impl Config {
-    pub fn storage_conf(&self) -> storage::driver::Config {
-        storage::driver::Config::File(storage::file::FileConfig {
+    pub fn storage_conf(&self) -> storage::file::FileConfig {
+        storage::file::FileConfig {
             location: self.data_dir.to_string_lossy().to_string(),
             format: FileFormat::StrictEncode,
-        })
+        }
     }
 }
 

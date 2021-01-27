@@ -14,19 +14,16 @@
 #[cfg(feature = "serde")]
 use serde_with::{As, DisplayFromStr};
 use std::collections::BTreeMap;
-use std::fmt::{Debug, Display};
+use std::fmt::Debug;
 use std::hash::Hash;
 use std::io;
 
 use bitcoin::hashes::{sha256, sha256t};
-use bitcoin::{BlockHash, OutPoint, Transaction, Txid};
+use bitcoin::{BlockHash, OutPoint, Txid};
 use chrono::NaiveDateTime;
 use internet2::RemoteNodeAddr;
-use lnp::channel::TxRole;
 use lnp::ChannelId;
-use lnpbp::client_side_validation::{
-    commit_strategy, CommitEncode, CommitEncodeWithStrategy, ConsensusCommit,
-};
+use lnpbp::client_side_validation::{CommitEncode, ConsensusCommit};
 use lnpbp::commit_verify::CommitVerify;
 use lnpbp::strict_encoding::StrictEncode;
 use lnpbp::tagged_hash::{self, TaggedHash};
