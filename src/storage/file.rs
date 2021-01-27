@@ -72,7 +72,9 @@ impl FileDriver {
             data: Default::default(),
         };
         if !exists {
-            warn!("Data file does not exist: initializing empty vault");
+            warn!(
+                "Data file does not exist: initializing empty citadel storage"
+            );
             me.store(&vec![])?;
         }
         Ok(me)

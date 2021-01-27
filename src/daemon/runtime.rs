@@ -26,7 +26,7 @@ use crate::{Config, Error};
 pub fn run(config: Config) -> Result<(), Error> {
     let runtime = Runtime::init(config)?;
 
-    runtime.run_or_panic("keyringd");
+    runtime.run_or_panic("mycitadeld");
 
     Ok(())
 }

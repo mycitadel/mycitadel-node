@@ -40,9 +40,15 @@ pub struct Config {
 
 impl Config {
     pub fn storage_conf(&self) -> storage::file::FileConfig {
+        let format = FileFormat::Yaml;
+
+        let mut data_filename = self.data_dir.clone();
+        data_filename.push("citadel");
+        data_filename.set_extension(format.extension());
+
         storage::file::FileConfig {
-            location: self.data_dir.to_string_lossy().to_string(),
-            format: FileFormat::StrictEncode,
+            location: data_filename.to_string_lossy().to_string(),
+            format,
         }
     }
 }

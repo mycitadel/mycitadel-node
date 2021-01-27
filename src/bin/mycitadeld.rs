@@ -30,6 +30,7 @@ extern crate log;
 
 use clap::Clap;
 
+use microservices::shell::LogLevel;
 use mycitadel::daemon::{self, Opts};
 use mycitadel::Config;
 
@@ -37,12 +38,14 @@ fn main() {
     println!("mycitadeld: MyCitadel wallet node/backend service");
 
     let mut opts = Opts::parse();
-    trace!("Command-line arguments: {:?}", &opts);
+    LogLevel::from_verbosity_flag_count(opts.shared.verbose).apply();
+
+    trace!("Command-line arguments: {:#?}", &opts);
     opts.process();
-    trace!("Processed arguments: {:?}", &opts);
+    trace!("Processed arguments: {:#?}", &opts);
 
     let config: Config = opts.shared.clone().into();
-    trace!("Daemon configuration: {:?}", &config);
+    trace!("Daemon configuration: {:#?}", &config);
     debug!("RPC API socket {}", &config.rpc_endpoint);
 
     /*

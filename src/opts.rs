@@ -18,7 +18,6 @@ use std::path::PathBuf;
 
 use internet2::PartialNodeAddr;
 use lnpbp::Chain;
-use microservices::shell::LogLevel;
 
 #[cfg(any(target_os = "linux"))]
 pub const MYCITADEL_DATA_DIR: &'static str = "~/.mycitadel";
@@ -35,7 +34,7 @@ pub const MYCITADEL_DATA_DIR: &'static str = "~/Documents";
 pub const MYCITADEL_DATA_DIR: &'static str = ".";
 
 pub const MYCITADEL_RPC_SOCKET_NAME: &'static str =
-    "lnpz://0.0.0.0:30303?api=rpc"; //"ipc:{data_dir}/zmq.rpc";
+    "lnpz://0.0.0.0:61399?api=rpc"; //"ipc:{data_dir}/zmq.rpc";
 
 #[derive(Clap, Clone, PartialEq, Eq, Hash, Debug)]
 pub struct Opts {
@@ -111,11 +110,10 @@ pub struct Opts {
 
 impl Opts {
     pub fn process(&mut self) {
-        LogLevel::from_verbosity_flag_count(self.verbose).apply();
-        let mut me = self.clone();
+        let me = self.clone();
 
-        me.data_dir = PathBuf::from(
-            shellexpand::tilde(&me.data_dir.to_string_lossy().to_string())
+        self.data_dir = PathBuf::from(
+            shellexpand::tilde(&self.data_dir.to_string_lossy().to_string())
                 .to_string(),
         );
         fs::create_dir_all(&self.data_dir)

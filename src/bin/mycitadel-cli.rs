@@ -30,7 +30,7 @@ extern crate log;
 
 use clap::Clap;
 
-use microservices::shell::Exec;
+use microservices::shell::{Exec, LogLevel};
 use mycitadel::cli::Opts;
 use mycitadel::rpc::Client;
 use mycitadel::Config;
@@ -41,17 +41,19 @@ fn main() {
     );
 
     let mut opts = Opts::parse();
-    trace!("Command-line arguments: {:?}", &opts);
+    LogLevel::from_verbosity_flag_count(opts.shared.verbose).apply();
+
+    trace!("Command-line arguments: {:#?}", &opts);
     opts.process();
-    trace!("Processed arguments: {:?}", &opts);
+    trace!("Processed arguments: {:#?}", &opts);
 
     let config: Config = opts.shared.clone().into();
-    trace!("Tool configuration: {:?}", &config);
+    trace!("Tool configuration: {:#?}", &config);
     debug!("RPC API socket {}", &config.rpc_endpoint);
 
     let mut client = Client::with(config).expect("Error initializing client");
 
-    trace!("Executing command: {:?}", opts.command);
+    trace!("Executing command: {}", opts.command);
     opts.command
         .exec(&mut client)
         .unwrap_or_else(|err| eprintln!("{}", err));
