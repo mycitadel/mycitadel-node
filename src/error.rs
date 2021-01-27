@@ -18,7 +18,7 @@ use amplify::IoError;
 use internet2::TypeId;
 use internet2::{presentation, transport};
 #[cfg(any(feature = "node", feature = "client"))]
-use microservices::{esb, rpc};
+use microservices::rpc;
 
 use crate::storage;
 
@@ -29,11 +29,6 @@ pub enum Error {
     /// Generic I/O error: {0:?}
     #[from(io::Error)]
     Io(IoError),
-
-    /// ESB error: {0}
-    #[cfg(any(feature = "node", feature = "client"))]
-    #[from]
-    Esb(esb::Error),
 
     /// RPC error: {0}
     #[cfg(any(feature = "node", feature = "client"))]
@@ -47,7 +42,7 @@ pub enum Error {
     /// Transport-level interface error: {0}
     #[cfg(any(feature = "node", feature = "client"))]
     #[from]
-    Bridge(transport::Error),
+    Transport(transport::Error),
 
     /// Provided RPC request (type id {0}) is not supported
     #[cfg(any(feature = "node", feature = "client"))]
@@ -57,19 +52,14 @@ pub enum Error {
     #[cfg(any(feature = "server", feature = "embedded"))]
     #[from]
     StorageDriver(storage::Error),
+
+    // TODO: split client- and server-side error types
+    /// Server-reported failure
+    #[from]
+    ServerFailure(rpc::Failure),
 }
 
 impl microservices::error::Error for Error {}
-
-#[cfg(any(feature = "node", feature = "client"))]
-impl From<Error> for esb::Error {
-    fn from(err: Error) -> Self {
-        match err {
-            Error::Esb(err) => err,
-            err => esb::Error::ServiceError(err.to_string()),
-        }
-    }
-}
 
 #[cfg(any(feature = "node", feature = "client"))]
 impl From<Error> for rpc::Error {

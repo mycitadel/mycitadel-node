@@ -16,12 +16,11 @@ pub mod signer;
 pub mod wallet;
 
 pub use self::wallet::{Wallet, WalletContract, WalletId};
+pub use signer::SignerId;
 
 // -----------------------------------------------------------------------------
 
 use rgb20::Asset;
-#[cfg(feature = "serde")]
-use serde_with::DisplayFromStr;
 use std::collections::BTreeMap;
 
 use crate::rpc::message::{IdentityInfo, SignerAccount};
@@ -31,18 +30,7 @@ use crate::rpc::message::{IdentityInfo, SignerAccount};
     derive(Serialize, Deserialize),
     serde(crate = "serde_crate")
 )]
-#[derive(
-    Clone,
-    PartialEq,
-    Eq,
-    PartialOrd,
-    Ord,
-    Hash,
-    Debug,
-    Default,
-    StrictEncode,
-    StrictDecode,
-)]
+#[derive(Clone, PartialEq, Debug, Default, StrictEncode, StrictDecode)]
 #[strict_encoding_crate(lnpbp::strict_encoding)]
 pub struct Data {
     pub wallets: BTreeMap<WalletId, Wallet>,

@@ -60,6 +60,10 @@ impl Client {
 }
 
 impl Client {
+    pub fn wallet_list(&mut self) -> Result<Reply, Error> {
+        self.request(Request::ListWallets)
+    }
+
     pub fn wallet_create_current(
         &mut self,
         contract: WalletContract,

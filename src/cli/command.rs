@@ -17,20 +17,16 @@ use wallet::descriptor;
 use super::{Command, WalletCommand, WalletCreateCommand};
 use crate::data::WalletContract;
 use crate::rpc;
-use crate::rpc::Reply;
 use crate::Error;
 
 impl rpc::Reply {
-    pub fn report_failure(&self, prefix: &str) -> Option<&rpc::Reply> {
+    pub fn report_error(self, msg: &str) -> Result<Self, Error> {
         match self {
-            Reply::Success => Some(self),
-            Reply::Failure(failure) => {
-                eprintln!(
-                    "Error #{} {}: {}",
-                    failure.code, prefix, failure.info
-                );
-                None
+            rpc::Reply::Failure(failure) => {
+                error!("Error {} #{}: {}", msg, failure.code, failure.info);
+                Err(failure)?
             }
+            _ => Ok(self),
         }
     }
 }
@@ -57,9 +53,13 @@ impl Exec for WalletCommand {
             WalletCommand::List => client
                 .wallet_list()?
                 .report_error("listing wallets")
-                .map(|list| {
+                .map(|reply| {
                     eprintln!("Known wallets:");
-                    println!("{}", serde_yaml::to_string(list)?);
+                    println!(
+                        "{}",
+                        serde_yaml::to_string(&reply)
+                            .expect("Error presenting data as YAML")
+                    );
                 }),
         }
     }
@@ -79,14 +79,13 @@ impl Exec for WalletCreateCommand {
                 let descriptor = descriptor::Generator { variants, template };
                 info!("Creating current wallet with descriptor {}", descriptor);
                 client.wallet_create_current(WalletContract::Current {
-                    name,
-                    descriptor,
+                    name: name.clone(),
+                    descriptor: descriptor.clone(),
                 })?.report_error("during wallet creation").map(|_| {
                     eprint!("Wallet named '{}' was successfully created.\nUse the following string as the wallet id: ", name);
                     println!("{}", descriptor);
-                });
+                })
             }
         }
-        Ok(())
     }
 }

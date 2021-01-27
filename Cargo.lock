@@ -1195,6 +1195,7 @@ dependencies = [
  "serde_yaml",
  "shellexpand",
  "slip132",
+ "strict_encoding",
  "toml 0.5.8",
 ]
 
@@ -1665,7 +1666,7 @@ checksum = "b5eb417147ba9860a96cfe72a0b93bf88fee1744b5636ec99ab20c1aa9376581"
 [[package]]
 name = "rgb-core"
 version = "0.4.0-alpha.1+1"
-source = "git+https://github.com/rgb-org/rgb-core#eabb2eb133f89d8e61dd9b73b43aef561a2fce2f"
+source = "git+https://github.com/rgb-org/rgb-core#5b4d52908da110781fa60d93a2c4e054573fd0cc"
 dependencies = [
  "amplify",
  "amplify_derive",
@@ -1694,7 +1695,7 @@ dependencies = [
 [[package]]
 name = "rgb20"
 version = "0.4.0-alpha.1"
-source = "git+https://github.com/rgb-org/rgb-core#eabb2eb133f89d8e61dd9b73b43aef561a2fce2f"
+source = "git+https://github.com/rgb-org/rgb-core#5b4d52908da110781fa60d93a2c4e054573fd0cc"
 dependencies = [
  "amplify",
  "amplify_derive",
@@ -1925,6 +1926,7 @@ version = "1.5.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "8bac272128fb3b1e98872dca27a05c18d8b78b9bd089d3edb7b5871501b50bce"
 dependencies = [
+ "chrono",
  "hex",
  "serde 1.0.123",
  "serde_with_macros",
@@ -2053,9 +2055,9 @@ checksum = "a2eb9349b6444b326872e140eb1cf5e7c522154d69e7a0ffb0fb81c06b37543f"
 
 [[package]]
 name = "strict_encoding"
-version = "1.0.6"
+version = "1.0.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d055b52a84fc855eb3e57f17359bb6ec458ef10d7094cb30991591aa99ddf601"
+checksum = "1cfe176b9f4027623e26028c4ed336e41b479a07bc4a64b553fee14fcafc5168"
 dependencies = [
  "amplify",
  "amplify_derive",

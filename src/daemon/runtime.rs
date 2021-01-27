@@ -112,30 +112,29 @@ impl Runtime {
         );
         match message {
             Request::ListWallets => {
-                return self.storage.wallets().map(|list| Reply::Wallets(list))
+                self.storage.wallets().map(|list| Reply::Wallets(list))
             }
-            Request::ListIdentities => {
-                return self
-                    .storage
-                    .identities()
-                    .map(|list| Reply::Identities(list))
-            }
+            Request::ListIdentities => self
+                .storage
+                .identities()
+                .map(|list| Reply::Identities(list)),
             Request::ListAssets => {
-                return self.storage.assets().map(|list| Reply::Assets(list))
+                self.storage.assets().map(|list| Reply::Assets(list))
             }
             Request::AddWallet(contract) => {
-                self.storage.add_wallet(contract)?;
+                self.storage.add_wallet(contract).map(|_| Reply::Success)
             }
             Request::AddSigner(account) => {
-                self.storage.add_signer(account)?;
+                self.storage.add_signer(account).map(|_| Reply::Success)
             }
             Request::AddIdentity(identity) => {
-                self.storage.add_identity(identity)?;
+                self.storage.add_identity(identity).map(|_| Reply::Success)
             }
             Request::AddAsset(genesis) => {
-                self.storage.add_asset(genesis)?;
+                self.storage.add_asset(genesis).map(|_| Reply::Success)
             }
         }
-        Ok(Reply::Success)
+        .map_err(Error::from)
+        .map_err(Error::into)
     }
 }

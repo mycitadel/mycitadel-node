@@ -15,8 +15,8 @@
 use serde_with::{As, DisplayFromStr};
 use std::collections::BTreeMap;
 use std::fmt::Debug;
-use std::hash::Hash;
 use std::io;
+use std::str::FromStr;
 
 use bitcoin::hashes::{sha256, sha256t};
 use bitcoin::{BlockHash, OutPoint, Txid};
@@ -27,11 +27,31 @@ use lnpbp::client_side_validation::{CommitEncode, ConsensusCommit};
 use lnpbp::commit_verify::CommitVerify;
 use lnpbp::strict_encoding::StrictEncode;
 use lnpbp::tagged_hash::{self, TaggedHash};
-use rgb20::Invoice;
 use wallet::{descriptor, Psbt};
 
 // --- Wallet primitives
 
+/// Error parsing string representation of wallet data/structure
+#[derive(
+    Clone,
+    Copy,
+    PartialEq,
+    Eq,
+    PartialOrd,
+    Ord,
+    Hash,
+    Debug,
+    Display,
+    From,
+    Error,
+)]
+#[display(doc_comments)]
+#[from(bitcoin::hashes::hex::Error)]
+#[from(chrono::ParseError)]
+#[from(std::num::ParseIntError)]
+pub struct FromStrError;
+
+// TODO: Consider moving to descriptor wallet lib, BPro lib, LNP/BP Core lib
 #[derive(
     Getters,
     Clone,
@@ -46,13 +66,32 @@ use wallet::{descriptor, Psbt};
     StrictDecode,
 )]
 #[strict_encoding_crate(lnpbp::strict_encoding)]
-#[display("{height}:{block_hash}@{timestamp}")]
+#[display("{block_height}:{block_hash}@{timestamp}")]
 pub struct BlockchainTimepair {
     timestamp: NaiveDateTime,
-    height: u32,
+    block_height: u32,
     block_hash: BlockHash,
 }
 
+impl FromStr for BlockchainTimepair {
+    type Err = FromStrError;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        let mut data = s.split(&[':', '@'][..]);
+        let me = Self {
+            timestamp: data.next().ok_or(FromStrError)?.parse()?,
+            block_height: data.next().ok_or(FromStrError)?.parse()?,
+            block_hash: data.next().ok_or(FromStrError)?.parse()?,
+        };
+        if data.next().is_some() {
+            Err(FromStrError)
+        } else {
+            Ok(me)
+        }
+    }
+}
+
+// TODO: Consider moving to descriptor wallet lib, BPro lib, LNP/BP Core lib
 #[cfg_attr(
     feature = "serde",
     derive(Serialize, Deserialize),
@@ -72,8 +111,11 @@ pub struct BlockchainTimepair {
 )]
 #[strict_encoding_crate(lnpbp::strict_encoding)]
 pub enum TxConfirmation {
-    #[display("{height}:{block_hash}")]
-    Blockchain { height: u32, block_hash: BlockHash },
+    #[display("{block_height}:{block_hash}")]
+    Blockchain {
+        block_height: u32,
+        block_hash: BlockHash,
+    },
 
     #[display("{state_no}@{channel_id}")]
     Lightning {
@@ -82,33 +124,66 @@ pub enum TxConfirmation {
     },
 }
 
+impl FromStr for TxConfirmation {
+    type Err = FromStrError;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        let mut data = s.split(&[':', '@'][..]);
+        let me = if s.contains(':') {
+            TxConfirmation::Blockchain {
+                block_height: data.next().ok_or(FromStrError)?.parse()?,
+                block_hash: data.next().ok_or(FromStrError)?.parse()?,
+            }
+        } else {
+            TxConfirmation::Lightning {
+                channel_id: data.next().ok_or(FromStrError)?.parse()?,
+                state_no: data.next().ok_or(FromStrError)?.parse()?,
+            }
+        };
+        if data.next().is_some() {
+            Err(FromStrError)
+        } else {
+            Ok(me)
+        }
+    }
+}
+
 // --- Wallet identifiers
 
-/// Tag used for [`NodeId`] and [`ContractId`] hash types
-struct WalletIdTag;
+pub struct WalletIdTag;
 
 impl sha256t::Tag for WalletIdTag {
     #[inline]
     fn engine() -> sha256::HashEngine {
         let midstate = sha256::Midstate::from_inner(
-            *tagged_hash::Midstate::with("mycitadel:wallet"),
+            **tagged_hash::Midstate::with("mycitadel:wallet"),
         );
         sha256::HashEngine::from_midstate(midstate, 64)
     }
 }
 
-/// Unique node (genesis, extensions & state transition) identifier equivalent
-/// to the commitment hash
 #[cfg_attr(
     feature = "serde",
     derive(Serialize, Deserialize),
     serde(crate = "serde_crate")
 )]
 #[derive(
-    Wrapper, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Default, From,
+    Wrapper,
+    Copy,
+    Clone,
+    PartialEq,
+    Eq,
+    PartialOrd,
+    Ord,
+    Hash,
+    Default,
+    From,
+    StrictEncode,
+    StrictDecode,
 )]
 #[wrapper(
-    Debug, Display, LowerHex, Index, IndexRange, IndexFrom, IndexTo, IndexFull
+    Debug, Display, FromStr, LowerHex, Index, IndexRange, IndexFrom, IndexTo,
+    IndexFull
 )]
 pub struct WalletId(sha256t::Hash<WalletIdTag>);
 
@@ -118,14 +193,36 @@ where
 {
     #[inline]
     fn commit(msg: &MSG) -> WalletId {
-        <WalletId as TaggedHash>::hash(msg)
+        <WalletId as TaggedHash<_>>::hash(msg)
     }
 }
 
 // --- Payment slip
 
+#[derive(
+    Clone,
+    Ord,
+    PartialOrd,
+    Eq,
+    PartialEq,
+    Hash,
+    Debug,
+    Display,
+    StrictEncode,
+    StrictDecode,
+)]
+#[strict_encoding_crate(lnpbp::strict_encoding)]
+#[display(inner)]
 pub enum PaymentConfirmation {
     Txid(Txid),
+}
+
+impl FromStr for PaymentConfirmation {
+    type Err = FromStrError;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        Ok(PaymentConfirmation::Txid(s.parse()?))
+    }
 }
 
 #[cfg_attr(
@@ -150,8 +247,28 @@ pub enum PaymentConfirmation {
 #[strict_encoding_crate(lnpbp::strict_encoding)]
 #[display("{confirmation}@{paid}")]
 pub struct PaymentSlip {
+    #[cfg_attr(feature = "serde", serde(with = "As::<DisplayFromStr>"))]
     paid: BlockchainTimepair,
+
+    #[cfg_attr(feature = "serde", serde(with = "As::<DisplayFromStr>"))]
     confirmation: PaymentConfirmation,
+}
+
+impl FromStr for PaymentSlip {
+    type Err = FromStrError;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        let mut data = s.split(&[':', '@'][..]);
+        let me = Self {
+            paid: data.next().ok_or(FromStrError)?.parse()?,
+            confirmation: data.next().ok_or(FromStrError)?.parse()?,
+        };
+        if data.next().is_some() {
+            Err(FromStrError)
+        } else {
+            Ok(me)
+        }
+    }
 }
 
 // --- Wallet data structure
@@ -163,17 +280,7 @@ pub struct PaymentSlip {
     serde(crate = "serde_crate")
 )]
 #[derive(
-    Getters,
-    Clone,
-    Ord,
-    PartialOrd,
-    Eq,
-    PartialEq,
-    Hash,
-    Debug,
-    Display,
-    StrictEncode,
-    StrictDecode,
+    Getters, Clone, PartialEq, Debug, Display, StrictEncode, StrictDecode,
 )]
 #[strict_encoding_crate(lnpbp::strict_encoding)]
 #[display("{id}:{contract}")]
@@ -200,32 +307,30 @@ pub struct Wallet {
 
     #[cfg_attr(
         feature = "serde",
-        serde(with = "As::<BTreeMap<DisplayFromStr, _>>")
+        serde(with = "As::<Vec<(DisplayFromStr, DisplayFromStr)>>")
     )]
     blinding_factors: BTreeMap<OutPoint, u64>,
 
     #[cfg_attr(feature = "serde", serde(with = "As::<Vec<DisplayFromStr>>"))]
-    sent_invoices: Vec<Invoice>,
+    sent_invoices: Vec<String>,
 
     #[cfg_attr(feature = "serde", serde(with = "As::<Vec<DisplayFromStr>>"))]
-    received_invoices: Vec<Invoice>,
+    received_invoices: Vec<String>,
 
     #[cfg_attr(
         feature = "serde",
-        serde(with = "As::<BTreeMap<DisplayFromStr, DisplayFromStr>>")
+        serde(with = "As::<Vec<(DisplayFromStr, DisplayFromStr)>>")
     )]
-    paid_invoices: BTreeMap<Invoice, PaymentSlip>,
+    paid_invoices: BTreeMap<String, PaymentSlip>,
 
-    #[cfg_attr(
-        feature = "serde",
-        serde(with = "As::<BTreeMap<_, DisplayFromStr>>")
-    )]
     transactions: BTreeMap<Txid, Psbt>,
 
-    #[cfg_attr(
+    /* #[cfg_attr(
         feature = "serde",
-        serde(with = "As::<BTreeMap<_, DisplayFromStr>>")
-    )]
+        serde(with = "As::<Vec<(DisplayFromStr, _)>>")
+    )]*/
+    // Due to some weird bug the variant above ^^^ is not working
+    #[serde_as(as = "Vec<(DisplayFromStr, _)>")]
     operations: BTreeMap<BlockchainTimepair, Operation>,
 }
 
@@ -312,6 +417,7 @@ pub enum ContractType {
     PartialOrd,
     Eq,
     PartialEq,
+    Hash,
     Debug,
     Display,
     StrictEncode,
@@ -366,6 +472,7 @@ impl WalletContract {
     PartialOrd,
     Eq,
     PartialEq,
+    Hash,
     Debug,
     Display,
     StrictEncode,
@@ -376,7 +483,7 @@ impl WalletContract {
 pub struct InstantContract {
     channel_id: ChannelId,
 
-    #[serde_as(as = "Vec<DisplayFromStr>")]
+    #[cfg_attr(feature = "serde", serde(with = "As::<Vec<DisplayFromStr>>"))]
     peers: Vec<RemoteNodeAddr>,
 
     #[cfg_attr(feature = "serde", serde(skip))]
@@ -394,6 +501,7 @@ pub struct InstantContract {
     PartialOrd,
     Eq,
     PartialEq,
+    Hash,
     Debug,
     Display,
     StrictEncode,
@@ -407,4 +515,77 @@ pub enum SavingContract {
 
     #[display("covenant")]
     Covenant,
+}
+
+#[cfg_attr(
+    feature = "serde",
+    derive(Serialize, Deserialize),
+    serde(crate = "serde_crate")
+)]
+#[derive(
+    Clone,
+    Ord,
+    PartialOrd,
+    Eq,
+    PartialEq,
+    Hash,
+    Debug,
+    Display,
+    StrictEncode,
+    StrictDecode,
+)]
+#[strict_encoding_crate(lnpbp::strict_encoding)]
+pub enum PaymentDirecton {
+    #[display("+", alt = "->")]
+    Incoming,
+
+    #[display("-", alt = "<-")]
+    Outcoming,
+}
+
+#[cfg_attr(
+    feature = "serde",
+    serde_as,
+    derive(Serialize, Deserialize),
+    serde(crate = "serde_crate")
+)]
+#[derive(
+    Clone,
+    Ord,
+    PartialOrd,
+    Eq,
+    PartialEq,
+    Hash,
+    Debug,
+    Display,
+    StrictEncode,
+    StrictDecode,
+)]
+#[strict_encoding_crate(lnpbp::strict_encoding)]
+#[display(
+    "{direction:#} {txid}:{vout} {direction}{value} @ {mined_at}: {details}\n"
+)]
+pub struct Operation {
+    pub direction: PaymentDirecton,
+
+    #[cfg_attr(
+        feature = "serde",
+        serde(with = "As::<chrono::DateTime<chrono::Utc>>")
+    )]
+    pub created_at: NaiveDateTime,
+
+    #[cfg_attr(feature = "serde", serde(with = "As::<DisplayFromStr>"))]
+    pub mined_at: BlockchainTimepair,
+
+    #[cfg_attr(feature = "serde", serde(with = "As::<DisplayFromStr>"))]
+    pub txid: Txid,
+
+    pub vout: u16,
+
+    #[cfg_attr(feature = "serde", serde(with = "As::<DisplayFromStr>"))]
+    pub value: bitcoin::Amount,
+
+    pub invoice: String,
+
+    pub details: String,
 }

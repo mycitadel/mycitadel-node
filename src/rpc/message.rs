@@ -11,16 +11,25 @@
 // along with this software.
 // If not, see <https://www.gnu.org/licenses/agpl-3.0-standalone.html>.
 
+#[cfg(feature = "serde")]
+use serde_with::{As, DisplayFromStr};
 use std::io;
 use std::ops::RangeInclusive;
 
 use lnpbp::strict_encoding::{self, StrictDecode, StrictEncode};
 use wallet::descriptor;
 
+#[cfg_attr(
+    feature = "serde",
+    serde_as,
+    derive(Serialize, Deserialize),
+    serde(crate = "serde_crate")
+)]
 #[derive(Clone, Eq, PartialEq, Hash, Debug, Display)]
 #[display("{key}")]
 pub struct SignerAccount {
     pub title: String,
+    #[cfg_attr(feature = "serde", serde(with = "As::<DisplayFromStr>"))]
     pub key: descriptor::SingleSig,
     pub used: Vec<RangeInclusive<u32>>,
 }
@@ -55,10 +64,17 @@ impl StrictDecode for SignerAccount {
     }
 }
 
+#[cfg_attr(
+    feature = "serde",
+    serde_as,
+    derive(Serialize, Deserialize),
+    serde(crate = "serde_crate")
+)]
 #[derive(Clone, Eq, PartialEq, Hash, Debug, Display)]
 #[display("{key}")]
 pub struct IdentityInfo {
     pub name: String,
+    #[cfg_attr(feature = "serde", serde(with = "As::<DisplayFromStr>"))]
     pub key: descriptor::SingleSig,
     pub known: Vec<RangeInclusive<u32>>,
 }

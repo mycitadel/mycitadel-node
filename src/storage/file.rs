@@ -153,7 +153,7 @@ impl Driver for FileDriver {
         unimplemented!()
     }
 
-    fn add_idenity(&mut self, identity: IdentityInfo) -> Result<(), Error> {
+    fn add_identity(&mut self, identity: IdentityInfo) -> Result<(), Error> {
         unimplemented!()
     }
 

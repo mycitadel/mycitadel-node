@@ -14,8 +14,15 @@
 use internet2::presentation;
 use microservices::{rpc, rpc_connection};
 
+use crate::data::WalletContract;
+use crate::rpc::message::IdentityInfo;
 use crate::Error;
 
+#[cfg_attr(
+    feature = "serde",
+    derive(Serialize, Deserialize),
+    serde(crate = "serde_crate")
+)]
 #[derive(Clone, Debug, Display, Api)]
 #[strict_encoding_crate(lnpbp::strict_encoding)]
 #[api(encoding = "strict")]
@@ -25,9 +32,22 @@ pub enum Reply {
     #[display("success()")]
     Success,
 
-    #[api(type = 0x0102)]
+    #[api(type = 0x0101)]
     #[display("failure({0})")]
+    #[cfg_attr(feature = "serde", serde(skip))]
     Failure(microservices::rpc::Failure),
+
+    #[api(type = 0x0200)]
+    #[display("wallets(...)")]
+    Wallets(Vec<WalletContract>),
+
+    #[api(type = 0x0201)]
+    #[display("assets(...)")]
+    Assets(Vec<rgb20::Asset>),
+
+    #[api(type = 0x0203)]
+    #[display("identities(...)")]
+    Identities(Vec<IdentityInfo>),
 }
 
 impl rpc_connection::Reply for Reply {}
@@ -46,14 +66,14 @@ impl From<presentation::Error> for Reply {
 impl From<Error> for rpc::Failure {
     fn from(err: Error) -> Self {
         rpc::Failure {
-            code: 1, // Error from LNPD
+            code: 1, // TODO: Create errno types
             info: err.to_string(),
         }
     }
 }
 
-impl From<rpc::Failure> for Error {
-    fn from(fail: rpc::Failure) -> Self {
-        Error::FailedRequest(fail.to_string())
+impl From<Error> for Reply {
+    fn from(err: Error) -> Self {
+        Reply::Failure(err.into())
     }
 }
