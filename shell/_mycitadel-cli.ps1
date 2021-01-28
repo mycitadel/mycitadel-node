@@ -42,14 +42,6 @@ Register-ArgumentCompleter -Native -CommandName 'mycitadel-cli' -ScriptBlock {
             break
         }
         'mycitadel-cli;wallet' {
-            [CompletionResult]::new('-d', 'd', [CompletionResultType]::ParameterName, 'Data directory path')
-            [CompletionResult]::new('--data-dir', 'data-dir', [CompletionResultType]::ParameterName, 'Data directory path')
-            [CompletionResult]::new('-T', 'T', [CompletionResultType]::ParameterName, 'Use Tor')
-            [CompletionResult]::new('--tor-proxy', 'tor-proxy', [CompletionResultType]::ParameterName, 'Use Tor')
-            [CompletionResult]::new('-x', 'x', [CompletionResultType]::ParameterName, 'ZMQ socket name/address for daemon RPC interface')
-            [CompletionResult]::new('--rpc-socket', 'rpc-socket', [CompletionResultType]::ParameterName, 'ZMQ socket name/address for daemon RPC interface')
-            [CompletionResult]::new('-n', 'n', [CompletionResultType]::ParameterName, 'Blockchain to use')
-            [CompletionResult]::new('--chain', 'chain', [CompletionResultType]::ParameterName, 'Blockchain to use')
             [CompletionResult]::new('-v', 'v', [CompletionResultType]::ParameterName, 'Set verbosity level')
             [CompletionResult]::new('--verbose', 'verbose', [CompletionResultType]::ParameterName, 'Set verbosity level')
             [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Prints help information')
@@ -61,14 +53,6 @@ Register-ArgumentCompleter -Native -CommandName 'mycitadel-cli' -ScriptBlock {
             break
         }
         'mycitadel-cli;wallet;create' {
-            [CompletionResult]::new('-d', 'd', [CompletionResultType]::ParameterName, 'Data directory path')
-            [CompletionResult]::new('--data-dir', 'data-dir', [CompletionResultType]::ParameterName, 'Data directory path')
-            [CompletionResult]::new('-T', 'T', [CompletionResultType]::ParameterName, 'Use Tor')
-            [CompletionResult]::new('--tor-proxy', 'tor-proxy', [CompletionResultType]::ParameterName, 'Use Tor')
-            [CompletionResult]::new('-x', 'x', [CompletionResultType]::ParameterName, 'ZMQ socket name/address for daemon RPC interface')
-            [CompletionResult]::new('--rpc-socket', 'rpc-socket', [CompletionResultType]::ParameterName, 'ZMQ socket name/address for daemon RPC interface')
-            [CompletionResult]::new('-n', 'n', [CompletionResultType]::ParameterName, 'Blockchain to use')
-            [CompletionResult]::new('--chain', 'chain', [CompletionResultType]::ParameterName, 'Blockchain to use')
             [CompletionResult]::new('-v', 'v', [CompletionResultType]::ParameterName, 'Set verbosity level')
             [CompletionResult]::new('--verbose', 'verbose', [CompletionResultType]::ParameterName, 'Set verbosity level')
             [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Prints help information')
@@ -80,14 +64,6 @@ Register-ArgumentCompleter -Native -CommandName 'mycitadel-cli' -ScriptBlock {
         }
         'mycitadel-cli;wallet;create;current' {
             [CompletionResult]::new('--variants', 'variants', [CompletionResultType]::ParameterName, 'variants')
-            [CompletionResult]::new('-d', 'd', [CompletionResultType]::ParameterName, 'Data directory path')
-            [CompletionResult]::new('--data-dir', 'data-dir', [CompletionResultType]::ParameterName, 'Data directory path')
-            [CompletionResult]::new('-T', 'T', [CompletionResultType]::ParameterName, 'Use Tor')
-            [CompletionResult]::new('--tor-proxy', 'tor-proxy', [CompletionResultType]::ParameterName, 'Use Tor')
-            [CompletionResult]::new('-x', 'x', [CompletionResultType]::ParameterName, 'ZMQ socket name/address for daemon RPC interface')
-            [CompletionResult]::new('--rpc-socket', 'rpc-socket', [CompletionResultType]::ParameterName, 'ZMQ socket name/address for daemon RPC interface')
-            [CompletionResult]::new('-n', 'n', [CompletionResultType]::ParameterName, 'Blockchain to use')
-            [CompletionResult]::new('--chain', 'chain', [CompletionResultType]::ParameterName, 'Blockchain to use')
             [CompletionResult]::new('-v', 'v', [CompletionResultType]::ParameterName, 'Set verbosity level')
             [CompletionResult]::new('--verbose', 'verbose', [CompletionResultType]::ParameterName, 'Set verbosity level')
             [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Prints help information')
@@ -97,14 +73,6 @@ Register-ArgumentCompleter -Native -CommandName 'mycitadel-cli' -ScriptBlock {
             break
         }
         'mycitadel-cli;wallet;list' {
-            [CompletionResult]::new('-d', 'd', [CompletionResultType]::ParameterName, 'Data directory path')
-            [CompletionResult]::new('--data-dir', 'data-dir', [CompletionResultType]::ParameterName, 'Data directory path')
-            [CompletionResult]::new('-T', 'T', [CompletionResultType]::ParameterName, 'Use Tor')
-            [CompletionResult]::new('--tor-proxy', 'tor-proxy', [CompletionResultType]::ParameterName, 'Use Tor')
-            [CompletionResult]::new('-x', 'x', [CompletionResultType]::ParameterName, 'ZMQ socket name/address for daemon RPC interface')
-            [CompletionResult]::new('--rpc-socket', 'rpc-socket', [CompletionResultType]::ParameterName, 'ZMQ socket name/address for daemon RPC interface')
-            [CompletionResult]::new('-n', 'n', [CompletionResultType]::ParameterName, 'Blockchain to use')
-            [CompletionResult]::new('--chain', 'chain', [CompletionResultType]::ParameterName, 'Blockchain to use')
             [CompletionResult]::new('-v', 'v', [CompletionResultType]::ParameterName, 'Set verbosity level')
             [CompletionResult]::new('--verbose', 'verbose', [CompletionResultType]::ParameterName, 'Set verbosity level')
             [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Prints help information')

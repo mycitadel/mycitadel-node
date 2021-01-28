@@ -24,7 +24,7 @@ use rgb::Genesis;
 use rgb20::Asset;
 
 use super::{Driver, Error};
-use crate::data::{Data, WalletContract};
+use crate::data::{Data, Wallet, WalletContract};
 use crate::rpc::message::{IdentityInfo, SignerAccount};
 
 #[derive(Debug)]
@@ -75,17 +75,17 @@ impl FileDriver {
             warn!(
                 "Data file does not exist: initializing empty citadel storage"
             );
-            me.store(&vec![])?;
+            me.store()?;
         }
         Ok(me)
     }
 
-    fn load(&mut self) -> Result<Vec<u8>, Error> {
+    fn load(&mut self) -> Result<(), Error> {
         debug!("Loading data from {}", self.config.location);
         self.fd.seek(io::SeekFrom::Start(0))?;
         trace!("Parsing data (expected format {})", self.config.format);
-        let accounts = match self.config.format {
-            FileFormat::StrictEncode => Vec::<u8>::strict_decode(&mut self.fd)?,
+        self.data = match self.config.format {
+            FileFormat::StrictEncode => Data::strict_decode(&mut self.fd)?,
             #[cfg(feature = "serde_yaml")]
             FileFormat::Yaml => serde_yaml::from_reader(&mut self.fd)?,
             #[cfg(feature = "toml")]
@@ -98,34 +98,33 @@ impl FileDriver {
             FileFormat::Json => serde_json::from_reader(&mut self.fd)?,
             _ => unimplemented!(),
         };
-        trace!("Data loaded from storage: {:?}", accounts);
-        Ok(accounts)
+        trace!("Data loaded from storage");
+        Ok(())
     }
 
-    fn store(&mut self, data: &Vec<u8>) -> Result<(), Error> {
+    fn store(&mut self) -> Result<(), Error> {
         debug!(
             "Storing data to the file {} in {} format",
             self.config.location, self.config.format
         );
-        trace!("Current data to store: {:?}", data);
         self.fd.seek(io::SeekFrom::Start(0))?;
         self.fd.set_len(0)?;
         match self.config.format {
             FileFormat::StrictEncode => {
-                data.strict_encode(&mut self.fd)?;
+                self.data.strict_encode(&mut self.fd)?;
             }
             #[cfg(feature = "serde_yaml")]
             FileFormat::Yaml => {
-                serde_yaml::to_writer(&mut self.fd, data)?;
+                serde_yaml::to_writer(&mut self.fd, &self.data)?;
             }
             #[cfg(feature = "toml")]
             FileFormat::Toml => {
-                let data = toml::to_vec(data)?;
+                let data = toml::to_vec(&self.data)?;
                 self.fd.write_all(&data)?;
             }
             #[cfg(feature = "serde_json")]
             FileFormat::Json => {
-                serde_json::to_writer(&mut self.fd, data)?;
+                serde_json::to_writer(&mut self.fd, &self.data)?;
             }
             _ => unimplemented!(),
         };
@@ -136,11 +135,20 @@ impl FileDriver {
 
 impl Driver for FileDriver {
     fn wallets(&self) -> Result<Vec<WalletContract>, Error> {
-        unimplemented!()
+        Ok(self
+            .data
+            .wallets
+            .values()
+            .map(Wallet::contract)
+            .cloned()
+            .collect())
     }
 
     fn add_wallet(&mut self, contract: WalletContract) -> Result<(), Error> {
-        unimplemented!()
+        let wallet = Wallet::with(contract);
+        self.data.wallets.insert(*wallet.id(), wallet);
+        self.store()?;
+        Ok(())
     }
 
     fn signers(&self) -> Result<Vec<SignerAccount>, Error> {

@@ -20,7 +20,6 @@ pub use signer::SignerId;
 
 // -----------------------------------------------------------------------------
 
-use rgb20::Asset;
 use std::collections::BTreeMap;
 
 use crate::rpc::message::{IdentityInfo, SignerAccount};
@@ -36,5 +35,5 @@ pub struct Data {
     pub wallets: BTreeMap<WalletId, Wallet>,
     pub signers: BTreeMap<SignerId, SignerAccount>,
     pub identities: BTreeMap<rgb::ContractId, IdentityInfo>,
-    pub assets: BTreeMap<rgb::ContractId, Asset>,
+    pub assets: BTreeMap<rgb::ContractId, rgb20::Asset>,
 }

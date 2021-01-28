@@ -11,6 +11,7 @@
 // along with this software.
 // If not, see <https://www.gnu.org/licenses/agpl-3.0-standalone.html>.
 
+use colored::Colorize;
 use microservices::shell::Exec;
 use wallet::descriptor;
 
@@ -77,13 +78,15 @@ impl Exec for WalletCreateCommand {
                 template,
             } => {
                 let descriptor = descriptor::Generator { variants, template };
-                info!("Creating current wallet with descriptor {}", descriptor);
-                client.wallet_create_current(WalletContract::Current {
+                eprintln!("Creating current wallet with descriptor template generator {}", descriptor.to_string().yellow());
+                let contract = WalletContract::Current {
                     name: name.clone(),
                     descriptor: descriptor.clone(),
-                })?.report_error("during wallet creation").map(|_| {
-                    eprint!("Wallet named '{}' was successfully created.\nUse the following string as the wallet id: ", name);
-                    println!("{}", descriptor);
+                };
+                let id = contract.id();
+                client.wallet_create_current(contract)?.report_error("during wallet creation").map(|_| {
+                    eprint!("Wallet named '{}' was successfully created.\nUse the following string as the wallet id: ", name.yellow().bold());
+                    println!("{}", id.to_string().bright_yellow());
                 })
             }
         }

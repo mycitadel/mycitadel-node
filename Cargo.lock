@@ -535,7 +535,7 @@ dependencies = [
 [[package]]
 name = "descriptor-wallet"
 version = "0.4.0-alpha.1"
-source = "git+https://github.com/LNP-BP/descriptor-wallet#953053e6cf9ecffcaacc078084ba805be31f04c7"
+source = "git+https://github.com/LNP-BP/descriptor-wallet#222d49b891bc02618fddb6268d97141e5815e2d0"
 dependencies = [
  "amplify",
  "amplify_derive",
@@ -546,6 +546,7 @@ dependencies = [
  "regex",
  "serde 1.0.123",
  "serde_with",
+ "slip132",
  "strict_encoding",
 ]
 
@@ -983,9 +984,9 @@ dependencies = [
 
 [[package]]
 name = "libc"
-version = "0.2.82"
+version = "0.2.83"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "89203f3fba0a3795506acaad8ebce3c80c0af93f994d5a1d7a0b1eeb23271929"
+checksum = "7eb0c4e9c72ee9d69b767adebc5f4788462a3b45624acd919475c92597bcaf4f"
 
 [[package]]
 name = "libsqlite3-sys"
@@ -1058,7 +1059,7 @@ dependencies = [
 [[package]]
 name = "lnpbp"
 version = "0.4.0-alpha.1"
-source = "git+https://github.com/LNP-BP/rust-lnpbp#81b33bfcee70faa71524a3292682827d0b6e5456"
+source = "git+https://github.com/LNP-BP/rust-lnpbp#296c3fb5ad3951f79d34cc91e6682fa954645869"
 dependencies = [
  "amplify",
  "amplify_derive",

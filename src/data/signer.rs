@@ -12,6 +12,7 @@
 // If not, see <https://www.gnu.org/licenses/agpl-3.0-standalone.html>.
 
 use bitcoin::hashes::{sha256, sha256t};
+use lnpbp::bech32::ToBech32IdString;
 use lnpbp::commit_verify::CommitVerify;
 use lnpbp::tagged_hash::{self, TaggedHash};
 
@@ -43,15 +44,16 @@ impl sha256t::Tag for SignerIdTag {
     PartialOrd,
     Ord,
     Hash,
+    Display,
     Default,
     From,
     StrictEncode,
     StrictDecode,
 )]
 #[wrapper(
-    Debug, Display, FromStr, LowerHex, Index, IndexRange, IndexFrom, IndexTo,
-    IndexFull
+    Debug, FromStr, LowerHex, Index, IndexRange, IndexFrom, IndexTo, IndexFull
 )]
+#[display(SignerId::to_bech32_id_string)]
 pub struct SignerId(sha256t::Hash<SignerIdTag>);
 
 impl<MSG> CommitVerify<MSG> for SignerId

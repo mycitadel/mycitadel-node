@@ -11,18 +11,20 @@
 // along with this software.
 // If not, see <https://www.gnu.org/licenses/agpl-3.0-standalone.html>.
 
+use chrono::NaiveDateTime;
 #[cfg(feature = "serde")]
 use serde_with::{As, DisplayFromStr};
 use std::collections::BTreeMap;
 use std::fmt::Debug;
 use std::io;
 use std::str::FromStr;
+use std::time::{SystemTime, UNIX_EPOCH};
 
 use bitcoin::hashes::{sha256, sha256t};
 use bitcoin::{BlockHash, OutPoint, Txid};
-use chrono::NaiveDateTime;
 use internet2::RemoteNodeAddr;
 use lnp::ChannelId;
+use lnpbp::bech32::ToBech32IdString;
 use lnpbp::client_side_validation::{CommitEncode, ConsensusCommit};
 use lnpbp::commit_verify::CommitVerify;
 use lnpbp::strict_encoding::StrictEncode;
@@ -176,15 +178,16 @@ impl sha256t::Tag for WalletIdTag {
     PartialOrd,
     Ord,
     Hash,
+    Display,
     Default,
     From,
     StrictEncode,
     StrictDecode,
 )]
 #[wrapper(
-    Debug, Display, FromStr, LowerHex, Index, IndexRange, IndexFrom, IndexTo,
-    IndexFull
+    Debug, FromStr, LowerHex, Index, IndexRange, IndexFrom, IndexTo, IndexFull
 )]
+#[display(WalletId::to_bech32_id_string)]
 pub struct WalletId(sha256t::Hash<WalletIdTag>);
 
 impl<MSG> CommitVerify<MSG> for WalletId
@@ -294,16 +297,23 @@ pub struct Wallet {
     /// The id is kept pre-computed: the wallet contract can't be changed after
     /// the creation, so there is no need to perform expensive commitment
     /// process each time we need wallet id
+    #[cfg_attr(feature = "serde", serde(with = "As::<DisplayFromStr>"))]
     id: WalletId,
 
     #[cfg_attr(feature = "serde", serde(flatten))]
     contract: WalletContract,
 
-    #[cfg_attr(feature = "serde", serde(with = "As::<DisplayFromStr>"))]
-    created_at: BlockchainTimepair,
+    #[cfg_attr(
+        feature = "serde",
+        serde(with = "As::<chrono::DateTime<chrono::Utc>>")
+    )]
+    created_at: NaiveDateTime,
 
-    #[cfg_attr(feature = "serde", serde(with = "As::<DisplayFromStr>"))]
-    checked_at: BlockchainTimepair,
+    #[cfg_attr(
+        feature = "serde",
+        serde(with = "As::<Option<DisplayFromStr>>")
+    )]
+    checked_at: Option<BlockchainTimepair>,
 
     #[cfg_attr(
         feature = "serde",
@@ -347,11 +357,26 @@ impl CommitEncode for Wallet {
 }
 
 impl Wallet {
-    /*
-    pub fn id(&self) -> WalletId {
-        self.clone().consensus_commit()
+    pub fn with(contract: WalletContract) -> Self {
+        let timestamp = SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .expect("Failed time service");
+        Wallet {
+            id: contract.id(),
+            contract,
+            created_at: NaiveDateTime::from_timestamp(
+                timestamp.as_secs() as i64,
+                0,
+            ),
+            checked_at: None,
+            blinding_factors: empty!(),
+            sent_invoices: empty!(),
+            received_invoices: empty!(),
+            paid_invoices: empty!(),
+            transactions: empty!(),
+            operations: empty!(),
+        }
     }
-     */
 
     pub fn contract_type(&self) -> ContractType {
         self.contract.contract_type()
@@ -426,7 +451,7 @@ pub enum ContractType {
 #[cfg_attr(
     feature = "serde",
     derive(Serialize, Deserialize),
-    serde(crate = "serde_crate", rename = "lowercase")
+    serde(crate = "serde_crate", rename_all = "lowercase", tag = "account")
 )]
 #[strict_encoding_crate(lnpbp::strict_encoding)]
 #[non_exhaustive]
@@ -434,6 +459,7 @@ pub enum WalletContract {
     #[display("{descriptor}")]
     Current {
         name: String,
+        #[cfg_attr(feature = "serde", serde(with = "As::<DisplayFromStr>"))]
         descriptor: descriptor::Generator,
     },
 
@@ -450,7 +476,22 @@ pub enum WalletContract {
     },
 }
 
+impl ConsensusCommit for WalletContract {
+    type Commitment = WalletId;
+}
+
+impl CommitEncode for WalletContract {
+    fn commit_encode<E: io::Write>(self, e: E) -> usize {
+        self.strict_encode(e)
+            .expect("Memory encoders does not fail")
+    }
+}
+
 impl WalletContract {
+    pub fn id(&self) -> WalletId {
+        self.clone().consensus_commit()
+    }
+
     pub fn contract_type(&self) -> ContractType {
         match self {
             WalletContract::Current { .. } => ContractType::Current,

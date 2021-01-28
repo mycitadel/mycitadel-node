@@ -49,7 +49,6 @@ pub struct Opts {
     #[clap(
         short,
         long,
-        global = true,
         default_value = MYCITADEL_DATA_DIR,
         env = "MYCITADEL_DATA_DIR",
         value_hint = ValueHint::DirPath
@@ -72,7 +71,6 @@ pub struct Opts {
         short = 'T',
         long,
         alias = "tor",
-        global = true,
         env = "MYCITADEL_TOR_PROXY",
         value_hint = ValueHint::Hostname
     )]
@@ -87,7 +85,6 @@ pub struct Opts {
     #[clap(
         short = 'x',
         long,
-        global = true,
         env = "MYCITADEL_RPC_SOCKET",
         value_hint = ValueHint::FilePath,
         default_value = MYCITADEL_RPC_SOCKET_NAME
@@ -98,7 +95,6 @@ pub struct Opts {
     #[clap(
         short = 'n',
         long,
-        global = true,
         alias = "network",
         default_value = "testnet",
         env = "MYCITADEL_NETWORK"
