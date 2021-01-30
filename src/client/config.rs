@@ -1,5 +1,5 @@
 // MyCitadel: node, wallet library & command-line tool
-// Written in 2020 by
+// Written in 2021 by
 //     Dr. Maxim Orlovsky <orlovsky@mycitadel.io>
 //
 // To the extent possible under law, the author(s) have dedicated all
@@ -12,15 +12,8 @@
 // If not, see <https://www.gnu.org/licenses/agpl-3.0-standalone.html>.
 
 use std::convert::TryInto;
-use std::path::PathBuf;
 
 use internet2::zmqsocket::ZmqSocketAddr;
-use lnpbp::Chain;
-use microservices::FileFormat;
-
-#[cfg(feature = "shell")]
-use crate::opts::Opts;
-use crate::storage;
 
 /// Final configuration resulting from data contained in config file environment
 /// variables and command-line options. For security reasons node key is kept
@@ -28,40 +21,21 @@ use crate::storage;
 #[derive(Clone, PartialEq, Eq, Debug, Display)]
 #[display(Debug)]
 pub struct Config {
-    /// Bitcoin blockchain to use (mainnet, testnet, signet, liquid etc)
-    pub chain: Chain,
-
     /// ZMQ socket for RPC API
     pub rpc_endpoint: ZmqSocketAddr,
 
-    /// Data location
-    pub data_dir: PathBuf,
-}
-
-impl Config {
-    pub fn storage_conf(&self) -> storage::file::FileConfig {
-        let format = FileFormat::Yaml;
-
-        let mut data_filename = self.data_dir.clone();
-        data_filename.push("citadel");
-        data_filename.set_extension(format.extension());
-
-        storage::file::FileConfig {
-            location: data_filename.to_string_lossy().to_string(),
-            format,
-        }
-    }
+    /// Verbosity level
+    pub verbose: u8,
 }
 
 #[cfg(feature = "shell")]
-impl From<Opts> for Config {
-    fn from(opts: Opts) -> Self {
+impl From<crate::cli::Opts> for Config {
+    fn from(opts: crate::cli::Opts) -> Self {
         Config {
-            chain: opts.chain,
-            data_dir: opts.data_dir,
-            rpc_endpoint: opts.rpc_socket.try_into().expect(
+            rpc_endpoint: opts.shared.rpc_socket.try_into().expect(
                 "The provided socket address must be a valid ZMQ socket",
             ),
+            verbose: opts.shared.verbose,
         }
     }
 }

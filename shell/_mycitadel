@@ -1,8 +1,8 @@
-#compdef mycitadel-cli
+#compdef mycitadel
 
 autoload -U is-at-least
 
-_mycitadel-cli() {
+_mycitadel() {
     typeset -A opt_args
     typeset -a _arguments_options
     local ret=1
@@ -19,22 +19,28 @@ _mycitadel-cli() {
 '*--tor-proxy=[Use Tor]: :_hosts' \
 '-x+[ZMQ socket name/address for daemon RPC interface]: :_files' \
 '--rpc-socket=[ZMQ socket name/address for daemon RPC interface]: :_files' \
+'-n+[Blockchain to use]' \
+'--chain=[Blockchain to use]' \
+'-d+[Data directory path]: :_files -/' \
+'--data-dir=[Data directory path]: :_files -/' \
+'--electrum-server=[Electrum server connection string]' \
 '-c+[Path to the configuration file]: :_files' \
 '--config=[Path to the configuration file]: :_files' \
 '*-v[Set verbosity level]' \
 '*--verbose[Set verbosity level]' \
+'--init[Initializes config file with the default values]' \
 '-h[Prints help information]' \
 '--help[Prints help information]' \
 '-V[Prints version information]' \
 '--version[Prints version information]' \
-":: :_mycitadel-cli_commands" \
-"*::: :->mycitadel-cli" \
+":: :_mycitadel_commands" \
+"*::: :->mycitadel" \
 && ret=0
     case $state in
-    (mycitadel-cli)
+    (mycitadel)
         words=($line[1] "${words[@]}")
         (( CURRENT += 1 ))
-        curcontext="${curcontext%:*:*}:mycitadel-cli-command-$line[1]:"
+        curcontext="${curcontext%:*:*}:mycitadel-command-$line[1]:"
         case $line[1] in
             (wallet)
 _arguments "${_arguments_options[@]}" \
@@ -44,14 +50,14 @@ _arguments "${_arguments_options[@]}" \
 '--help[Prints help information]' \
 '-V[Prints version information]' \
 '--version[Prints version information]' \
-":: :_mycitadel-cli__wallet_commands" \
+":: :_mycitadel__wallet_commands" \
 "*::: :->wallet" \
 && ret=0
 case $state in
     (wallet)
         words=($line[1] "${words[@]}")
         (( CURRENT += 1 ))
-        curcontext="${curcontext%:*:*}:mycitadel-cli-wallet-command-$line[1]:"
+        curcontext="${curcontext%:*:*}:mycitadel-wallet-command-$line[1]:"
         case $line[1] in
             (create)
 _arguments "${_arguments_options[@]}" \
@@ -61,14 +67,14 @@ _arguments "${_arguments_options[@]}" \
 '--help[Prints help information]' \
 '-V[Prints version information]' \
 '--version[Prints version information]' \
-":: :_mycitadel-cli__wallet__create_commands" \
+":: :_mycitadel__wallet__create_commands" \
 "*::: :->create" \
 && ret=0
 case $state in
     (create)
         words=($line[1] "${words[@]}")
         (( CURRENT += 1 ))
-        curcontext="${curcontext%:*:*}:mycitadel-cli-wallet-create-command-$line[1]:"
+        curcontext="${curcontext%:*:*}:mycitadel-wallet-create-command-$line[1]:"
         case $line[1] in
             (current)
 _arguments "${_arguments_options[@]}" \
@@ -114,49 +120,49 @@ _arguments "${_arguments_options[@]}" \
 esac
 }
 
-(( $+functions[_mycitadel-cli_commands] )) ||
-_mycitadel-cli_commands() {
+(( $+functions[_mycitadel_commands] )) ||
+_mycitadel_commands() {
     local commands; commands=(
         "wallet:Wallet management commands" \
 "help:Prints this message or the help of the given subcommand(s)" \
     )
-    _describe -t commands 'mycitadel-cli commands' commands "$@"
+    _describe -t commands 'mycitadel commands' commands "$@"
 }
-(( $+functions[_mycitadel-cli__wallet__create_commands] )) ||
-_mycitadel-cli__wallet__create_commands() {
+(( $+functions[_mycitadel__wallet__create_commands] )) ||
+_mycitadel__wallet__create_commands() {
     local commands; commands=(
         "current:Creates current wallet account" \
     )
-    _describe -t commands 'mycitadel-cli wallet create commands' commands "$@"
+    _describe -t commands 'mycitadel wallet create commands' commands "$@"
 }
-(( $+functions[_mycitadel-cli__wallet__create__current_commands] )) ||
-_mycitadel-cli__wallet__create__current_commands() {
+(( $+functions[_mycitadel__wallet__create__current_commands] )) ||
+_mycitadel__wallet__create__current_commands() {
     local commands; commands=(
         
     )
-    _describe -t commands 'mycitadel-cli wallet create current commands' commands "$@"
+    _describe -t commands 'mycitadel wallet create current commands' commands "$@"
 }
-(( $+functions[_mycitadel-cli__help_commands] )) ||
-_mycitadel-cli__help_commands() {
+(( $+functions[_mycitadel__help_commands] )) ||
+_mycitadel__help_commands() {
     local commands; commands=(
         
     )
-    _describe -t commands 'mycitadel-cli help commands' commands "$@"
+    _describe -t commands 'mycitadel help commands' commands "$@"
 }
-(( $+functions[_mycitadel-cli__wallet__list_commands] )) ||
-_mycitadel-cli__wallet__list_commands() {
+(( $+functions[_mycitadel__wallet__list_commands] )) ||
+_mycitadel__wallet__list_commands() {
     local commands; commands=(
         
     )
-    _describe -t commands 'mycitadel-cli wallet list commands' commands "$@"
+    _describe -t commands 'mycitadel wallet list commands' commands "$@"
 }
-(( $+functions[_mycitadel-cli__wallet_commands] )) ||
-_mycitadel-cli__wallet_commands() {
+(( $+functions[_mycitadel__wallet_commands] )) ||
+_mycitadel__wallet_commands() {
     local commands; commands=(
         "create:Creates wallet with a given name and descriptor parameters" \
 "list:Lists existing wallets" \
     )
-    _describe -t commands 'mycitadel-cli wallet commands' commands "$@"
+    _describe -t commands 'mycitadel wallet commands' commands "$@"
 }
 
-_mycitadel-cli "$@"
+_mycitadel "$@"

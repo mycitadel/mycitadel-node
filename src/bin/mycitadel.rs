@@ -11,7 +11,7 @@
 // along with this software.
 // If not, see <https://www.gnu.org/licenses/agpl-3.0-standalone.html>.
 
-//! Main executable for lnpd: lightning node management microservice.
+//! Command-line interface to MyCitadel node
 
 #![recursion_limit = "256"]
 // Coding conventions
@@ -30,34 +30,20 @@ extern crate log;
 
 use clap::Clap;
 
-use microservices::shell::LogLevel;
-use mycitadel::daemon::{self, Config, Opts};
+use microservices::shell::{Exec, LogLevel};
+use mycitadel::EmbeddedOpts;
 
 fn main() {
-    println!("mycitadeld: MyCitadel wallet node daemon");
+    println!("mycitadel: command-line runtime");
 
-    let mut opts = Opts::parse();
-    LogLevel::from_verbosity_flag_count(opts.shared.verbose).apply();
+    let mut opts = EmbeddedOpts::parse();
+    LogLevel::from_verbosity_flag_count(opts.daemon.shared.verbose).apply();
 
     trace!("Command-line arguments: {:#?}", &opts);
     opts.process();
     trace!("Processed arguments: {:#?}", &opts);
 
-    let config: Config = opts.shared.clone().into();
-    trace!("Daemon configuration: {:#?}", &config);
-    debug!("RPC API socket {}", &config.rpc_endpoint);
-
-    /*
-    use self::internal::ResultExt;
-    let (config_from_file, _) =
-        internal::Config::custom_args_and_optional_files(std::iter::empty::<
-            &str,
-        >())
-        .unwrap_or_exit();
-     */
-
-    debug!("Starting runtime ...");
-    daemon::run(config).expect("Error running mycitadeld runtime");
-
-    unreachable!()
+    let mut client = mycitadel::run_embedded(opts.clone())
+        .expect("Error initializing MyCitadel");
+    opts.command.exec(&mut client);
 }

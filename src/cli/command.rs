@@ -1,5 +1,5 @@
 // MyCitadel: node, wallet library & command-line tool
-// Written in 2020 by
+// Written in 2021 by
 //     Dr. Maxim Orlovsky <orlovsky@mycitadel.io>
 //
 // To the extent possible under law, the author(s) have dedicated all
@@ -18,7 +18,7 @@ use wallet::descriptor;
 use super::{Command, WalletCommand, WalletCreateCommand};
 use crate::data::WalletContract;
 use crate::rpc;
-use crate::Error;
+use crate::{Client, Error};
 
 impl rpc::Reply {
     pub fn report_error(self, msg: &str) -> Result<Self, Error> {
@@ -33,11 +33,11 @@ impl rpc::Reply {
 }
 
 impl Exec for Command {
-    type Client = rpc::Client;
+    type Client = Client;
     type Error = Error;
 
     #[inline]
-    fn exec(self, client: &mut rpc::Client) -> Result<(), Self::Error> {
+    fn exec(self, client: &mut Self::Client) -> Result<(), Self::Error> {
         match self {
             Command::Wallet { subcommand } => subcommand.exec(client),
         }
@@ -45,7 +45,7 @@ impl Exec for Command {
 }
 
 impl Exec for WalletCommand {
-    type Client = rpc::Client;
+    type Client = Client;
     type Error = Error;
 
     fn exec(self, client: &mut Self::Client) -> Result<(), Self::Error> {
@@ -67,7 +67,7 @@ impl Exec for WalletCommand {
 }
 
 impl Exec for WalletCreateCommand {
-    type Client = rpc::Client;
+    type Client = Client;
     type Error = Error;
 
     fn exec(self, client: &mut Self::Client) -> Result<(), Self::Error> {

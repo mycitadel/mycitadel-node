@@ -1,5 +1,5 @@
 // MyCitadel: node, wallet library & command-line tool
-// Written in 2020 by
+// Written in 2021 by
 //     Dr. Maxim Orlovsky <orlovsky@mycitadel.io>
 //
 // To the extent possible under law, the author(s) have dedicated all
@@ -27,11 +27,20 @@ pub mod cli {
 pub mod daemon {
     include!("src/daemon/opts.rs");
 }
+pub mod mycitadel {
+    include!("src/mycitadel/opts.rs");
+}
 
 fn main() -> Result<(), configure_me_codegen::Error> {
     let outdir = "./shell";
 
-    for app in [daemon::Opts::into_app(), cli::Opts::into_app()].iter_mut() {
+    for app in [
+        daemon::Opts::into_app(),
+        cli::Opts::into_app(),
+        mycitadel::Opts::into_app(),
+    ]
+    .iter_mut()
+    {
         let name = app.get_name().to_string();
         generate_to::<Bash, _, _>(app, &name, &outdir);
         generate_to::<PowerShell, _, _>(app, &name, &outdir);

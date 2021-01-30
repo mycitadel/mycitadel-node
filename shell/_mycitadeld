@@ -15,19 +15,20 @@ _mycitadeld() {
 
     local context curcontext="$curcontext" state line
     _arguments "${_arguments_options[@]}" \
-'-d+[Data directory path]: :_files -/' \
-'--data-dir=[Data directory path]: :_files -/' \
 '*-T+[Use Tor]: :_hosts' \
 '*--tor-proxy=[Use Tor]: :_hosts' \
 '-x+[ZMQ socket name/address for daemon RPC interface]: :_files' \
 '--rpc-socket=[ZMQ socket name/address for daemon RPC interface]: :_files' \
 '-n+[Blockchain to use]' \
 '--chain=[Blockchain to use]' \
+'-d+[Data directory path]: :_files -/' \
+'--data-dir=[Data directory path]: :_files -/' \
+'--electrum-server=[Electrum server connection string]' \
 '-c+[Path to the configuration file]: :_files' \
 '--config=[Path to the configuration file]: :_files' \
-'--init[Initializes config file with the default values]' \
 '*-v[Set verbosity level]' \
 '*--verbose[Set verbosity level]' \
+'--init[Initializes config file with the default values]' \
 '-h[Prints help information]' \
 '--help[Prints help information]' \
 '-V[Prints version information]' \

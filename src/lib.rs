@@ -1,5 +1,5 @@
 // MyCitadel: node, wallet library & command-line tool
-// Written in 2020 by
+// Written in 2021 by
 //     Dr. Maxim Orlovsky <orlovsky@mycitadel.io>
 //
 // To the extent possible under law, the author(s) have dedicated all
@@ -43,20 +43,24 @@ extern crate serde_with;
 
 #[cfg(feature = "cli")]
 pub mod cli;
-#[cfg(feature = "_rpc")]
-mod config;
 mod error;
 #[cfg(feature = "shell")]
 pub mod opts;
 #[cfg(feature = "_rpc")]
 pub mod rpc;
 
+#[cfg(feature = "client")]
+pub mod client;
 #[cfg(feature = "node")]
 pub mod daemon;
 pub mod data;
+#[cfg(all(feature = "cli", feature = "node"))]
+mod mycitadel;
 #[cfg(feature = "node")]
 pub mod storage;
 
-#[cfg(feature = "_rpc")]
-pub use config::Config;
+#[cfg(feature = "client")]
+pub use client::Client;
 pub use error::Error;
+#[cfg(all(feature = "cli", feature = "node"))]
+pub use mycitadel::{run_embedded, Opts as EmbeddedOpts};

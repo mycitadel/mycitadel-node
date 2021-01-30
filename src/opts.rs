@@ -1,5 +1,5 @@
 // MyCitadel: node, wallet library & command-line tool
-// Written in 2020 by
+// Written in 2021 by
 //     Dr. Maxim Orlovsky <orlovsky@mycitadel.io>
 //
 // To the extent possible under law, the author(s) have dedicated all
@@ -12,49 +12,15 @@
 // If not, see <https://www.gnu.org/licenses/agpl-3.0-standalone.html>.
 
 use clap::{Clap, ValueHint};
-use std::fs;
 use std::net::SocketAddr;
-use std::path::PathBuf;
 
-use internet2::PartialNodeAddr;
-use lnpbp::Chain;
-
-#[cfg(any(target_os = "linux"))]
-pub const MYCITADEL_DATA_DIR: &'static str = "~/.mycitadel";
-#[cfg(any(target_os = "freebsd", target_os = "openbsd", target_os = "netbsd"))]
-pub const MYCITADEL_DATA_DIR: &'static str = "~/.mycitadel";
-#[cfg(target_os = "macos")]
-pub const MYCITADEL_DATA_DIR: &'static str =
-    "~/Library/Application Support/MyCitadel";
-#[cfg(target_os = "windows")]
-pub const MYCITADEL_DATA_DIR: &'static str = "~\\AppData\\Local\\MyCitadel";
-#[cfg(target_os = "ios")]
-pub const MYCITADEL_DATA_DIR: &'static str = "~/Documents";
-#[cfg(target_os = "android")]
-pub const MYCITADEL_DATA_DIR: &'static str = ".";
+use internet2::ZmqSocketAddr;
 
 pub const MYCITADEL_RPC_SOCKET_NAME: &'static str =
     "lnpz://0.0.0.0:61399?api=rpc"; //"ipc:{data_dir}/zmq.rpc";
 
 #[derive(Clap, Clone, PartialEq, Eq, Hash, Debug)]
-pub struct Opts {
-    /// Initializes config file with the default values
-    #[clap(long)]
-    pub init: bool,
-
-    /// Data directory path
-    ///
-    /// Path to the directory that contains LNP Node data, and where ZMQ RPC
-    /// socket files are located
-    #[clap(
-        short,
-        long,
-        default_value = MYCITADEL_DATA_DIR,
-        env = "MYCITADEL_DATA_DIR",
-        value_hint = ValueHint::DirPath
-    )]
-    pub data_dir: PathBuf,
-
+pub struct SharedOpts {
     /// Set verbosity level
     ///
     /// Can be used multiple times to increase verbosity
@@ -89,45 +55,5 @@ pub struct Opts {
         value_hint = ValueHint::FilePath,
         default_value = MYCITADEL_RPC_SOCKET_NAME
     )]
-    pub rpc_socket: PartialNodeAddr,
-
-    /// Blockchain to use
-    #[clap(
-        short = 'n',
-        long,
-        alias = "network",
-        default_value = "testnet",
-        env = "MYCITADEL_NETWORK"
-    )]
-    // TODO: Put it back to `signet` default network once rust-bitcoin will
-    //       release signet support
-    pub chain: Chain,
-}
-
-impl Opts {
-    pub fn process(&mut self) {
-        let me = self.clone();
-
-        self.data_dir = PathBuf::from(
-            shellexpand::tilde(&self.data_dir.to_string_lossy().to_string())
-                .to_string(),
-        );
-        fs::create_dir_all(&self.data_dir)
-            .expect("Unable to access data directory");
-
-        for s in vec![&mut self.rpc_socket] {
-            match s {
-                PartialNodeAddr::ZmqIpc(path, ..)
-                | PartialNodeAddr::Posix(path) => {
-                    me.process_dir(path);
-                }
-                _ => {}
-            }
-        }
-    }
-
-    pub fn process_dir(&self, path: &mut String) {
-        *path = path.replace("{data_dir}", &self.data_dir.to_string_lossy());
-        *path = shellexpand::tilde(path).to_string();
-    }
+    pub rpc_socket: ZmqSocketAddr,
 }

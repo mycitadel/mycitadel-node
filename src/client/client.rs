@@ -1,5 +1,5 @@
 // MyCitadel: node, wallet library & command-line tool
-// Written in 2020 by
+// Written in 2021 by
 //     Dr. Maxim Orlovsky <orlovsky@mycitadel.io>
 //
 // To the extent possible under law, the author(s) have dedicated all
@@ -17,9 +17,10 @@ use internet2::{
     Unmarshall, Unmarshaller,
 };
 
+use super::Config;
 use crate::data::WalletContract;
 use crate::rpc::{Reply, Request};
-use crate::{Config, Error};
+use crate::Error;
 
 #[repr(C)]
 pub struct Client {
@@ -31,7 +32,7 @@ pub struct Client {
 impl Client {
     pub fn with(config: Config) -> Result<Self, Error> {
         debug!("Initializing runtime");
-        trace!("Connecting to keyring daemon at {}", config.rpc_endpoint);
+        trace!("Connecting to mycitadel daemon at {}", config.rpc_endpoint);
         let session_rpc = session::Raw::with_zmq_unencrypted(
             ZmqType::Req,
             &config.rpc_endpoint,

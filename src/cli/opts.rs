@@ -1,5 +1,5 @@
 // MyCitadel: node, wallet library & command-line tool
-// Written in 2020 by
+// Written in 2021 by
 //     Dr. Maxim Orlovsky <orlovsky@mycitadel.io>
 //
 // To the extent possible under law, the author(s) have dedicated all
@@ -28,7 +28,7 @@ pub struct Opts {
     /// These params can be read also from the configuration file, not just
     /// command-line args or environment variables
     #[clap(flatten)]
-    pub shared: crate::opts::Opts,
+    pub shared: crate::opts::SharedOpts,
 
     /// Path to the configuration file.
     ///
@@ -45,13 +45,6 @@ pub struct Opts {
     /// Command to execute
     #[clap(subcommand)]
     pub command: Command,
-}
-
-impl Opts {
-    pub fn process(&mut self) {
-        self.shared.process();
-        self.shared.process_dir(&mut self.config);
-    }
 }
 
 #[derive(Clap, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Debug, Display)]

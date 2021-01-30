@@ -35,21 +35,13 @@ _mycitadel-cli() {
 
     case "${cmd}" in
         mycitadel__cli)
-            opts=" -d -v -T -x -n -c -h -V  --init --data-dir --verbose --tor-proxy --rpc-socket --chain --config --help --version  wallet help"
+            opts=" -v -T -x -c -h -V  --verbose --tor-proxy --rpc-socket --config --help --version  wallet help"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 1 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
             fi
             case "${prev}" in
                 
-                --data-dir)
-                    COMPREPLY=($(compgen -f "${cur}"))
-                    return 0
-                    ;;
-                    -d)
-                    COMPREPLY=($(compgen -f "${cur}"))
-                    return 0
-                    ;;
                 --tor-proxy)
                     COMPREPLY=($(compgen -f "${cur}"))
                     return 0
@@ -63,14 +55,6 @@ _mycitadel-cli() {
                     return 0
                     ;;
                     -x)
-                    COMPREPLY=($(compgen -f "${cur}"))
-                    return 0
-                    ;;
-                --chain)
-                    COMPREPLY=($(compgen -f "${cur}"))
-                    return 0
-                    ;;
-                    -n)
                     COMPREPLY=($(compgen -f "${cur}"))
                     return 0
                     ;;

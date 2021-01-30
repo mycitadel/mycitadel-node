@@ -1,5 +1,5 @@
 // MyCitadel: node, wallet library & command-line tool
-// Written in 2020 by
+// Written in 2021 by
 //     Dr. Maxim Orlovsky <orlovsky@mycitadel.io>
 //
 // To the extent possible under law, the author(s) have dedicated all
@@ -19,9 +19,10 @@ use internet2::{
 use microservices::node::TryService;
 use rgb_node::util::ToBech32Data;
 
+use super::Config;
 use crate::rpc::{Reply, Request};
 use crate::storage::{Driver, FileDriver};
-use crate::{Config, Error};
+use crate::Error;
 
 pub fn run(config: Config) -> Result<(), Error> {
     let runtime = Runtime::init(config)?;

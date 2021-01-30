@@ -11,10 +11,8 @@
 // along with this software.
 // If not, see <https://www.gnu.org/licenses/agpl-3.0-standalone.html>.
 
+mod client;
 mod config;
-pub(crate) mod opts;
-mod runtime;
 
+pub use client::Client;
 pub use config::Config;
-pub use opts::Opts;
-pub use runtime::{run, Runtime};

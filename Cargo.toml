@@ -16,6 +16,10 @@ path = "src/lib.rs"
 crate-type = ["rlib", "staticlib"]
 
 [[bin]]
+name = "mycitadel"
+required-features = ["node", "cli"]
+
+[[bin]]
 name = "mycitadeld"
 required-features = ["server"]
 

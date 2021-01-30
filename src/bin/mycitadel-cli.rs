@@ -1,5 +1,5 @@
 // MyCitadel: node, wallet library & command-line tool
-// Written in 2020 by
+// Written in 2021 by
 //     Dr. Maxim Orlovsky <orlovsky@mycitadel.io>
 //
 // To the extent possible under law, the author(s) have dedicated all
@@ -32,8 +32,7 @@ use clap::Clap;
 
 use microservices::shell::{Exec, LogLevel};
 use mycitadel::cli::Opts;
-use mycitadel::rpc::Client;
-use mycitadel::Config;
+use mycitadel::client::{Client, Config};
 
 fn main() {
     println!(
@@ -47,7 +46,7 @@ fn main() {
     opts.process();
     trace!("Processed arguments: {:#?}", &opts);
 
-    let config: Config = opts.shared.clone().into();
+    let config: Config = opts.clone().into();
     trace!("Tool configuration: {:#?}", &config);
     debug!("RPC API socket {}", &config.rpc_endpoint);
 
