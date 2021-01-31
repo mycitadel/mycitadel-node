@@ -55,6 +55,13 @@ pub enum Command {
         #[clap(subcommand)]
         subcommand: WalletCommand,
     },
+
+    /// Asset management commands
+    #[display("asset {subcommand}")]
+    Asset {
+        #[clap(subcommand)]
+        subcommand: AssetCommand,
+    },
 }
 
 #[derive(Clap, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Debug, Display)]
@@ -87,4 +94,11 @@ pub enum WalletCreateCommand {
         /// Wallet descriptor template
         template: descriptor::Template,
     },
+}
+
+#[derive(Clap, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Debug, Display)]
+pub enum AssetCommand {
+    /// Lists known assets
+    #[display("list")]
+    List,
 }

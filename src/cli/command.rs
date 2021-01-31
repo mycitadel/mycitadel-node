@@ -15,7 +15,7 @@ use colored::Colorize;
 use microservices::shell::Exec;
 use wallet::descriptor;
 
-use super::{Command, WalletCommand, WalletCreateCommand};
+use super::{AssetCommand, Command, WalletCommand, WalletCreateCommand};
 use crate::data::WalletContract;
 use crate::rpc;
 use crate::{Client, Error};
@@ -40,6 +40,7 @@ impl Exec for Command {
     fn exec(self, client: &mut Self::Client) -> Result<(), Self::Error> {
         match self {
             Command::Wallet { subcommand } => subcommand.exec(client),
+            Command::Asset { subcommand } => subcommand.exec(client),
         }
     }
 }
@@ -89,6 +90,27 @@ impl Exec for WalletCreateCommand {
                     println!("{}", id.to_string().bright_yellow());
                 })
             }
+        }
+    }
+}
+
+impl Exec for AssetCommand {
+    type Client = Client;
+    type Error = Error;
+
+    fn exec(self, client: &mut Self::Client) -> Result<(), Self::Error> {
+        match self {
+            AssetCommand::List => client
+                .asset_list()?
+                .report_error("listing assets")
+                .map(|reply| {
+                    eprintln!("Known assets:");
+                    println!(
+                        "{}",
+                        serde_yaml::to_string(&reply)
+                            .expect("Error presenting data as YAML")
+                    );
+                }),
         }
     }
 }

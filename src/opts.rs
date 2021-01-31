@@ -16,8 +16,7 @@ use std::net::SocketAddr;
 
 use internet2::ZmqSocketAddr;
 
-pub const MYCITADEL_RPC_SOCKET_NAME: &'static str =
-    "lnpz://0.0.0.0:61399?api=rpc"; //"ipc:{data_dir}/zmq.rpc";
+pub const MYCITADEL_RPC_ENDPOINT: &'static str = "lnpz://0.0.0.0:61399?api=rpc";
 
 #[derive(Clap, Clone, PartialEq, Eq, Hash, Debug)]
 pub struct SharedOpts {
@@ -51,9 +50,9 @@ pub struct SharedOpts {
     #[clap(
         short = 'x',
         long,
-        env = "MYCITADEL_RPC_SOCKET",
+        env = "MYCITADEL_RPC_ENDPOINT",
         value_hint = ValueHint::FilePath,
-        default_value = MYCITADEL_RPC_SOCKET_NAME
+        default_value = MYCITADEL_RPC_ENDPOINT
     )]
-    pub rpc_socket: ZmqSocketAddr,
+    pub rpc_endpoint: ZmqSocketAddr,
 }

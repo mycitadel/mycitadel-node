@@ -14,4 +14,6 @@
 mod command;
 mod opts;
 
-pub use opts::{Command, Opts, WalletCommand, WalletCreateCommand};
+pub use opts::{
+    AssetCommand, Command, Opts, WalletCommand, WalletCreateCommand,
+};

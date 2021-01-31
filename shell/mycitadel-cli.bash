@@ -13,6 +13,9 @@ _mycitadel-cli() {
                 cmd="mycitadel__cli"
                 ;;
             
+            asset)
+                cmd+="__asset"
+                ;;
             create)
                 cmd+="__create"
                 ;;
@@ -35,7 +38,7 @@ _mycitadel-cli() {
 
     case "${cmd}" in
         mycitadel__cli)
-            opts=" -v -T -x -c -h -V  --verbose --tor-proxy --rpc-socket --config --help --version  wallet help"
+            opts=" -v -T -x -c -h -V  --verbose --tor-proxy --rpc-endpoint --config --help --version  wallet asset help"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 1 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -50,7 +53,7 @@ _mycitadel-cli() {
                     COMPREPLY=($(compgen -f "${cur}"))
                     return 0
                     ;;
-                --rpc-socket)
+                --rpc-endpoint)
                     COMPREPLY=($(compgen -f "${cur}"))
                     return 0
                     ;;
@@ -74,6 +77,36 @@ _mycitadel-cli() {
             return 0
             ;;
         
+        mycitadel__cli__asset)
+            opts=" -v -h -V  --verbose --help --version  list"
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        mycitadel__cli__asset__list)
+            opts=" -v -h -V  --verbose --help --version  "
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
         mycitadel__cli__help)
             opts=" -h -V  --help --version  "
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then

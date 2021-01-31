@@ -57,6 +57,9 @@ pub enum Error {
     /// Server-reported failure
     #[from]
     ServerFailure(rpc::Failure),
+
+    /// Error initializing embedded node
+    EmbeddedNodeError,
 }
 
 impl microservices::error::Error for Error {}

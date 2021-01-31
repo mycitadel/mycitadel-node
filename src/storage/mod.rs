@@ -19,8 +19,7 @@ pub use file::{FileConfig, FileDriver};
 
 // -----------------------------------------------------------------------------
 
-use rgb::{ContractId, Genesis};
-use rgb20::Asset;
+use rgb::ContractId;
 
 use crate::data::{SignerId, WalletContract, WalletId};
 use crate::rpc::message::{IdentityInfo, SignerAccount};
@@ -34,9 +33,6 @@ pub trait Driver {
 
     fn identities(&self) -> Result<Vec<IdentityInfo>, Error>;
     fn add_identity(&mut self, identity: IdentityInfo) -> Result<(), Error>;
-
-    fn assets(&self) -> Result<Vec<Asset>, Error>;
-    fn add_asset(&mut self, genesis: Genesis) -> Result<(), Error>;
 }
 
 #[derive(Clone, Eq, PartialEq, Hash, Debug, Display, Error, From)]
@@ -86,4 +82,7 @@ pub enum Error {
     #[from(toml::de::Error)]
     #[from(toml::ser::Error)]
     TomlEncoding,
+
+    /// Error by remote storage
+    Remote,
 }

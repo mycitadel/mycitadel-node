@@ -38,8 +38,9 @@ pub const MYCITADEL_STORAGE_FORMAT: FileFormat = FileFormat::Yaml;
 #[cfg(not(feature = "serde_yaml"))]
 pub const MYCITADEL_STORAGE_FORMAT: FileFormat = FileFormat::StrictEncoded;
 pub const MYCITADEL_STORAGE_FILE: &'static str = "accounts.yaml";
-pub const MYCITADEL_ELECTRUM_SERVER: &'static str =
-    "http://pandora.network:60000";
+pub const MYCITADEL_ELECTRUM_SERVER: &'static str = "pandora.network:60001";
+pub const MYCITADEL_RGB20_ENDPOINT: &'static str =
+    "lnpz://0.0.0.0:61612?api=rpc";
 
 #[derive(Clap, Clone, PartialEq, Eq, Hash, Debug)]
 #[clap(
@@ -86,6 +87,10 @@ pub struct Opts {
     #[clap(long, default_value = MYCITADEL_ELECTRUM_SERVER, env = "MYCITADEL_ELECTRUM_SERVER")]
     pub electrum_server: String,
 
+    /// Electrum server connection string
+    #[clap(long, default_value = MYCITADEL_RGB20_ENDPOINT, env = "MYCITADEL_RGB20_ENDPOINT")]
+    pub rgb20_endpoint: ZmqSocketAddr,
+
     /// Path to the configuration file.
     ///
     /// NB: Command-line options override configuration file values.
@@ -110,7 +115,7 @@ impl Opts {
 
         let me = self.clone();
 
-        match self.shared.rpc_socket {
+        match self.shared.rpc_endpoint {
             ZmqSocketAddr::Ipc(ref mut path) => {
                 me.process_dir(path);
             }

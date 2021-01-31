@@ -11,7 +11,6 @@
 // along with this software.
 // If not, see <https://www.gnu.org/licenses/agpl-3.0-standalone.html>.
 
-use std::convert::TryInto;
 use std::path::PathBuf;
 
 use internet2::zmqsocket::ZmqSocketAddr;
@@ -33,6 +32,9 @@ pub struct Config {
 
     /// ZMQ socket for RPC API
     pub rpc_endpoint: ZmqSocketAddr,
+
+    /// RGB20 ZMQ RPC API endpoint
+    pub rgb20_endpoint: ZmqSocketAddr,
 
     /// Data location
     pub data_dir: PathBuf,
@@ -65,9 +67,8 @@ impl From<Opts> for Config {
         Config {
             chain: opts.chain,
             data_dir: opts.data_dir,
-            rpc_endpoint: opts.shared.rpc_socket.try_into().expect(
-                "The provided socket address must be a valid ZMQ socket",
-            ),
+            rpc_endpoint: opts.shared.rpc_endpoint,
+            rgb20_endpoint: opts.rgb20_endpoint,
             verbose: opts.shared.verbose,
             electrum_server: opts.electrum_server,
         }

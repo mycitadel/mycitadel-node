@@ -13,6 +13,9 @@ _mycitadel() {
                 cmd="mycitadel"
                 ;;
             
+            asset)
+                cmd+="__asset"
+                ;;
             create)
                 cmd+="__create"
                 ;;
@@ -35,7 +38,7 @@ _mycitadel() {
 
     case "${cmd}" in
         mycitadel)
-            opts=" -v -T -x -n -d -c -h -V  --verbose --tor-proxy --rpc-socket --chain --init --data-dir --electrum-server --config --help --version  wallet help"
+            opts=" -v -T -x -n -d -c -h -V  --verbose --tor-proxy --rpc-endpoint --chain --init --data-dir --electrum-server --rgb20-endpoint --config --help --version  wallet asset help"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 1 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -50,7 +53,7 @@ _mycitadel() {
                     COMPREPLY=($(compgen -f "${cur}"))
                     return 0
                     ;;
-                --rpc-socket)
+                --rpc-endpoint)
                     COMPREPLY=($(compgen -f "${cur}"))
                     return 0
                     ;;
@@ -78,6 +81,10 @@ _mycitadel() {
                     COMPREPLY=($(compgen -f "${cur}"))
                     return 0
                     ;;
+                --rgb20-endpoint)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
                 --config)
                     COMPREPLY=($(compgen -f "${cur}"))
                     return 0
@@ -94,6 +101,36 @@ _mycitadel() {
             return 0
             ;;
         
+        mycitadel__asset)
+            opts=" -v -h -V  --verbose --help --version  list"
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        mycitadel__asset__list)
+            opts=" -v -h -V  --verbose --help --version  "
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
         mycitadel__help)
             opts=" -h -V  --help --version  "
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then

@@ -71,4 +71,8 @@ impl Client {
     ) -> Result<Reply, Error> {
         self.request(Request::AddWallet(contract))
     }
+
+    pub fn asset_list(&mut self) -> Result<Reply, Error> {
+        self.request(Request::ListAssets)
+    }
 }

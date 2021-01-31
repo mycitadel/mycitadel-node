@@ -20,9 +20,6 @@ use std::{fs, io};
 use lnpbp::strict_encoding::{StrictDecode, StrictEncode};
 use microservices::FileFormat;
 
-use rgb::Genesis;
-use rgb20::Asset;
-
 use super::{Driver, Error};
 use crate::data::{Data, Wallet, WalletContract};
 use crate::rpc::message::{IdentityInfo, SignerAccount};
@@ -164,14 +161,6 @@ impl Driver for FileDriver {
     }
 
     fn add_identity(&mut self, identity: IdentityInfo) -> Result<(), Error> {
-        unimplemented!()
-    }
-
-    fn assets(&self) -> Result<Vec<Asset>, Error> {
-        unimplemented!()
-    }
-
-    fn add_asset(&mut self, genesis: Genesis) -> Result<(), Error> {
         unimplemented!()
     }
 }

@@ -18,7 +18,7 @@ _mycitadel-cli() {
 '*-T+[Use Tor]: :_hosts' \
 '*--tor-proxy=[Use Tor]: :_hosts' \
 '-x+[ZMQ socket name/address for daemon RPC interface]: :_files' \
-'--rpc-socket=[ZMQ socket name/address for daemon RPC interface]: :_files' \
+'--rpc-endpoint=[ZMQ socket name/address for daemon RPC interface]: :_files' \
 '-c+[Path to the configuration file]: :_files' \
 '--config=[Path to the configuration file]: :_files' \
 '*-v[Set verbosity level]' \
@@ -101,6 +101,37 @@ _arguments "${_arguments_options[@]}" \
     ;;
 esac
 ;;
+(asset)
+_arguments "${_arguments_options[@]}" \
+'*-v[Set verbosity level]' \
+'*--verbose[Set verbosity level]' \
+'-h[Prints help information]' \
+'--help[Prints help information]' \
+'-V[Prints version information]' \
+'--version[Prints version information]' \
+":: :_mycitadel-cli__asset_commands" \
+"*::: :->asset" \
+&& ret=0
+case $state in
+    (asset)
+        words=($line[1] "${words[@]}")
+        (( CURRENT += 1 ))
+        curcontext="${curcontext%:*:*}:mycitadel-cli-asset-command-$line[1]:"
+        case $line[1] in
+            (list)
+_arguments "${_arguments_options[@]}" \
+'*-v[Set verbosity level]' \
+'*--verbose[Set verbosity level]' \
+'-h[Prints help information]' \
+'--help[Prints help information]' \
+'-V[Prints version information]' \
+'--version[Prints version information]' \
+&& ret=0
+;;
+        esac
+    ;;
+esac
+;;
 (help)
 _arguments "${_arguments_options[@]}" \
 '-h[Prints help information]' \
@@ -118,9 +149,17 @@ esac
 _mycitadel-cli_commands() {
     local commands; commands=(
         "wallet:Wallet management commands" \
+"asset:Asset management commands" \
 "help:Prints this message or the help of the given subcommand(s)" \
     )
     _describe -t commands 'mycitadel-cli commands' commands "$@"
+}
+(( $+functions[_mycitadel-cli__asset_commands] )) ||
+_mycitadel-cli__asset_commands() {
+    local commands; commands=(
+        "list:Lists known assets" \
+    )
+    _describe -t commands 'mycitadel-cli asset commands' commands "$@"
 }
 (( $+functions[_mycitadel-cli__wallet__create_commands] )) ||
 _mycitadel-cli__wallet__create_commands() {
@@ -142,6 +181,13 @@ _mycitadel-cli__help_commands() {
         
     )
     _describe -t commands 'mycitadel-cli help commands' commands "$@"
+}
+(( $+functions[_mycitadel-cli__asset__list_commands] )) ||
+_mycitadel-cli__asset__list_commands() {
+    local commands; commands=(
+        
+    )
+    _describe -t commands 'mycitadel-cli asset list commands' commands "$@"
 }
 (( $+functions[_mycitadel-cli__wallet__list_commands] )) ||
 _mycitadel-cli__wallet__list_commands() {

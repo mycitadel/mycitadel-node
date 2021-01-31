@@ -26,14 +26,18 @@ use crate::Error;
 pub fn run_embedded(mut opts: Opts) -> Result<Client, Error> {
     debug!("Starting RGBd node instance in background");
 
-    opts.daemon.shared.rpc_socket = "inproc://mycitadel.rpc"
+    opts.daemon.shared.rpc_endpoint = "inproc://mycitadel.rpc"
         .parse()
         .expect("MyCitadel RPC address error");
+    opts.daemon.rgb20_endpoint = "inproc://rgb20.rpc"
+        .parse()
+        .expect("RGB20 RPC address error");
 
     let data_dir = opts.daemon.data_dir.clone();
     let network = opts.daemon.chain.clone();
     let verbose = opts.daemon.shared.verbose;
     let electrum_server = opts.daemon.electrum_server.clone();
+    let rgb20_endpoint = opts.daemon.rgb20_endpoint.clone();
     thread::spawn(move || {
         rgb_node::rgbd::main_with_config(rgb_node::rgbd::Config {
             data_dir,
@@ -42,7 +46,7 @@ pub fn run_embedded(mut opts: Opts) -> Result<Client, Error> {
             contracts: vec![rgb_node::rgbd::ContractName::Fungible],
             network,
             verbose,
-            fungible_rpc_endpoint: s!("inproc://fungible.rpc"),
+            fungible_rpc_endpoint: rgb20_endpoint.to_string(),
             fungible_pub_endpoint: s!("inproc://fungible.pub"),
             stash_rpc_endpoint: s!("inproc://stash.rpc"),
             stash_pub_endpoint: s!("inproc://stash.pub"),

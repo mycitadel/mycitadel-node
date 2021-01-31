@@ -11,17 +11,23 @@
 // along with this software.
 // If not, see <https://www.gnu.org/licenses/agpl-3.0-standalone.html>.
 
+use std::{thread, time};
+
 use internet2::zmqsocket::{self, ZmqType};
 use internet2::{
     session, CreateUnmarshaller, PlainTranscoder, Session, TypedEnum,
     Unmarshall, Unmarshaller,
 };
+use lnpbp::strict_encoding::StrictDecode;
 use microservices::node::TryService;
+use microservices::FileFormat;
+use rgb20::Asset;
+use rgb_node::rpc::reply::SyncFormat;
 use rgb_node::util::ToBech32Data;
 
 use super::Config;
 use crate::rpc::{Reply, Request};
-use crate::storage::{Driver, FileDriver};
+use crate::storage::{self, Driver, FileDriver};
 use crate::Error;
 
 pub fn run(config: Config) -> Result<(), Error> {
@@ -44,6 +50,9 @@ pub struct Runtime {
 
     /// Unmarshaller instance used for parsing RPC request
     unmarshaller: Unmarshaller<Request>,
+
+    /// RGB20 (fungibled) daemon client
+    rgb20_client: rgb_node::i9n::Runtime,
 }
 
 impl Runtime {
@@ -59,10 +68,29 @@ impl Runtime {
             None,
         )?;
 
+        let rgb20_client =
+            rgb_node::i9n::Runtime::init(rgb_node::i9n::Config {
+                verbose: config.verbose,
+                data_dir: config.data_dir.clone().to_string_lossy().to_string(),
+                electrum_server: config.electrum_server.clone(),
+                stash_rpc_endpoint: s!("inproc://stash.rpc"),
+                stash_pub_endpoint: s!("inproc://stash.pub"),
+                fungible_pub_endpoint: s!("inproc://fungible.pub"),
+                contract_endpoints: map! {
+                    rgb_node::rgbd::ContractName::Fungible => config.rgb20_endpoint.to_string()
+                },
+                network: config.chain.clone(),
+                run_embedded: false,
+            })
+            .map_err(|err| Error::EmbeddedNodeError)?;
+
+        thread::sleep(time::Duration::from_secs(1));
+
         Ok(Self {
             config,
             session_rpc,
             storage,
+            rgb20_client,
             unmarshaller: Request::create_unmarshaller(),
         })
     }
@@ -119,9 +147,15 @@ impl Runtime {
                 .storage
                 .identities()
                 .map(|list| Reply::Identities(list)),
-            Request::ListAssets => {
-                self.storage.assets().map(|list| Reply::Assets(list))
-            }
+            Request::ListAssets => self
+                .rgb20_client
+                .list_assets(FileFormat::StrictEncode)
+                .map_err(|_| storage::Error::Remote)
+                .and_then(|SyncFormat(_, data)| {
+                    Vec::<Asset>::strict_deserialize(data)
+                        .map_err(storage::Error::from)
+                })
+                .map(|assets| Reply::Assets(assets)),
             Request::AddWallet(contract) => {
                 self.storage.add_wallet(contract).map(|_| Reply::Success)
             }
@@ -132,7 +166,7 @@ impl Runtime {
                 self.storage.add_identity(identity).map(|_| Reply::Success)
             }
             Request::AddAsset(genesis) => {
-                self.storage.add_asset(genesis).map(|_| Reply::Success)
+                unimplemented!()
             }
         }
         .map_err(Error::from)

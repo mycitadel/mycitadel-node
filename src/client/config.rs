@@ -32,7 +32,7 @@ pub struct Config {
 impl From<crate::cli::Opts> for Config {
     fn from(opts: crate::cli::Opts) -> Self {
         Config {
-            rpc_endpoint: opts.shared.rpc_socket.try_into().expect(
+            rpc_endpoint: opts.shared.rpc_endpoint.try_into().expect(
                 "The provided socket address must be a valid ZMQ socket",
             ),
             verbose: opts.shared.verbose,

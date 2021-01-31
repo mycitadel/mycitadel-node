@@ -31,9 +31,9 @@ extern crate log;
 use clap::Clap;
 
 use microservices::shell::{Exec, LogLevel};
-use mycitadel::EmbeddedOpts;
+use mycitadel::{EmbeddedOpts, Error};
 
-fn main() {
+fn main() -> Result<(), Error> {
     println!("mycitadel: command-line runtime");
 
     let mut opts = EmbeddedOpts::parse();
@@ -45,5 +45,5 @@ fn main() {
 
     let mut client = mycitadel::run_embedded(opts.clone())
         .expect("Error initializing MyCitadel");
-    opts.command.exec(&mut client);
+    opts.command.exec(&mut client)
 }
