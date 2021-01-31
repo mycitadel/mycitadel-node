@@ -425,9 +425,9 @@ dependencies = [
 
 [[package]]
 name = "cmake"
-version = "0.1.45"
+version = "0.1.43"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "eb6210b637171dfba4cda12e579ac6dc73f5165ad56133e5d72ef3131f320855"
+checksum = "49f97562167906afc51aa3fd7e6c83c10a5c96d33bd18f98a4c06a1413134caa"
 dependencies = [
  "cc",
 ]
@@ -2747,8 +2747,7 @@ dependencies = [
 [[package]]
 name = "zeromq-src"
 version = "0.1.10+4.3.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "df9133d366817fcffe22e4356043ba187ae122ec5db63d7ce73d1e6a18efa2f1"
+source = "git+https://github.com/LNP-BP/zeromq-src-rs?branch=fix/cmake#e95a4e68136a6897d61c936622933bf259ebdd7f"
 dependencies = [
  "cmake",
 ]
@@ -2775,3 +2774,8 @@ dependencies = [
  "metadeps",
  "zeromq-src",
 ]
+
+[[patch.unused]]
+name = "lightning-invoice"
+version = "0.3.0"
+source = "git+https://github.com/LNP-BP/rust-lightning-invoice?tag=systemtime-fix#979dce954315a386528fd1ddbde1a27fa89f00c1"

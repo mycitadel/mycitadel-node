@@ -54,14 +54,14 @@ pub(crate) fn ptr_to_string(ptr: *const c_char) -> String {
 #[allow(non_camel_case_types)]
 #[repr(C)]
 pub struct mycitadel_error_t {
-    pub errno: c_int,
+    pub err_no: c_int,
     pub message: *const c_char,
 }
 
 impl From<mycitadel::Error> for mycitadel_error_t {
     fn from(err: Error) -> Self {
         mycitadel_error_t {
-            errno: match err {
+            err_no: match err {
                 Error::Io(_) => ERRNO_IO,
                 Error::Rpc(_) => ERRNO_RPC,
                 Error::Networking(_) => ERRNO_NET,
@@ -103,7 +103,7 @@ impl mycitadel_client_t {
         mycitadel_client_t {
             _inner: ptr::null_mut(),
             last_error: &mut mycitadel_error_t {
-                errno,
+                err_no: errno,
                 message: msg.to_char_ptr(),
             },
         }
@@ -139,7 +139,7 @@ impl mycitadel_client_t {
                     json.to_char_ptr()
                 } else {
                     self.last_error = &mut mycitadel_error_t {
-                        errno: ERRNO_JSON,
+                        err_no: ERRNO_JSON,
                         message: format!(
                             "Unable to JSON-encode response for the call {}",
                             request

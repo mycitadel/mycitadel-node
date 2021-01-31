@@ -130,6 +130,12 @@ vendored_openssl = ["microservices/vendored_openssl", "internet2/vendored_openss
 [package.metadata.configure_me]
 spec = "config_spec.toml"
 
+[patch.crates-io]
+# Required to fix Android SystemTime incorrect size
+lightning-invoice = { git = "https://github.com/LNP-BP/rust-lightning-invoice", tag = "systemtime-fix" }
+# Remove this once https://github.com/jean-airoldie/zeromq-src-rs/pull/15 got merged
+zeromq-src = { git = "https://github.com/LNP-BP/zeromq-src-rs", branch = "fix/cmake" }
+
 [workspace]
 members = [".", "libmycitadel"]
 default-members = ["."]

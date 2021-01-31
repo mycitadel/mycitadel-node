@@ -31,7 +31,7 @@
 #define ERRNO_JSON 101
 
 typedef struct mycitadel_error_t {
-        int errno;
+        int err_no;
         const char *message;
 } mycitadel_error_t;
 
