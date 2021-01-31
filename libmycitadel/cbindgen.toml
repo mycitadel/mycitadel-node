@@ -20,8 +20,8 @@ no_includes = false
 ############################ Code Style Options ################################
 
 braces = "SameLine"
-line_length = 100
-tab_width = 2
+line_length = 80
+tab_width = 8
 documentation_style = "auto"
 
 ############################# Codegen Options ##################################
@@ -37,7 +37,6 @@ renaming_overrides_prefixing = false
 [fn]
 rename_args = "None"
 args = "auto"
-sort_by = "Name"
 
 [struct]
 rename_fields = "None"
@@ -52,6 +51,7 @@ enum_class = true
 [const]
 allow_static_const = true
 allow_constexpr = false
+sort_by = "None"
 
 [macro_expansion]
 bitflags = false

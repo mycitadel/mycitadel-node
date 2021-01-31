@@ -264,12 +264,13 @@ dependencies = [
 
 [[package]]
 name = "cbindgen"
-version = "0.14.3"
+version = "0.16.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e6e03a705df2e735cc5486f104a48e25a8f72ae06eaea5b7753a81270ed00859"
+checksum = "9344318b9c787667b95cd2c5124f5eaf2bde35e959dd01ea04fc5b234c542c11"
 dependencies = [
  "clap 2.33.3",
  "heck",
+ "indexmap",
  "log",
  "proc-macro2 1.0.24",
  "quote 1.0.8",
@@ -1055,9 +1056,12 @@ dependencies = [
  "amplify",
  "amplify_derive",
  "android_logger",
+ "bitcoin",
  "cbindgen",
  "env_logger",
+ "internet2",
  "libsqlite3-sys",
+ "lnpbp",
  "log",
  "mycitadel",
  "openssl",

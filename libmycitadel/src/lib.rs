@@ -21,6 +21,8 @@
 
 #[macro_use]
 extern crate amplify_derive;
+#[macro_use]
+extern crate amplify;
 
 mod error;
 mod external;

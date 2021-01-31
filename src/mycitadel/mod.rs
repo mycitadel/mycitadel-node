@@ -23,21 +23,21 @@ use crate::client::{self, Client};
 use crate::daemon;
 use crate::Error;
 
-pub fn run_embedded(mut opts: Opts) -> Result<Client, Error> {
+pub fn run_embedded(mut config: daemon::Config) -> Result<Client, Error> {
     debug!("Starting RGBd node instance in background");
 
-    opts.daemon.shared.rpc_endpoint = "inproc://mycitadel.rpc"
+    config.rpc_endpoint = "inproc://mycitadel.rpc"
         .parse()
         .expect("MyCitadel RPC address error");
-    opts.daemon.rgb20_endpoint = "inproc://rgb20.rpc"
+    config.rgb20_endpoint = "inproc://rgb20.rpc"
         .parse()
         .expect("RGB20 RPC address error");
 
-    let data_dir = opts.daemon.data_dir.clone();
-    let network = opts.daemon.chain.clone();
-    let verbose = opts.daemon.shared.verbose;
-    let electrum_server = opts.daemon.electrum_server.clone();
-    let rgb20_endpoint = opts.daemon.rgb20_endpoint.clone();
+    let data_dir = config.data_dir.clone();
+    let network = config.chain.clone();
+    let verbose = config.verbose;
+    let electrum_server = config.electrum_server.clone();
+    let rgb20_endpoint = config.rgb20_endpoint.clone();
     thread::spawn(move || {
         rgb_node::rgbd::main_with_config(rgb_node::rgbd::Config {
             data_dir,
@@ -63,7 +63,6 @@ pub fn run_embedded(mut opts: Opts) -> Result<Client, Error> {
     });
 
     debug!("Starting MyCitadel node instance in background");
-    let config = daemon::Config::from(opts.daemon);
     let rpc_endpoint = config.rpc_endpoint.clone();
     thread::spawn(move || {
         daemon::run(config).expect("Error in MyCitadel daemon runtime")
