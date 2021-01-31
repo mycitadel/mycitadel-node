@@ -61,6 +61,33 @@ dependencies = [
 ]
 
 [[package]]
+name = "android_log-sys"
+version = "0.1.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b8052e2d8aabbb8d556d6abbcce2a22b9590996c5f849b9c7ce4544a2e3b984e"
+
+[[package]]
+name = "android_logger"
+version = "0.8.6"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "8cbd542dd180566fad88fd2729a53a62a734843c626638006a9d63ec0688484e"
+dependencies = [
+ "android_log-sys",
+ "env_logger",
+ "lazy_static",
+ "log",
+]
+
+[[package]]
+name = "ansi_term"
+version = "0.11.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ee49baf6cb617b853aa8d93bf420db2383fab46d314482ca2803b40d5fde979b"
+dependencies = [
+ "winapi 0.3.9",
+]
+
+[[package]]
 name = "arrayvec"
 version = "0.3.25"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -236,6 +263,24 @@ dependencies = [
 ]
 
 [[package]]
+name = "cbindgen"
+version = "0.14.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e6e03a705df2e735cc5486f104a48e25a8f72ae06eaea5b7753a81270ed00859"
+dependencies = [
+ "clap 2.33.3",
+ "heck",
+ "log",
+ "proc-macro2 1.0.24",
+ "quote 1.0.8",
+ "serde 1.0.123",
+ "serde_json",
+ "syn 1.0.60",
+ "tempfile",
+ "toml 0.5.8",
+]
+
+[[package]]
 name = "cc"
 version = "1.0.66"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -301,6 +346,21 @@ dependencies = [
 
 [[package]]
 name = "clap"
+version = "2.33.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "37e58ac78573c40708d45522f0d80fa2f01cc4f9b4e2bf749807255454312002"
+dependencies = [
+ "ansi_term",
+ "atty",
+ "bitflags",
+ "strsim 0.8.0",
+ "textwrap 0.11.0",
+ "unicode-width",
+ "vec_map",
+]
+
+[[package]]
+name = "clap"
 version = "3.0.0-beta.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "4bd1061998a501ee7d4b6d449020df3266ca3124b941ec56cf2005c3779ca142"
@@ -313,7 +373,7 @@ dependencies = [
  "os_str_bytes",
  "strsim 0.10.0",
  "termcolor",
- "textwrap",
+ "textwrap 0.12.1",
  "unicode-width",
  "vec_map",
 ]
@@ -337,7 +397,7 @@ version = "3.0.0-beta.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "adf420f8b687b628d2915ccfd43a660c437a170432e3fbcb66944e8717a0d68f"
 dependencies = [
- "clap",
+ "clap 3.0.0-beta.2",
 ]
 
 [[package]]
@@ -989,11 +1049,32 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "7eb0c4e9c72ee9d69b767adebc5f4788462a3b45624acd919475c92597bcaf4f"
 
 [[package]]
+name = "libmycitadel"
+version = "0.1.0-alpha"
+dependencies = [
+ "amplify",
+ "amplify_derive",
+ "android_logger",
+ "cbindgen",
+ "env_logger",
+ "libsqlite3-sys",
+ "log",
+ "mycitadel",
+ "openssl",
+ "serde 1.0.123",
+ "serde_json",
+ "serde_with",
+ "serde_with_macros",
+ "zmq",
+]
+
+[[package]]
 name = "libsqlite3-sys"
 version = "0.18.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "1e704a02bcaecd4a08b93a23f6be59d0bd79cd161e0963e9499165a0a35df7bd"
 dependencies = [
+ "cc",
  "pkg-config",
  "vcpkg",
 ]
@@ -1137,7 +1218,7 @@ source = "git+https://github.com/internet2-org/rust-internet2#ea2c7cad91da47eb92
 dependencies = [
  "amplify",
  "amplify_derive",
- "clap",
+ "clap 3.0.0-beta.2",
  "config",
  "env_logger",
  "internet2",
@@ -1171,7 +1252,7 @@ dependencies = [
  "bech32",
  "bitcoin",
  "chrono",
- "clap",
+ "clap 3.0.0-beta.2",
  "clap_generate",
  "colored",
  "config",
@@ -1504,6 +1585,18 @@ dependencies = [
 ]
 
 [[package]]
+name = "rand"
+version = "0.8.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "0ef9e7e66b4468674bfcb0c81af8b7fa0bb154fa9f28eb840da5c447baeb8d7e"
+dependencies = [
+ "libc",
+ "rand_chacha 0.3.0",
+ "rand_core 0.6.1",
+ "rand_hc 0.3.0",
+]
+
+[[package]]
 name = "rand_chacha"
 version = "0.1.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1521,6 +1614,16 @@ checksum = "f4c8ed856279c9737206bf725bf36935d8666ead7aa69b52be55af369d193402"
 dependencies = [
  "ppv-lite86",
  "rand_core 0.5.1",
+]
+
+[[package]]
+name = "rand_chacha"
+version = "0.3.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e12735cf05c9e10bf21534da50a147b924d555dc7a547c42e6bb2d5b6017ae0d"
+dependencies = [
+ "ppv-lite86",
+ "rand_core 0.6.1",
 ]
 
 [[package]]
@@ -1548,6 +1651,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "rand_core"
+version = "0.6.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "c026d7df8b298d90ccbbc5190bd04d85e159eaf5576caeacf8741da93ccbd2e5"
+dependencies = [
+ "getrandom 0.2.2",
+]
+
+[[package]]
 name = "rand_hc"
 version = "0.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1563,6 +1675,15 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "ca3129af7b92a17112d59ad498c6f81eaf463253766b90396d39ea7a39d6613c"
 dependencies = [
  "rand_core 0.5.1",
+]
+
+[[package]]
+name = "rand_hc"
+version = "0.3.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "3190ef7066a446f2e7f42e239d161e905420ccab01eb967c9eb27d21b2322a73"
+dependencies = [
+ "rand_core 0.6.1",
 ]
 
 [[package]]
@@ -1665,6 +1786,15 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "b5eb417147ba9860a96cfe72a0b93bf88fee1744b5636ec99ab20c1aa9376581"
 
 [[package]]
+name = "remove_dir_all"
+version = "0.5.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "3acd125665422973a33ac9d3dd2df85edad0f4ae9b00dafb1a05e43a9f5ef8e7"
+dependencies = [
+ "winapi 0.3.9",
+]
+
+[[package]]
 name = "rgb-core"
 version = "0.4.0-alpha.1+1"
 source = "git+https://github.com/rgb-org/rgb-core#5b4d52908da110781fa60d93a2c4e054573fd0cc"
@@ -1721,7 +1851,7 @@ dependencies = [
  "bech32",
  "bitcoin",
  "chrono",
- "clap",
+ "clap 3.0.0-beta.2",
  "colored",
  "config",
  "configure_me 0.3.4",
@@ -2094,6 +2224,12 @@ dependencies = [
 
 [[package]]
 name = "strsim"
+version = "0.8.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "8ea5119cdb4c55b55d432abb513a0429384878c15dde60cc77b1c99de1a95a6a"
+
+[[package]]
+name = "strsim"
 version = "0.9.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "6446ced80d6c486436db5c078dde11a9f73d42b57fb273121e160b84f63d894c"
@@ -2163,12 +2299,35 @@ dependencies = [
 ]
 
 [[package]]
+name = "tempfile"
+version = "3.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "dac1c663cfc93810f88aed9b8941d48cabf856a1b111c29a40439018d870eb22"
+dependencies = [
+ "cfg-if 1.0.0",
+ "libc",
+ "rand 0.8.3",
+ "redox_syscall",
+ "remove_dir_all",
+ "winapi 0.3.9",
+]
+
+[[package]]
 name = "termcolor"
 version = "1.1.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "2dfed899f0eb03f32ee8c6a0aabdb8a7949659e3466561fc0adf54e26d88c5f4"
 dependencies = [
  "winapi-util",
+]
+
+[[package]]
+name = "textwrap"
+version = "0.11.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d326610f408c7a4eb6f51c37c330e496b08506c9457c9d34287ecc38809fb060"
+dependencies = [
+ "unicode-width",
 ]
 
 [[package]]

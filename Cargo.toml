@@ -8,12 +8,7 @@ keywords = ["bitcoin", "rgb", "wallet", "lightning"]
 edition = "2018"
 readme = "README.md"
 build = "build.rs"
-exclude = [".github", "/test", "/data", "Dockerfile"]
-
-[lib]
-name = "mycitadel"
-path = "src/lib.rs"
-crate-type = ["rlib", "staticlib"]
+exclude = [".github", "/test", "/data", "Dockerfile", "/shell", "libmycitadel"]
 
 [[bin]]
 name = "mycitadel"
@@ -134,3 +129,8 @@ vendored_openssl = ["microservices/vendored_openssl", "internet2/vendored_openss
 
 [package.metadata.configure_me]
 spec = "config_spec.toml"
+
+[workspace]
+members = [".", "libmycitadel"]
+default-members = ["."]
+exclude = ["shell"]
