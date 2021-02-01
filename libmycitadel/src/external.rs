@@ -25,8 +25,9 @@ pub const ERRNO_NOTSUPPORTED: c_int = 5;
 pub const ERRNO_STORAGE: c_int = 6;
 pub const ERRNO_SERVERFAIL: c_int = 7;
 pub const ERRNO_EMBEDDEDFAIL: c_int = 8;
-pub const ERRNO_CHAIN: c_int = 100;
-pub const ERRNO_JSON: c_int = 101;
+pub const ERRNO_CHAIN: c_int = 101;
+pub const ERRNO_JSON: c_int = 102;
+pub const ERRNO_UNINIT: c_int = 100;
 
 pub trait ToCharPtr {
     fn to_char_ptr(&self) -> *const c_char;
@@ -56,6 +57,18 @@ pub(crate) fn ptr_to_string(ptr: *const c_char) -> String {
 pub struct mycitadel_error_t {
     pub err_no: c_int,
     pub message: *const c_char,
+}
+
+impl mycitadel_error_t {
+    pub fn with(err_no: c_int) -> Self {
+        let message = match err_no {
+            ERRNO_UNINIT => "MyCitadel client is not yet initialized",
+            _ => panic!("Error in mycitadel_error_t::with"),
+        }
+        .to_string()
+        .to_char_ptr();
+        mycitadel_error_t { err_no, message }
+    }
 }
 
 impl From<mycitadel::Error> for mycitadel_error_t {
@@ -109,26 +122,31 @@ impl mycitadel_client_t {
         }
     }
 
-    #[no_mangle]
-    pub extern "C" fn mycitadel_is_ok(&self) -> bool {
+    pub(crate) fn is_ok(&self) -> bool {
         self._inner != ptr::null_mut()
     }
 
-    #[no_mangle]
-    pub extern "C" fn mycitadel_has_err(&self) -> bool {
+    pub(crate) fn has_err(&self) -> bool {
         self.last_error != ptr::null_mut()
     }
 
-    fn inner(&mut self) -> &mut Client {
-        if self.mycitadel_is_ok() {
-            panic!("MyCitadel controller is not initialized")
+    fn inner(&mut self) -> Option<&mut Client> {
+        if self.is_ok() {
+            return None;
         }
         let boxed = unsafe { Box::from_raw(self._inner as *mut Client) };
-        Box::leak(boxed)
+        Some(Box::leak(boxed))
     }
 
     pub(crate) fn call(&mut self, request: rpc::Request) -> *const c_char {
-        match self.inner().request(request.clone()) {
+        let inner = match self.inner() {
+            None => {
+                self.last_error = &mut mycitadel_error_t::with(ERRNO_UNINIT);
+                return ptr::null();
+            }
+            Some(inner) => inner,
+        };
+        match inner.request(request.clone()) {
             Err(err) => {
                 self.last_error = &mut mycitadel_error_t::from(err);
                 ptr::null()
@@ -178,6 +196,17 @@ pub extern "C" fn mycitadel_run_embedded(
     })
     .map(mycitadel_client_t::with)
     .unwrap_or_else(mycitadel_client_t::from_err)
+}
+
+#[no_mangle]
+pub extern "C" fn mycitadel_is_ok(client: *mut mycitadel_client_t) -> bool {
+    unsafe { client.as_mut().expect("Wrong MyCitadel client pointer") }.is_ok()
+}
+
+#[no_mangle]
+pub extern "C" fn mycitadel_has_err(client: *mut mycitadel_client_t) -> bool {
+    unsafe { client.as_mut().expect("Wrong MyCitadel client pointer") }
+        .has_err()
 }
 
 #[no_mangle]

@@ -26,9 +26,11 @@
 
 #define ERRNO_EMBEDDEDFAIL 8
 
-#define ERRNO_CHAIN 100
+#define ERRNO_CHAIN 101
 
-#define ERRNO_JSON 101
+#define ERRNO_JSON 102
+
+#define ERRNO_UNINIT 100
 
 typedef struct mycitadel_error_t {
         int err_no;
@@ -44,13 +46,13 @@ typedef struct mycitadel_client_t {
 extern "C" {
 #endif // __cplusplus
 
-bool mycitadel_is_ok(const struct mycitadel_client_t *self);
-
-bool mycitadel_has_err(const struct mycitadel_client_t *self);
-
 struct mycitadel_client_t *mycitadel_run_embedded(const char *chain,
                                                   const char *data_dir,
                                                   const char *electrum_server);
+
+bool mycitadel_is_ok(struct mycitadel_client_t *client);
+
+bool mycitadel_has_err(struct mycitadel_client_t *client);
 
 const char *mycitadel_list_assets(struct mycitadel_client_t *client);
 

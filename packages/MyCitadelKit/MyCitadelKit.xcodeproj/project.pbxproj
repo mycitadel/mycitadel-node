@@ -127,6 +127,7 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 304DE86225C6F8B9008FE0A4 /* Build configuration list for PBXNativeTarget "MyCitadelKit" */;
 			buildPhases = (
+				304DE95E25C78070008FE0A4 /* Cargo lipo */,
 				304DE84925C6F8B9008FE0A4 /* Headers */,
 				304DE84A25C6F8B9008FE0A4 /* Sources */,
 				304DE84B25C6F8B9008FE0A4 /* Frameworks */,
@@ -213,6 +214,27 @@
 		};
 /* End PBXResourcesBuildPhase section */
 
+/* Begin PBXShellScriptBuildPhase section */
+		304DE95E25C78070008FE0A4 /* Cargo lipo */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = "Cargo lipo";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "# The $PATH used by Xcode likely won't contain Cargo, fix that.\n# This assumes a default `rustup` setup.\nexport PATH=\"$HOME/.cargo/bin:$PATH\"\n\n# --xcode-integ determines --release and --targets from Xcode's env vars.\n# Depending your setup, specify the rustup toolchain explicitly.\ncargo lipo --manifest-path ../../libmycitadel/Cargo.toml --release #--xcode-integ\n";
+		};
+/* End PBXShellScriptBuildPhase section */
+
 /* Begin PBXSourcesBuildPhase section */
 		304DE84A25C6F8B9008FE0A4 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
@@ -294,7 +316,7 @@
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
-				LIBRARY_SEARCH_PATHS = "$(SOURCE_ROOT)/../../target/universal/release";
+				LIBRARY_SEARCH_PATHS = "$(SOURCE_ROOT)/../../target/universal/release/";
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
@@ -353,7 +375,7 @@
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
-				LIBRARY_SEARCH_PATHS = "$(SOURCE_ROOT)/../../target/universal/release";
+				LIBRARY_SEARCH_PATHS = "$(SOURCE_ROOT)/../../target/universal/release/";
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				SDKROOT = iphoneos;
@@ -375,6 +397,7 @@
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				ENABLE_BITCODE = NO;
 				INFOPLIST_FILE = MyCitadelKit/Info.plist;
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -403,6 +426,7 @@
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				ENABLE_BITCODE = NO;
 				INFOPLIST_FILE = MyCitadelKit/Info.plist;
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
 				LD_RUNPATH_SEARCH_PATHS = (
