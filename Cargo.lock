@@ -1065,6 +1065,8 @@ dependencies = [
  "log",
  "mycitadel",
  "openssl",
+ "rgb-core",
+ "rgb20",
  "serde 1.0.123",
  "serde_json",
  "serde_with",

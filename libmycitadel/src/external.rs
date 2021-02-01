@@ -26,9 +26,10 @@ pub const ERRNO_NOTSUPPORTED: c_int = 5;
 pub const ERRNO_STORAGE: c_int = 6;
 pub const ERRNO_SERVERFAIL: c_int = 7;
 pub const ERRNO_EMBEDDEDFAIL: c_int = 8;
+pub const ERRNO_UNINIT: c_int = 100;
 pub const ERRNO_CHAIN: c_int = 101;
 pub const ERRNO_JSON: c_int = 102;
-pub const ERRNO_UNINIT: c_int = 100;
+pub const ERRNO_BECH32: c_int = 103;
 
 pub trait ToCharPtr {
     fn to_char_ptr(&self) -> *const c_char;
@@ -215,4 +216,27 @@ pub extern "C" fn mycitadel_list_assets(
 ) -> *const c_char {
     unsafe { client.as_mut().expect("Wrong MyCitadel client pointer") }
         .call(rpc::Request::ListAssets)
+}
+
+#[no_mangle]
+pub extern "C" fn mycitadel_import_asset(
+    client: *mut mycitadel_client_t,
+    genesis_b32: *const c_char,
+) -> *const c_char {
+    let client =
+        unsafe { client.as_mut().expect("Wrong MyCitadel client pointer") };
+    let genesis_b32 = ptr_to_string(genesis_b32);
+    match rgb::Genesis::from_str(&genesis_b32) {
+        Ok(genesis) => client.call(rpc::Request::AddAsset(genesis)),
+        Err(err) => {
+            client.set_error_details(
+                ERRNO_BECH32,
+                &format!(
+                    "Error in Bech32 encoding of asset genesis: {}",
+                    err.to_string()
+                ),
+            );
+            ptr::null()
+        }
+    }
 }

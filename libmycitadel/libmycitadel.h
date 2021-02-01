@@ -28,11 +28,13 @@
 
 #define ERRNO_EMBEDDEDFAIL 8
 
+#define ERRNO_UNINIT 100
+
 #define ERRNO_CHAIN 101
 
 #define ERRNO_JSON 102
 
-#define ERRNO_UNINIT 100
+#define ERRNO_BECH32 103
 
 typedef struct mycitadel_client_t {
         void *inner;
@@ -53,6 +55,9 @@ bool mycitadel_is_ok(struct mycitadel_client_t *client);
 bool mycitadel_has_err(struct mycitadel_client_t *client);
 
 const char *mycitadel_list_assets(struct mycitadel_client_t *client);
+
+const char *mycitadel_import_asset(struct mycitadel_client_t *client,
+                                   const char *genesis_b32);
 
 #ifdef __cplusplus
 } // extern "C"

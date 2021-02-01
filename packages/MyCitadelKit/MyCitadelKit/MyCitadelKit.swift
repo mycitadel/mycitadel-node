@@ -17,7 +17,7 @@ public struct MyCitadelError: Error {
     let errNo: Int
     let message: String
 
-    init(errNo errNo: Int, message: String) {
+    init(errNo: Int, message: String) {
         self.errNo = errNo
         self.message = message
     }
@@ -69,14 +69,23 @@ open class MyCitadelClient {
         }
     }
     
-    public func refreshAssets() throws -> [Asset] {
-        guard let json = mycitadel_list_assets(client) else {
+    private func processResponse(_ response: UnsafePointer<Int8>?) throws -> Data {
+        guard let json = response else {
             guard let err = self.lastError() else {
                 throw MyCitadelError("MyCitadelClient API is broken")
             }
             throw err
         }
-        let jsonData = Data(String(cString: json).utf8)
-        return try JSONDecoder().decode([Asset].self, from: jsonData)
+        return Data(String(cString: json).utf8)
+    }
+    
+    public func refreshAssets() throws -> [Asset] {
+        let response = mycitadel_list_assets(client);
+        return try JSONDecoder().decode([Asset].self, from: self.processResponse(response))
+    }
+    
+    public func importAsset(bech32 genesis: String) throws -> Asset {
+        let response = mycitadel_import_asset(client, genesis);
+        return try JSONDecoder().decode(Asset.self, from: self.processResponse(response))
     }
 }
