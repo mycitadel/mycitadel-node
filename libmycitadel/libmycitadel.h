@@ -10,6 +10,8 @@
 #include <stdint.h>
 #include <stdlib.h>
 
+#define SUCCESS 0
+
 #define ERRNO_IO 1
 
 #define ERRNO_RPC 2
@@ -32,14 +34,10 @@
 
 #define ERRNO_UNINIT 100
 
-typedef struct mycitadel_error_t {
-        int err_no;
-        const char *message;
-} mycitadel_error_t;
-
 typedef struct mycitadel_client_t {
-        void *_inner;
-        struct mycitadel_error_t *last_error;
+        void *inner;
+        const char *message;
+        int err_no;
 } mycitadel_client_t;
 
 #ifdef __cplusplus

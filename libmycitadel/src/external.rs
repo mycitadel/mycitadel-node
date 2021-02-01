@@ -17,6 +17,7 @@ use internet2::ZmqSocketAddr;
 use lnpbp::Chain;
 use mycitadel::{rpc, Client, Error};
 
+pub const SUCCESS: c_int = 0;
 pub const ERRNO_IO: c_int = 1;
 pub const ERRNO_RPC: c_int = 2;
 pub const ERRNO_NET: c_int = 3;
@@ -54,116 +55,115 @@ pub(crate) fn ptr_to_string(ptr: *const c_char) -> String {
 
 #[allow(non_camel_case_types)]
 #[repr(C)]
-pub struct mycitadel_error_t {
-    pub err_no: c_int,
-    pub message: *const c_char,
-}
-
-impl mycitadel_error_t {
-    pub fn with(err_no: c_int) -> Self {
-        let message = match err_no {
-            ERRNO_UNINIT => "MyCitadel client is not yet initialized",
-            _ => panic!("Error in mycitadel_error_t::with"),
-        }
-        .to_string()
-        .to_char_ptr();
-        mycitadel_error_t { err_no, message }
-    }
-}
-
-impl From<mycitadel::Error> for mycitadel_error_t {
-    fn from(err: Error) -> Self {
-        mycitadel_error_t {
-            err_no: match err {
-                Error::Io(_) => ERRNO_IO,
-                Error::Rpc(_) => ERRNO_RPC,
-                Error::Networking(_) => ERRNO_NET,
-                Error::Transport(_) => ERRNO_TRANSPORT,
-                Error::NotSupported(_) => ERRNO_NOTSUPPORTED,
-                Error::StorageDriver(_) => ERRNO_STORAGE,
-                Error::ServerFailure(_) => ERRNO_SERVERFAIL,
-                Error::EmbeddedNodeError => ERRNO_EMBEDDEDFAIL,
-                _ => 0,
-            },
-            message: err.to_string().to_char_ptr(),
-        }
-    }
-}
-
-#[allow(non_camel_case_types)]
-#[repr(C)]
 pub struct mycitadel_client_t {
-    _inner: *mut c_void,
-    pub last_error: *mut mycitadel_error_t,
+    inner: *mut c_void,
+    message: *const c_char,
+    err_no: c_int,
 }
 
 impl mycitadel_client_t {
-    pub(crate) fn with(mut client: Client) -> Self {
+    pub(crate) fn with(inner_client: Client) -> Self {
         mycitadel_client_t {
-            _inner: &mut client as *mut _ as *mut c_void,
-            last_error: ptr::null_mut(),
+            inner: Box::into_raw(Box::new(inner_client)) as *mut c_void,
+            err_no: SUCCESS,
+            message: ptr::null(),
         }
     }
 
     pub(crate) fn from_err(error: mycitadel::Error) -> Self {
-        mycitadel_client_t {
-            _inner: ptr::null_mut(),
-            last_error: &mut mycitadel_error_t::from(error),
-        }
+        let mut me = mycitadel_client_t {
+            inner: ptr::null_mut(),
+            err_no: c_int::MAX,
+            message: ptr::null(),
+        };
+        me.set_error(error);
+        me
     }
 
-    pub(crate) fn from_custom_err(errno: c_int, msg: &str) -> Self {
-        mycitadel_client_t {
-            _inner: ptr::null_mut(),
-            last_error: &mut mycitadel_error_t {
-                err_no: errno,
-                message: msg.to_char_ptr(),
-            },
-        }
+    pub(crate) fn from_custom_err(err_no: c_int, msg: &str) -> Self {
+        let mut me = mycitadel_client_t {
+            inner: ptr::null_mut(),
+            err_no,
+            message: ptr::null(),
+        };
+        me.set_error_details(err_no, msg);
+        me
+    }
+
+    fn set_success(&mut self) {
+        self.err_no = SUCCESS;
+        self.message = ptr::null()
+    }
+
+    fn set_error_details(&mut self, err_no: c_int, msg: &str) {
+        self.err_no = err_no;
+        self.message = msg.to_char_ptr();
+    }
+
+    fn set_error_no(&mut self, err_no: c_int) {
+        let message = match err_no {
+            ERRNO_UNINIT => "MyCitadel client is not yet initialized",
+            _ => panic!("Error in mycitadel_error_t::with"),
+        };
+        self.set_error_details(err_no, message);
+    }
+
+    fn set_error(&mut self, err: mycitadel::Error) {
+        let err_no = match err {
+            Error::Io(_) => ERRNO_IO,
+            Error::Rpc(_) => ERRNO_RPC,
+            Error::Networking(_) => ERRNO_NET,
+            Error::Transport(_) => ERRNO_TRANSPORT,
+            Error::NotSupported(_) => ERRNO_NOTSUPPORTED,
+            Error::StorageDriver(_) => ERRNO_STORAGE,
+            Error::ServerFailure(_) => ERRNO_SERVERFAIL,
+            Error::EmbeddedNodeError => ERRNO_EMBEDDEDFAIL,
+            _ => c_int::MAX,
+        };
+        self.set_error_details(err_no, &err.to_string());
     }
 
     pub(crate) fn is_ok(&self) -> bool {
-        self._inner != ptr::null_mut()
+        self.inner.is_null() && self.err_no == SUCCESS
     }
 
     pub(crate) fn has_err(&self) -> bool {
-        self.last_error != ptr::null_mut()
+        self.err_no != SUCCESS && !self.message.is_null()
     }
 
     fn inner(&mut self) -> Option<&mut Client> {
         if self.is_ok() {
             return None;
         }
-        let boxed = unsafe { Box::from_raw(self._inner as *mut Client) };
+        let boxed = unsafe { Box::from_raw(self.inner as *mut Client) };
         Some(Box::leak(boxed))
     }
 
     pub(crate) fn call(&mut self, request: rpc::Request) -> *const c_char {
         let inner = match self.inner() {
             None => {
-                self.last_error = &mut mycitadel_error_t::with(ERRNO_UNINIT);
+                self.set_error_no(ERRNO_UNINIT);
                 return ptr::null();
             }
             Some(inner) => inner,
         };
         match inner.request(request.clone()) {
             Err(err) => {
-                self.last_error = &mut mycitadel_error_t::from(err);
+                self.set_error(err);
                 ptr::null()
             }
             Ok(result) => {
                 if let Ok(json) = serde_json::to_string(&result) {
-                    self.last_error = ptr::null_mut();
+                    self.set_success();
                     json.to_char_ptr()
                 } else {
-                    self.last_error = &mut mycitadel_error_t {
-                        err_no: ERRNO_JSON,
-                        message: format!(
+                    self.set_error_details(
+                        ERRNO_JSON,
+                        &format!(
                             "Unable to JSON-encode response for the call {}",
                             request
-                        )
-                        .to_char_ptr(),
-                    };
+                        ),
+                    );
                     ptr::null()
                 }
             }
@@ -178,24 +178,24 @@ pub extern "C" fn mycitadel_run_embedded(
     electrum_server: *const c_char,
 ) -> *mut mycitadel_client_t {
     let chain = ptr_to_string(chain);
-    let chain = if let Ok(chain) = Chain::from_str(&chain) {
-        chain
+    let client = if let Ok(chain) = Chain::from_str(&chain) {
+        mycitadel::run_embedded(mycitadel::daemon::Config {
+            verbose: 4,
+            chain,
+            rpc_endpoint: ZmqSocketAddr::Inproc(s!("mycitadel.rpc")),
+            rgb20_endpoint: ZmqSocketAddr::Inproc(s!("rgb20.rpc")),
+            data_dir: PathBuf::from(ptr_to_string(data_dir)),
+            electrum_server: ptr_to_string(electrum_server),
+        })
+        .map(mycitadel_client_t::with)
+        .unwrap_or_else(mycitadel_client_t::from_err)
     } else {
-        return &mut mycitadel_client_t::from_custom_err(
+        mycitadel_client_t::from_custom_err(
             ERRNO_CHAIN,
             &format!("Unknown chain {}", chain),
-        );
+        )
     };
-    &mut mycitadel::run_embedded(mycitadel::daemon::Config {
-        verbose: 4,
-        chain,
-        rpc_endpoint: ZmqSocketAddr::Inproc(s!("mycitadel.rpc")),
-        rgb20_endpoint: ZmqSocketAddr::Inproc(s!("rgb20.rpc")),
-        data_dir: PathBuf::from(ptr_to_string(data_dir)),
-        electrum_server: ptr_to_string(electrum_server),
-    })
-    .map(mycitadel_client_t::with)
-    .unwrap_or_else(mycitadel_client_t::from_err)
+    Box::into_raw(Box::new(client))
 }
 
 #[no_mangle]

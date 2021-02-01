@@ -17,14 +17,14 @@ public struct MyCitadelError: Error {
     let errNo: Int
     let message: String
 
-    init(_ err: mycitadel_error_t) {
-        self.errNo = Int(err.err_no)
-        self.message = String(cString: err.message)
+    init(errNo errNo: Int, message: String) {
+        self.errNo = errNo
+        self.message = message
     }
     
-    init(_ msg: String) {
+    init(_ message: String) {
         self.errNo = 1000
-        self.message = msg
+        self.message = message
     }
 }
 
@@ -39,7 +39,7 @@ public struct Asset: Decodable {
 open class MyCitadelClient {
     let network: Network
     let dataDir: String
-    private var client: UnsafeMutablePointer<mycitadel_client_t>
+    private var client: UnsafeMutablePointer<mycitadel_client_t>!
     
     private init(network: Network = .Signet, electrumServer: String = "pandora.network:60001") {
         self.network = network
@@ -62,15 +62,15 @@ open class MyCitadelClient {
     }
     
     public func lastError() -> MyCitadelError? {
-        if mycitadel_has_err(self.client) {
-            return MyCitadelError(self.client.pointee.last_error.pointee)
+        if mycitadel_has_err(client) {
+            return MyCitadelError(errNo: Int(client.pointee.err_no), message: String(cString: client.pointee.message))
         } else {
             return nil
         }
     }
     
     public func refreshAssets() throws -> [Asset] {
-        guard let json = mycitadel_list_assets(self.client) else {
+        guard let json = mycitadel_list_assets(client) else {
             guard let err = self.lastError() else {
                 throw MyCitadelError("MyCitadelClient API is broken")
             }
