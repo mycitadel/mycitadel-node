@@ -10,6 +10,46 @@
 #include <stdint.h>
 #include <stdlib.h>
 
+#define BECH32_OK 0
+
+#define BECH32_ERR_HRP 1
+
+#define BECH32_ERR_CHECKSUM 2
+
+#define BECH32_ERR_ENCODING 3
+
+#define BECH32_ERR_PAYLOAD 4
+
+#define BECH32_ERR_UNSUPPORTED 5
+
+#define BECH32_ERR_INTERNAL 6
+
+#define BECH32_UNKNOWN 0
+
+#define BECH32_URL 1
+
+#define BECH32_BC_ADDRESS 256
+
+#define BECH32_LN_BOLT11 257
+
+#define BECH32_LNPBP_ID 512
+
+#define BECH32_LNPBP_DATA 513
+
+#define BECH32_LNPBP_ZDATA 514
+
+#define BECH32_LNPBP_INVOICE 528
+
+#define BECH32_RGB_SCHEMA_ID 768
+
+#define BECH32_RGB_CONTRACT_ID 769
+
+#define BECH32_RGB_SCHEMA 770
+
+#define BECH32_RGB_GENESIS 771
+
+#define BECH32_RGB_CONSIGNMENT 772
+
 #define SUCCESS 0
 
 #define ERRNO_IO 1
@@ -36,6 +76,13 @@
 
 #define ERRNO_BECH32 103
 
+typedef struct bech32_info_t {
+        int status;
+        int category;
+        bool bech32m;
+        const char *details;
+} bech32_info_t;
+
 typedef struct mycitadel_client_t {
         void *inner;
         const char *message;
@@ -45,6 +92,8 @@ typedef struct mycitadel_client_t {
 #ifdef __cplusplus
 extern "C" {
 #endif // __cplusplus
+
+struct bech32_info_t lnpbp_bech32_info(const char *bech_str);
 
 struct mycitadel_client_t *mycitadel_run_embedded(const char *chain,
                                                   const char *data_dir,

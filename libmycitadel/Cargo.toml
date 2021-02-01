@@ -8,7 +8,7 @@ edition = "2018"
 build = "build.rs"
 
 [lib]
-crate-type = ["staticlib", "cdylib"]
+crate-type = ["staticlib"]
 name = "mycitadel"
 
 [build-dependencies]
@@ -25,10 +25,11 @@ mycitadel = { path = "..", features = [ "node", "client" ] }
 lnpbp = { git = "https://github.com/LNP-BP/rust-lnpbp" }
 # lnp-core = { git = "https://github.com/LNP-BP/lnp-core" }
 rgb-core = { git = "https://github.com/rgb-org/rgb-core" }
-rgb20 = { git = "https://github.com/rgb-org/rgb-core", optional = true }
+rgb20 = { git = "https://github.com/rgb-org/rgb-core" }
 # rgb_node = { git = "https://github.com/rgb-org/rgb-node", default-features = false, features = ["fungibles"] }
 internet2 = { git = "https://github.com/internet2-org/rust-internet2" }
 # microservices = { git = "https://github.com/internet2-org/rust-internet2", default-features = false }
+bech32 = "0.7"
 bitcoin = "0.26"
 
 log = "0.4"

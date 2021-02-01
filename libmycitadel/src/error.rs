@@ -7,30 +7,18 @@
 // the public domain worldwide. This software is distributed without
 // any warranty.
 
-#[derive(Debug, Display, From, Error)]
-#[display(doc_comments)]
-#[non_exhaustive]
-pub(crate) enum RequestError {
-    /// Input value is not a JSON object or JSON parse error: {0}
-    #[from]
-    Json(serde_json::Error),
+use std::os::raw::c_int;
 
-    /// Input value is not a UTF8 string: {0}
-    #[from]
-    Utf8(std::str::Utf8Error),
-
-    /// Impossible error: {0}
-    #[from]
-    Infallible(std::convert::Infallible),
-
-    /// I/O error: {0}
-    #[from]
-    Io(std::io::Error),
-
-    /// Input error: {0}
-    #[from]
-    Input(String),
-
-    /// Internal error
-    Internal,
-}
+pub const SUCCESS: c_int = 0;
+pub const ERRNO_IO: c_int = 1;
+pub const ERRNO_RPC: c_int = 2;
+pub const ERRNO_NET: c_int = 3;
+pub const ERRNO_TRANSPORT: c_int = 4;
+pub const ERRNO_NOTSUPPORTED: c_int = 5;
+pub const ERRNO_STORAGE: c_int = 6;
+pub const ERRNO_SERVERFAIL: c_int = 7;
+pub const ERRNO_EMBEDDEDFAIL: c_int = 8;
+pub const ERRNO_UNINIT: c_int = 100;
+pub const ERRNO_CHAIN: c_int = 101;
+pub const ERRNO_JSON: c_int = 102;
+pub const ERRNO_BECH32: c_int = 103;

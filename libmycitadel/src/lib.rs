@@ -20,13 +20,13 @@
 )]
 
 #[macro_use]
-extern crate amplify_derive;
-#[macro_use]
 extern crate amplify;
 
-mod error;
+mod bech32;
+mod client;
+pub mod error;
 mod external;
 mod helpers;
-mod internal;
 
-pub use external::*;
+pub use client::mycitadel_client_t;
+pub use helpers::{ptr_to_string, ToCharPtr};
