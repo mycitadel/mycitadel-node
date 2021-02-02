@@ -46,6 +46,6 @@ pub enum Request {
     AddIdentity(IdentityInfo),
 
     #[api(type = 0x0050)]
-    #[display("add_asset({0})")]
-    AddAsset(Genesis),
+    #[display("import_asset({0})")]
+    ImportAsset(Genesis),
 }

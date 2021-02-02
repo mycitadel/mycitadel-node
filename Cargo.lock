@@ -229,9 +229,9 @@ dependencies = [
 
 [[package]]
 name = "bumpalo"
-version = "3.5.0"
+version = "3.6.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f07aa6688c702439a1be0307b6a94dffe1168569e45b9500c1372bc580740d59"
+checksum = "099e596ef14349721d9016f6b80dd3419ea1bf289ab9b44df8e4dfd3a005d5d9"
 
 [[package]]
 name = "byte-tools"
@@ -595,8 +595,8 @@ dependencies = [
 
 [[package]]
 name = "descriptor-wallet"
-version = "0.4.0-alpha.1"
-source = "git+https://github.com/LNP-BP/descriptor-wallet#222d49b891bc02618fddb6268d97141e5815e2d0"
+version = "0.4.0-beta"
+source = "git+https://github.com/LNP-BP/descriptor-wallet#2ccae940f3ca1d96f281b42d0b78bf4105c3c269"
 dependencies = [
  "amplify",
  "amplify_derive",
@@ -709,7 +709,7 @@ dependencies = [
  "ed25519",
  "rand 0.7.3",
  "serde 1.0.123",
- "sha2 0.9.2",
+ "sha2 0.9.3",
  "zeroize 1.2.0",
 ]
 
@@ -985,7 +985,7 @@ dependencies = [
 [[package]]
 name = "internet2"
 version = "0.4.0-alpha.2"
-source = "git+https://github.com/internet2-org/rust-internet2#ea2c7cad91da47eb92557a0e578607411eef6428"
+source = "git+https://github.com/internet2-org/rust-internet2#e4c741cd0579d5f03f81f3f6a0ca57ee0a9bb56e"
 dependencies = [
  "amplify",
  "amplify_derive",
@@ -1045,9 +1045,9 @@ dependencies = [
 
 [[package]]
 name = "libc"
-version = "0.2.83"
+version = "0.2.85"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7eb0c4e9c72ee9d69b767adebc5f4788462a3b45624acd919475c92597bcaf4f"
+checksum = "7ccac4b00700875e6a07c6cde370d44d32fa01c5a65cdd2fca6858c479d28bb3"
 
 [[package]]
 name = "libmycitadel"
@@ -1064,6 +1064,7 @@ dependencies = [
  "libsqlite3-sys",
  "lnpbp",
  "log",
+ "microservices",
  "mycitadel",
  "openssl",
  "rgb-core",
@@ -1147,7 +1148,7 @@ dependencies = [
 [[package]]
 name = "lnpbp"
 version = "0.4.0-alpha.1"
-source = "git+https://github.com/LNP-BP/rust-lnpbp#296c3fb5ad3951f79d34cc91e6682fa954645869"
+source = "git+https://github.com/LNP-BP/rust-lnpbp#7b2582a967734307f45edb26823fd44047855e25"
 dependencies = [
  "amplify",
  "amplify_derive",
@@ -1220,8 +1221,8 @@ dependencies = [
 
 [[package]]
 name = "microservices"
-version = "0.4.0-alpha.1"
-source = "git+https://github.com/internet2-org/rust-internet2#ea2c7cad91da47eb92557a0e578607411eef6428"
+version = "0.4.0-beta"
+source = "git+https://github.com/internet2-org/rust-internet2#e4c741cd0579d5f03f81f3f6a0ca57ee0a9bb56e"
 dependencies = [
  "amplify",
  "amplify_derive",
@@ -1803,8 +1804,8 @@ dependencies = [
 
 [[package]]
 name = "rgb-core"
-version = "0.4.0-alpha.1+1"
-source = "git+https://github.com/rgb-org/rgb-core#5b4d52908da110781fa60d93a2c4e054573fd0cc"
+version = "0.4.0-beta"
+source = "git+https://github.com/rgb-org/rgb-core#46d92fc46ec079e10eeb5d3973186f79bce58c0c"
 dependencies = [
  "amplify",
  "amplify_derive",
@@ -1833,7 +1834,7 @@ dependencies = [
 [[package]]
 name = "rgb20"
 version = "0.4.0-alpha.1"
-source = "git+https://github.com/rgb-org/rgb-core#5b4d52908da110781fa60d93a2c4e054573fd0cc"
+source = "git+https://github.com/rgb-org/rgb-core#46d92fc46ec079e10eeb5d3973186f79bce58c0c"
 dependencies = [
  "amplify",
  "amplify_derive",
@@ -1850,7 +1851,7 @@ dependencies = [
 [[package]]
 name = "rgb_node"
 version = "0.4.0-alpha"
-source = "git+https://github.com/rgb-org/rgb-node#38e341490a208f4c3018e55256a272ba55cd814e"
+source = "git+https://github.com/rgb-org/rgb-node#48074733459b814d934c424b5c0072489253db4d"
 dependencies = [
  "amplify",
  "amplify_derive",
@@ -1885,9 +1886,9 @@ dependencies = [
 
 [[package]]
 name = "ring"
-version = "0.16.19"
+version = "0.16.20"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "024a1e66fea74c66c66624ee5622a7ff0e4b73a13b4f5c326ddb50c708944226"
+checksum = "3053cf52e236a3ed746dfc745aa9cacf1b791d846bdaf412f60a8d7d6e17c8fc"
 dependencies = [
  "cc",
  "libc",
@@ -2084,9 +2085,9 @@ dependencies = [
 
 [[package]]
 name = "serde_yaml"
-version = "0.8.15"
+version = "0.8.16"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "971be8f6e4d4a47163b405a3df70d14359186f9ab0f3a3ec37df144ca1ce089f"
+checksum = "bdd2af560da3c1fdc02cb80965289254fc35dff869810061e2d8290ee48848ae"
 dependencies = [
  "dtoa",
  "linked-hash-map 0.5.4",
@@ -2114,9 +2115,9 @@ dependencies = [
 
 [[package]]
 name = "sha2"
-version = "0.9.2"
+version = "0.9.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6e7aab86fe2149bad8c507606bdb3f4ef5e7b2380eb92350f56122cca72a42a8"
+checksum = "fa827a14b29ab7f44778d14a88d3cb76e949c45083f7dbfa507d0cb699dc12de"
 dependencies = [
  "block-buffer 0.9.0",
  "cfg-if 1.0.0",
@@ -2193,9 +2194,9 @@ checksum = "a2eb9349b6444b326872e140eb1cf5e7c522154d69e7a0ffb0fb81c06b37543f"
 
 [[package]]
 name = "strict_encoding"
-version = "1.0.7"
+version = "1.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1cfe176b9f4027623e26028c4ed336e41b479a07bc4a64b553fee14fcafc5168"
+checksum = "040e89a9add0494e5a5eef5763ba18f0293ae4eed22bab439998fc893afd2a26"
 dependencies = [
  "amplify",
  "amplify_derive",
@@ -2383,9 +2384,9 @@ checksum = "cda74da7e1a664f795bb1f8a87ec406fb89a02522cf6e50620d016add6dbbf5c"
 
 [[package]]
 name = "tokio"
-version = "0.3.6"
+version = "0.3.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "720ba21c25078711bf456d607987d95bce90f7c3bea5abe1db587862e7a1e87c"
+checksum = "46409491c9375a693ce7032101970a54f8a2010efb77e13f70788f0d84489e39"
 dependencies = [
  "autocfg 1.0.1",
  "bytes",

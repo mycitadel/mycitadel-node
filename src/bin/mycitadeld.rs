@@ -11,7 +11,7 @@
 // along with this software.
 // If not, see <https://www.gnu.org/licenses/agpl-3.0-standalone.html>.
 
-//! Main executable for lnpd: lightning node management microservice.
+//! Main executable for MyCitadel runtime: main node managing microservice
 
 #![recursion_limit = "256"]
 // Coding conventions
@@ -34,18 +34,18 @@ use microservices::shell::LogLevel;
 use mycitadel::daemon::{self, Config, Opts};
 
 fn main() {
-    println!("mycitadeld: MyCitadel wallet node daemon");
+    println!("mycitadeld: MyCitadel node daemon");
 
-    let mut opts = Opts::parse();
+    let opts = Opts::parse();
     LogLevel::from_verbosity_flag_count(opts.shared.verbose).apply();
 
     trace!("Command-line arguments: {:#?}", &opts);
-    opts.process();
-    trace!("Processed arguments: {:#?}", &opts);
 
-    let config: Config = opts.shared.clone().into();
+    let mut config: Config = opts.clone().into();
+
     trace!("Daemon configuration: {:#?}", &config);
-    debug!("RPC API socket {}", &config.rpc_endpoint);
+    config.process();
+    trace!("Processed configuration: {:#?}", &opts);
 
     /*
     use self::internal::ResultExt;

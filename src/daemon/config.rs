@@ -11,6 +11,7 @@
 // along with this software.
 // If not, see <https://www.gnu.org/licenses/agpl-3.0-standalone.html>.
 
+use std::fs;
 use std::path::PathBuf;
 
 use internet2::zmqsocket::ZmqSocketAddr;
@@ -72,5 +73,34 @@ impl From<Opts> for Config {
             verbose: opts.shared.verbose,
             electrum_server: opts.electrum_server,
         }
+    }
+}
+
+impl Config {
+    pub fn process(&mut self) {
+        self.data_dir = PathBuf::from(
+            shellexpand::tilde(&self.data_dir.to_string_lossy().to_string())
+                .to_string(),
+        );
+        fs::create_dir_all(&self.data_dir)
+            .expect("Unable to access data directory");
+
+        let me = self.clone();
+
+        for dir in vec![&mut self.rpc_endpoint, &mut self.rgb20_endpoint] {
+            match dir {
+                ZmqSocketAddr::Ipc(ref mut path) => {
+                    me.process_dir(path);
+                }
+                _ => {}
+            }
+        }
+    }
+
+    pub fn process_dir(&self, path: &mut String) {
+        *path = path.replace("{data_dir}", &self.data_dir.to_string_lossy());
+        *path = path.replace("{network}", &self.chain.to_string());
+        *path = path.replace("{id}", "default");
+        *path = shellexpand::tilde(path).to_string();
     }
 }

@@ -14,6 +14,7 @@
 use std::{thread, time};
 
 use internet2::zmqsocket::{self, ZmqType};
+use internet2::ZmqSocketAddr;
 use internet2::{
     session, CreateUnmarshaller, PlainTranscoder, Session, TypedEnum,
     Unmarshall, Unmarshaller,
@@ -60,7 +61,7 @@ impl Runtime {
         debug!("Initializing data storage {:?}", config.storage_conf());
         let storage = FileDriver::with(config.storage_conf())?;
 
-        debug!("Opening ZMQ socket {}", config.rpc_endpoint);
+        debug!("Opening RPC API socket {}", config.rpc_endpoint);
         let session_rpc = session::Raw::with_zmq_unencrypted(
             ZmqType::Rep,
             &config.rpc_endpoint,
@@ -68,16 +69,15 @@ impl Runtime {
             None,
         )?;
 
+        debug!("Connecting RGB node embedded runtime...");
         let rgb20_client =
             rgb_node::i9n::Runtime::init(rgb_node::i9n::Config {
                 verbose: config.verbose,
                 data_dir: config.data_dir.clone().to_string_lossy().to_string(),
                 electrum_server: config.electrum_server.clone(),
-                stash_rpc_endpoint: s!("inproc://stash.rpc"),
-                stash_pub_endpoint: s!("inproc://stash.pub"),
-                fungible_pub_endpoint: s!("inproc://fungible.pub"),
+                stash_rpc_endpoint: ZmqSocketAddr::Inproc(s!("stash.rpc")),
                 contract_endpoints: map! {
-                    rgb_node::rgbd::ContractName::Fungible => config.rgb20_endpoint.to_string()
+                    rgb_node::rgbd::ContractName::Fungible => config.rgb20_endpoint.clone()
                 },
                 network: config.chain.clone(),
                 run_embedded: false,
@@ -85,6 +85,9 @@ impl Runtime {
             .map_err(|err| Error::EmbeddedNodeError)?;
 
         thread::sleep(time::Duration::from_secs(1));
+        debug!("RGB node runtime has successfully connected");
+
+        info!("MyCitadel runtime started successfully");
 
         Ok(Self {
             config,
@@ -165,9 +168,11 @@ impl Runtime {
             Request::AddIdentity(identity) => {
                 self.storage.add_identity(identity).map(|_| Reply::Success)
             }
-            Request::AddAsset(genesis) => {
-                unimplemented!()
-            }
+            Request::ImportAsset(genesis) => self
+                .rgb20_client
+                .import_asset(genesis)
+                .map_err(|_| storage::Error::Remote)
+                .map(|asset| Reply::Asset(asset)),
         }
         .map_err(Error::from)
         .map_err(Error::into)

@@ -15,22 +15,22 @@ use clap::{AppSettings, Clap, ValueHint};
 use internet2::ZmqSocketAddr;
 use lnpbp::Chain;
 use microservices::FileFormat;
-use std::fs;
 use std::path::PathBuf;
 
 #[cfg(any(target_os = "linux"))]
-pub const MYCITADEL_DATA_DIR: &'static str = "~/.mycitadel";
+pub const MYCITADEL_DATA_DIR: &'static str = "~/.mycitadel/{network}";
 #[cfg(any(target_os = "freebsd", target_os = "openbsd", target_os = "netbsd"))]
-pub const MYCITADEL_DATA_DIR: &'static str = "~/.mycitadel";
+pub const MYCITADEL_DATA_DIR: &'static str = "~/.mycitadel/{network}";
 #[cfg(target_os = "macos")]
 pub const MYCITADEL_DATA_DIR: &'static str =
-    "~/Library/Application Support/MyCitadel";
+    "~/Library/Application Support/MyCitadel/{network}";
 #[cfg(target_os = "windows")]
-pub const MYCITADEL_DATA_DIR: &'static str = "~\\AppData\\Local\\MyCitadel";
+pub const MYCITADEL_DATA_DIR: &'static str =
+    "~\\AppData\\Local\\MyCitadel\\{network}";
 #[cfg(target_os = "ios")]
-pub const MYCITADEL_DATA_DIR: &'static str = "~/Documents";
+pub const MYCITADEL_DATA_DIR: &'static str = "~/Documents/{network}";
 #[cfg(target_os = "android")]
-pub const MYCITADEL_DATA_DIR: &'static str = ".";
+pub const MYCITADEL_DATA_DIR: &'static str = "./{network}";
 
 pub const MYCITADEL_CONFIG: &'static str = "{data_dir}/mycitadeld.toml";
 #[cfg(feature = "serde_yaml")]
@@ -102,32 +102,4 @@ pub struct Opts {
         value_hint = ValueHint::FilePath
     )]
     pub config: String,
-}
-
-impl Opts {
-    pub fn process(&mut self) {
-        self.data_dir = PathBuf::from(
-            shellexpand::tilde(&self.data_dir.to_string_lossy().to_string())
-                .to_string(),
-        );
-        fs::create_dir_all(&self.data_dir)
-            .expect("Unable to access data directory");
-
-        let me = self.clone();
-
-        match self.shared.rpc_endpoint {
-            ZmqSocketAddr::Ipc(ref mut path) => {
-                me.process_dir(path);
-            }
-            _ => {}
-        }
-
-        me.process_dir(&mut self.config);
-    }
-
-    pub fn process_dir(&self, path: &mut String) {
-        *path = path.replace("{data_dir}", &self.data_dir.to_string_lossy());
-        *path = path.replace("{network}", &self.chain.to_string());
-        *path = shellexpand::tilde(path).to_string();
-    }
 }

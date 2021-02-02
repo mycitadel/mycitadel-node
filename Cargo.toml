@@ -138,5 +138,5 @@ zeromq-src = { git = "https://github.com/LNP-BP/zeromq-src-rs", branch = "fix/cm
 
 [workspace]
 members = [".", "libmycitadel"]
-default-members = ["."]
+default-members = [".", "libmycitadel"]
 exclude = ["shell"]

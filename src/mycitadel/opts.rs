@@ -33,9 +33,3 @@ pub struct Opts {
     #[clap(subcommand)]
     pub command: Command,
 }
-
-impl Opts {
-    pub fn process(&mut self) {
-        self.daemon.process()
-    }
-}

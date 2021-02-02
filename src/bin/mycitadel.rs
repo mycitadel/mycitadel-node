@@ -36,14 +36,17 @@ use mycitadel::{daemon, EmbeddedOpts, Error};
 fn main() -> Result<(), Error> {
     println!("mycitadel: command-line runtime");
 
-    let mut opts = EmbeddedOpts::parse();
+    let opts = EmbeddedOpts::parse();
     LogLevel::from_verbosity_flag_count(opts.daemon.shared.verbose).apply();
 
     trace!("Command-line arguments: {:#?}", &opts);
-    opts.process();
-    trace!("Processed arguments: {:#?}", &opts);
 
-    let config = daemon::Config::from(opts.daemon);
+    let mut config = daemon::Config::from(opts.daemon);
+
+    trace!("Configuration: {:#?}", &config);
+    config.process();
+    trace!("Processed configuration: {:#?}", &config);
+
     let mut client =
         mycitadel::run_embedded(config).expect("Error initializing MyCitadel");
     opts.command.exec(&mut client)

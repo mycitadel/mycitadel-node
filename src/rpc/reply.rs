@@ -21,7 +21,7 @@ use crate::Error;
 #[cfg_attr(
     feature = "serde",
     derive(Serialize, Deserialize),
-    serde(crate = "serde_crate")
+    serde(crate = "serde_crate", untagged)
 )]
 #[derive(Clone, Debug, Display, Api)]
 #[strict_encoding_crate(lnpbp::strict_encoding)]
@@ -34,7 +34,6 @@ pub enum Reply {
 
     #[api(type = 0x0101)]
     #[display("failure({0})")]
-    #[cfg_attr(feature = "serde", serde(skip))]
     Failure(microservices::rpc::Failure),
 
     #[api(type = 0x0200)]
@@ -42,6 +41,10 @@ pub enum Reply {
     Wallets(Vec<WalletContract>),
 
     #[api(type = 0x0201)]
+    #[display("asset({0})")]
+    Asset(rgb20::Asset),
+
+    #[api(type = 0x0202)]
     #[display("assets(...)")]
     Assets(Vec<rgb20::Asset>),
 

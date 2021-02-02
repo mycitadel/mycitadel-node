@@ -39,16 +39,12 @@ fn main() {
         "mycitadel-cli: command-line tool for working with MyCitadel node"
     );
 
-    let mut opts = Opts::parse();
+    let opts = Opts::parse();
     LogLevel::from_verbosity_flag_count(opts.shared.verbose).apply();
-
     trace!("Command-line arguments: {:#?}", &opts);
-    opts.process();
-    trace!("Processed arguments: {:#?}", &opts);
 
     let config: Config = opts.clone().into();
     trace!("Tool configuration: {:#?}", &config);
-    debug!("RPC API socket {}", &config.rpc_endpoint);
 
     let mut client = Client::with(config).expect("Error initializing client");
 
