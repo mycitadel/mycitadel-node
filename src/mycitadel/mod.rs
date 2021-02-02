@@ -23,6 +23,7 @@ use microservices::FileFormat;
 use crate::client::{self, Client};
 use crate::daemon;
 use crate::Error;
+use microservices::node::TryService;
 
 pub fn run_embedded(mut config: daemon::Config) -> Result<Client, Error> {
     trace!("MyCitadel runtime configuration: {:#?}", &config);
@@ -36,30 +37,44 @@ pub fn run_embedded(mut config: daemon::Config) -> Result<Client, Error> {
     let verbose = config.verbose;
     let electrum_server = config.electrum_server.clone();
     let rgb20_endpoint = config.rgb20_endpoint.clone();
+    let stash_endpoint = ZmqSocketAddr::Inproc(s!("stash.rpc"));
+    let stash = format!("{data_dir}/stash/", data_dir = data_dir_str);
+    let cache = format!("{data_dir}/", data_dir = data_dir_str);
+    let index = format!("{data_dir}/index.dat", data_dir = data_dir_str);
 
     debug!("Launching RGB node embedded runtime...");
-    thread::spawn(move || {
-        rgb_node::rgbd::main_with_config(rgb_node::rgbd::Config {
-            data_dir,
-            bin_dir: none!(),
-            threaded: true,
-            contracts: vec![rgb_node::rgbd::ContractName::Fungible],
-            network,
+    let stashd = rgb_node::stashd::Runtime::init(rgb_node::stashd::Config {
+        verbose,
+        data_dir: data_dir.clone(),
+        stash: stash.clone(),
+        index: index.clone(),
+        rpc_endpoint: stash_endpoint.clone(),
+        network: network.clone(),
+        electrum_server: electrum_server.clone(),
+        ..default!()
+    })
+    .expect("Error launching RGB node stashd thread");
+
+    let rgb20d =
+        rgb_node::fungibled::Runtime::init(rgb_node::fungibled::Config {
             verbose,
-            fungible_rpc_endpoint: rgb20_endpoint,
-            stash_rpc_endpoint: ZmqSocketAddr::Inproc(s!("stash.rpc")),
-            format: FileFormat::Json,
-            cache: format!("{data_dir}/cache/rgb20/", data_dir = data_dir_str),
-            stash: format!("{data_dir}/stash/", data_dir = data_dir_str),
-            index: format!(
-                "{data_dir}/stash/index.dat",
-                data_dir = data_dir_str
-            ),
-            electrum_server,
+            data_dir,
+            cache,
+            format: FileFormat::Yaml,
+            rpc_endpoint: rgb20_endpoint,
+            stash_rpc: stash_endpoint,
+            network,
         })
-        .expect("Error in RGB node runtime");
-        debug!("RGB node embedded runtime has successfully started");
+        .expect("Error launching RGB node fungibled thread");
+
+    thread::spawn(move || {
+        stashd.run_or_panic("stashd");
     });
+
+    thread::spawn(move || {
+        rgb20d.run_or_panic("fungibled");
+    });
+    debug!("RGB node embedded runtime has successfully started");
 
     let rpc_endpoint = config.rpc_endpoint.clone();
     thread::spawn(move || {

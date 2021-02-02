@@ -51,12 +51,8 @@ impl Config {
     pub fn storage_conf(&self) -> storage::file::FileConfig {
         let format = FileFormat::Yaml;
 
-        let mut data_filename = self.data_dir.clone();
-        data_filename.push("citadel");
-        data_filename.set_extension(format.extension());
-
         storage::file::FileConfig {
-            location: data_filename.to_string_lossy().to_string(),
+            location: self.data_dir.to_string_lossy().to_string(),
             format,
         }
     }
@@ -86,6 +82,9 @@ impl Config {
             .expect("Unable to access data directory");
 
         let me = self.clone();
+        let mut data_dir = self.data_dir.to_string_lossy().into_owned();
+        self.process_dir(&mut data_dir);
+        self.data_dir = PathBuf::from(data_dir);
 
         for dir in vec![&mut self.rpc_endpoint, &mut self.rgb20_endpoint] {
             match dir {

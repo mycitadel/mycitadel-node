@@ -45,7 +45,7 @@ fn main() {
 
     trace!("Daemon configuration: {:#?}", &config);
     config.process();
-    trace!("Processed configuration: {:#?}", &opts);
+    trace!("Processed configuration: {:#?}", &config);
 
     /*
     use self::internal::ResultExt;

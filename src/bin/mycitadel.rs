@@ -41,11 +41,7 @@ fn main() -> Result<(), Error> {
 
     trace!("Command-line arguments: {:#?}", &opts);
 
-    let mut config = daemon::Config::from(opts.daemon);
-
-    trace!("Configuration: {:#?}", &config);
-    config.process();
-    trace!("Processed configuration: {:#?}", &config);
+    let config = daemon::Config::from(opts.daemon);
 
     let mut client =
         mycitadel::run_embedded(config).expect("Error initializing MyCitadel");

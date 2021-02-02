@@ -14,7 +14,7 @@
 //! File storage driver
 
 use std::io::{Read, Seek, Write};
-use std::path::Path;
+use std::path::PathBuf;
 use std::{fs, io};
 
 use lnpbp::strict_encoding::{StrictDecode, StrictEncode};
@@ -51,18 +51,27 @@ pub struct FileConfig {
     pub format: FileFormat,
 }
 
+impl FileConfig {
+    pub fn filename(&self) -> PathBuf {
+        let mut filename = PathBuf::from(self.location.clone());
+        filename.push("citadel");
+        filename.set_extension(self.format.extension());
+        filename
+    }
+}
+
 impl FileDriver {
     pub fn with(config: FileConfig) -> Result<Self, Error> {
-        info!(
-            "Initializing file driver for data in {:?}",
-            &config.location
-        );
-        let exists = Path::new(&config.location).exists();
+        info!("Initializing file driver for data in {}", &config.location);
+        fs::create_dir_all(&config.location);
+
+        let filename = config.filename();
+        let exists = filename.exists();
         let fd = fs::OpenOptions::new()
             .read(true)
             .write(true)
             .create(!exists)
-            .open(&config.location)?;
+            .open(&filename)?;
         let mut me = Self {
             fd,
             config: config.clone(),
@@ -70,7 +79,8 @@ impl FileDriver {
         };
         if !exists {
             warn!(
-                "Data file does not exist: initializing empty citadel storage"
+                "Data file `{:?}` does not exist: initializing empty citadel storage",
+                filename
             );
             me.store()?;
         }
@@ -78,7 +88,7 @@ impl FileDriver {
     }
 
     fn load(&mut self) -> Result<(), Error> {
-        debug!("Loading data from {}", self.config.location);
+        debug!("Loading data from `{:?}`", self.config.filename());
         self.fd.seek(io::SeekFrom::Start(0))?;
         trace!("Parsing data (expected format {})", self.config.format);
         self.data = match self.config.format {
@@ -101,8 +111,9 @@ impl FileDriver {
 
     fn store(&mut self) -> Result<(), Error> {
         debug!(
-            "Storing data to the file {} in {} format",
-            self.config.location, self.config.format
+            "Storing data to the file `{:?}` in {} format",
+            self.config.filename(),
+            self.config.format
         );
         self.fd.seek(io::SeekFrom::Start(0))?;
         self.fd.set_len(0)?;
