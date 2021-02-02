@@ -43,9 +43,11 @@ pub const BECH32_LNPBP_INVOICE: c_int = 0x0210;
 
 pub const BECH32_RGB_SCHEMA_ID: c_int = 0x0300;
 pub const BECH32_RGB_CONTRACT_ID: c_int = 0x0301;
-pub const BECH32_RGB_SCHEMA: c_int = 0x0302;
-pub const BECH32_RGB_GENESIS: c_int = 0x0303;
-pub const BECH32_RGB_CONSIGNMENT: c_int = 0x0304;
+pub const BECH32_RGB_SCHEMA: c_int = 0x0310;
+pub const BECH32_RGB_GENESIS: c_int = 0x0311;
+pub const BECH32_RGB_CONSIGNMENT: c_int = 0x0320;
+
+pub const BECH32_RGB20_ASSET: c_int = 0x0320;
 
 #[allow(non_camel_case_types)]
 #[repr(C)]
@@ -121,9 +123,11 @@ impl From<Error> for bech32_info_t {
 #[no_mangle]
 pub extern "C" fn lnpbp_bech32_info(bech_str: *const c_char) -> bech32_info_t {
     match Bech32::from_str(&ptr_to_string(bech_str)) {
-        Ok(Bech32::Genesis(genesis)) => Asset::try_from(genesis)
-            .map(|asset| bech32_info_t::with_value(BECH32_RGB_GENESIS, &asset))
-            .unwrap_or_else(|_| bech32_info_t::with_wrong_payload()),
+        Ok(Bech32::Genesis(genesis)) => Asset::try_from(genesis.clone())
+            .map(|asset| bech32_info_t::with_value(BECH32_RGB20_ASSET, &asset))
+            .unwrap_or_else(|_| {
+                bech32_info_t::with_value(BECH32_RGB_GENESIS, &genesis)
+            }),
         Ok(_) => bech32_info_t::unsuported(),
         Err(err) => bech32_info_t::from(err),
     }

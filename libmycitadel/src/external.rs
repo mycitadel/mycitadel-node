@@ -77,7 +77,7 @@ pub extern "C" fn mycitadel_import_asset(
         unsafe { client.as_mut().expect("Wrong MyCitadel client pointer") };
     let genesis_b32 = ptr_to_string(genesis_b32);
     match rgb::Genesis::from_str(&genesis_b32) {
-        Ok(genesis) => client.call(rpc::Request::AddAsset(genesis)),
+        Ok(genesis) => client.call(rpc::Request::ImportAsset(genesis)),
         Err(err) => {
             client.set_error_details(
                 ERRNO_BECH32,

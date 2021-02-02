@@ -94,6 +94,11 @@ impl mycitadel_client_t {
         self.set_error_details(err_no, &err.to_string());
     }
 
+    pub(crate) fn set_failure(&mut self, failure: microservices::rpc::Failure) {
+        self.err_no = ERRNO_SERVERFAIL;
+        self.message = failure.to_string().to_char_ptr();
+    }
+
     pub(crate) fn is_ok(&self) -> bool {
         self.inner.is_null() && self.err_no == SUCCESS
     }
@@ -110,26 +115,33 @@ impl mycitadel_client_t {
             }
             Some(inner) => inner,
         };
-        match inner.request(request.clone()) {
-            Err(err) => {
+        inner
+            .request(request)
+            .map_err(|err| {
                 self.set_error(err);
-                ptr::null()
-            }
-            Ok(result) => {
-                if let Ok(json) = serde_json::to_string(&result) {
+                ()
+            })
+            .and_then(|reply| {
+                if let rpc::Reply::Failure(failure) = reply {
+                    self.set_failure(failure);
+                    Err(())
+                } else {
+                    Ok(reply)
+                }
+            })
+            .map(|result| match serde_json::to_string(&result) {
+                Ok(json) => {
                     self.set_success();
                     json.to_char_ptr()
-                } else {
+                }
+                Err(err) => {
                     self.set_error_details(
                         ERRNO_JSON,
-                        &format!(
-                            "Unable to JSON-encode response for the call {}",
-                            request
-                        ),
+                        &format!("Unable to JSON-encode response: {}", err),
                     );
                     ptr::null()
                 }
-            }
-        }
+            })
+            .unwrap_or(ptr::null())
     }
 }
