@@ -11,11 +11,14 @@
 // along with this software.
 // If not, see <https://www.gnu.org/licenses/agpl-3.0-standalone.html>.
 
+use std::str::FromStr;
+
 use internet2::zmqsocket::{self, ZmqType};
 use internet2::{
     session, CreateUnmarshaller, PlainTranscoder, Session, TypedEnum,
     Unmarshall, Unmarshaller,
 };
+use rgb::Genesis;
 
 use super::Config;
 use crate::data::WalletContract;
@@ -74,5 +77,16 @@ impl Client {
 
     pub fn asset_list(&mut self) -> Result<Reply, Error> {
         self.request(Request::ListAssets)
+    }
+
+    pub fn asset_import(
+        &mut self,
+        genesis1bech: String,
+    ) -> Result<Reply, Error> {
+        let genesis = Genesis::from_str(&genesis1bech).map_err(|err| {
+            error!("Wrong genesis data: {}", err);
+            Error::EmbeddedNodeError
+        })?;
+        self.request(Request::ImportAsset(genesis))
     }
 }

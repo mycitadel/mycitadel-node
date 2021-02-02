@@ -25,6 +25,9 @@ _mycitadel() {
             help)
                 cmd+="__help"
                 ;;
+            import)
+                cmd+="__import"
+                ;;
             list)
                 cmd+="__list"
                 ;;
@@ -102,8 +105,23 @@ _mycitadel() {
             ;;
         
         mycitadel__asset)
-            opts=" -v -h -V  --verbose --help --version  list"
+            opts=" -v -h -V  --verbose --help --version  list import"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        mycitadel__asset__import)
+            opts=" -v -h -V  --verbose --help --version  <genesis> "
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
             fi

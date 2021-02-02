@@ -111,6 +111,17 @@ impl Exec for AssetCommand {
                             .expect("Error presenting data as YAML")
                     );
                 }),
+            AssetCommand::Import { genesis } => client
+                .asset_import(genesis)?
+                .report_error("importing asset")
+                .map(|reply| {
+                    eprintln!("Asset succesfully imported:");
+                    println!(
+                        "{}",
+                        serde_yaml::to_string(&reply)
+                            .expect("Error presenting data as YAML")
+                    )
+                }),
         }
     }
 }

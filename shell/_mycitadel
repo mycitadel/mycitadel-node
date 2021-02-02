@@ -135,6 +135,17 @@ _arguments "${_arguments_options[@]}" \
 '--version[Prints version information]' \
 && ret=0
 ;;
+(import)
+_arguments "${_arguments_options[@]}" \
+'*-v[Set verbosity level]' \
+'*--verbose[Set verbosity level]' \
+'-h[Prints help information]' \
+'--help[Prints help information]' \
+'-V[Prints version information]' \
+'--version[Prints version information]' \
+':genesis -- Bech32-representation of the asset genesis (string starting with `genesis1....`:' \
+&& ret=0
+;;
         esac
     ;;
 esac
@@ -165,6 +176,7 @@ _mycitadel_commands() {
 _mycitadel__asset_commands() {
     local commands; commands=(
         "list:Lists known assets" \
+"import:Import asset genesis data" \
     )
     _describe -t commands 'mycitadel asset commands' commands "$@"
 }
@@ -188,6 +200,13 @@ _mycitadel__help_commands() {
         
     )
     _describe -t commands 'mycitadel help commands' commands "$@"
+}
+(( $+functions[_mycitadel__asset__import_commands] )) ||
+_mycitadel__asset__import_commands() {
+    local commands; commands=(
+        
+    )
+    _describe -t commands 'mycitadel asset import commands' commands "$@"
 }
 (( $+functions[_mycitadel__asset__list_commands] )) ||
 _mycitadel__asset__list_commands() {

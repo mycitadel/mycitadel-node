@@ -101,4 +101,13 @@ pub enum AssetCommand {
     /// Lists known assets
     #[display("list")]
     List,
+
+    /// Import asset genesis data
+    #[display("import")]
+    Import {
+        /// Bech32-representation of the asset genesis (string starting with
+        /// `genesis1....`
+        #[clap()]
+        genesis: String,
+    },
 }

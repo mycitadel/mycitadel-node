@@ -83,6 +83,6 @@ pub enum Error {
     #[from(toml::ser::Error)]
     TomlEncoding,
 
-    /// Error by remote storage
+    /// Error by remote RGB runtime
     Remote,
 }
