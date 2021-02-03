@@ -10,10 +10,16 @@
 		304DE85825C6F8B9008FE0A4 /* MyCitadelKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 304DE84E25C6F8B9008FE0A4 /* MyCitadelKit.framework */; };
 		304DE85D25C6F8B9008FE0A4 /* MyCitadelKitTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 304DE85C25C6F8B9008FE0A4 /* MyCitadelKitTests.swift */; };
 		304DE85F25C6F8B9008FE0A4 /* MyCitadelKit.h in Headers */ = {isa = PBXBuildFile; fileRef = 304DE85125C6F8B9008FE0A4 /* MyCitadelKit.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		304DE86F25C6F927008FE0A4 /* MyCitadelKit.swift in Sources */ = {isa = PBXBuildFile; fileRef = 304DE86E25C6F927008FE0A4 /* MyCitadelKit.swift */; };
+		304DE86F25C6F927008FE0A4 /* MyCitadelClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 304DE86E25C6F927008FE0A4 /* MyCitadelClient.swift */; };
 		304DE87E25C6FB82008FE0A4 /* libmycitadel.h in Headers */ = {isa = PBXBuildFile; fileRef = 304DE87D25C6FB82008FE0A4 /* libmycitadel.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		304DE93625C726E0008FE0A4 /* libmycitadel.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 304DE93525C726E0008FE0A4 /* libmycitadel.a */; };
 		304DE93C25C72736008FE0A4 /* libc++.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 304DE93B25C72736008FE0A4 /* libc++.tbd */; };
+		304DE97225C8C1F1008FE0A4 /* Bech32Info.swift in Sources */ = {isa = PBXBuildFile; fileRef = 304DE97125C8C1F0008FE0A4 /* Bech32Info.swift */; };
+		304DE97325C8C1F1008FE0A4 /* Bech32Info.swift in Sources */ = {isa = PBXBuildFile; fileRef = 304DE97125C8C1F0008FE0A4 /* Bech32Info.swift */; };
+		57C7C00FE0A1ECD984D19C56 /* Bitcoin.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57C7CD9E08CCCC838A9E8A29 /* Bitcoin.swift */; };
+		57C7C3DDA30D07DB05BC3D75 /* Bitcoin.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57C7CD9E08CCCC838A9E8A29 /* Bitcoin.swift */; };
+		57C7CC0AF0BD862C9CD81D3D /* RGB20.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57C7CD23C103A8CD23E4762D /* RGB20.swift */; };
+		57C7CF2A1EAD8DD103E53E8B /* RGB20.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57C7CD23C103A8CD23E4762D /* RGB20.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -33,10 +39,13 @@
 		304DE85725C6F8B9008FE0A4 /* MyCitadelKitTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = MyCitadelKitTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		304DE85C25C6F8B9008FE0A4 /* MyCitadelKitTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MyCitadelKitTests.swift; sourceTree = "<group>"; };
 		304DE85E25C6F8B9008FE0A4 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		304DE86E25C6F927008FE0A4 /* MyCitadelKit.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MyCitadelKit.swift; sourceTree = "<group>"; };
+		304DE86E25C6F927008FE0A4 /* MyCitadelClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MyCitadelClient.swift; sourceTree = "<group>"; };
 		304DE87D25C6FB82008FE0A4 /* libmycitadel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = libmycitadel.h; path = ../../../libmycitadel/libmycitadel.h; sourceTree = "<group>"; };
 		304DE93525C726E0008FE0A4 /* libmycitadel.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libmycitadel.a; path = ../../target/universal/release/libmycitadel.a; sourceTree = "<group>"; };
 		304DE93B25C72736008FE0A4 /* libc++.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = "libc++.tbd"; path = "usr/lib/libc++.tbd"; sourceTree = SDKROOT; };
+		304DE97125C8C1F0008FE0A4 /* Bech32Info.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Bech32Info.swift; sourceTree = "<group>"; };
+		57C7CD23C103A8CD23E4762D /* RGB20.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RGB20.swift; sourceTree = "<group>"; };
+		57C7CD9E08CCCC838A9E8A29 /* Bitcoin.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Bitcoin.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -85,7 +94,10 @@
 				304DE87D25C6FB82008FE0A4 /* libmycitadel.h */,
 				304DE85125C6F8B9008FE0A4 /* MyCitadelKit.h */,
 				304DE85225C6F8B9008FE0A4 /* Info.plist */,
-				304DE86E25C6F927008FE0A4 /* MyCitadelKit.swift */,
+				304DE86E25C6F927008FE0A4 /* MyCitadelClient.swift */,
+				304DE97125C8C1F0008FE0A4 /* Bech32Info.swift */,
+				57C7CD23C103A8CD23E4762D /* RGB20.swift */,
+				57C7CD9E08CCCC838A9E8A29 /* Bitcoin.swift */,
 			);
 			path = MyCitadelKit;
 			sourceTree = "<group>";
@@ -240,7 +252,10 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				304DE86F25C6F927008FE0A4 /* MyCitadelKit.swift in Sources */,
+				304DE86F25C6F927008FE0A4 /* MyCitadelClient.swift in Sources */,
+				304DE97225C8C1F1008FE0A4 /* Bech32Info.swift in Sources */,
+				57C7CF2A1EAD8DD103E53E8B /* RGB20.swift in Sources */,
+				57C7C00FE0A1ECD984D19C56 /* Bitcoin.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -249,6 +264,9 @@
 			buildActionMask = 2147483647;
 			files = (
 				304DE85D25C6F8B9008FE0A4 /* MyCitadelKitTests.swift in Sources */,
+				304DE97325C8C1F1008FE0A4 /* Bech32Info.swift in Sources */,
+				57C7CC0AF0BD862C9CD81D3D /* RGB20.swift in Sources */,
+				57C7C3DDA30D07DB05BC3D75 /* Bitcoin.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

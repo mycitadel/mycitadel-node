@@ -1,17 +1,11 @@
 //
-//  MyCitadelKit.swift
+//  MyCitadelClient.swift
 //  MyCitadelKit
 //
 //  Created by Maxim Orlovsky on 1/31/21.
 //
 
 import Foundation
-
-public enum Network: String {
-    case Mainnet = "mainnet"
-    case Testnet = "testnet"
-    case Signet = "signet"
-}
 
 public struct MyCitadelError: Error {
     let errNo: Int
@@ -28,32 +22,36 @@ public struct MyCitadelError: Error {
     }
 }
 
-public struct Asset: Decodable {
-    public let id: String
-    public let ticker: String
-    public let name: String
-    public let description: String?
-    public let fractionalBits: Int8
+extension MyCitadelError: CustomStringConvertible {
+    public var description: String {
+        self.message
+    }
+}
+
+extension MyCitadelError: LocalizedError {
+    public var errorDescription: String? {
+        self.message
+    }
 }
 
 open class MyCitadelClient {
-    let network: Network
+    let network: BitcoinNetwork
     let dataDir: String
     private var client: UnsafeMutablePointer<mycitadel_client_t>!
     
-    private init(network: Network = .Signet, electrumServer: String = "pandora.network:60001") {
+    private init(network: BitcoinNetwork = .Signet, electrumServer: String = "pandora.network:60001") {
         self.network = network
-        self.dataDir = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!.path
+        self.dataDir = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!.appendingPathComponent(network.rawValue).path
 
         self.client = mycitadel_run_embedded(network.rawValue, self.dataDir, electrumServer)
     }
     
     private static var _shared: MyCitadelClient? = nil
-    public static var shared: MyCitadelClient? {
+    public static var shared: MyCitadelClient! {
         get { Self._shared }
     }
     
-    public static func run(network: Network = .Signet, electrumServer: String = "pandora.network:60001") throws {
+    public static func run(network: BitcoinNetwork = .Signet, electrumServer: String = "pandora.network:60001") throws {
         if Self._shared == nil {
             Self._shared = MyCitadelClient(network: network, electrumServer: electrumServer)
         } else {
@@ -79,13 +77,13 @@ open class MyCitadelClient {
         return Data(String(cString: json).utf8)
     }
     
-    public func refreshAssets() throws -> [Asset] {
+    public func refreshAssets() throws -> [RGB20Asset] {
         let response = mycitadel_list_assets(client);
-        return try JSONDecoder().decode([Asset].self, from: self.processResponse(response))
+        return try JSONDecoder().decode([RGB20Asset].self, from: self.processResponse(response))
     }
     
-    public func importAsset(bech32 genesis: String) throws -> Asset {
+    public func importAsset(bech32 genesis: String) throws -> RGB20Asset {
         let response = mycitadel_import_asset(client, genesis);
-        return try JSONDecoder().decode(Asset.self, from: self.processResponse(response))
+        return try JSONDecoder().decode(RGB20Asset.self, from: self.processResponse(response))
     }
 }
