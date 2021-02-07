@@ -11,18 +11,23 @@
 // along with this software.
 // If not, see <https://www.gnu.org/licenses/agpl-3.0-standalone.html>.
 
-pub mod identity;
-pub mod signer;
-pub mod wallet;
+mod contract;
+mod operation;
+mod policy;
+mod state;
+mod util;
 
-pub use self::wallet::{Wallet, WalletContract, WalletId};
-pub use signer::SignerId;
+pub use contract::*;
+pub use operation::*;
+pub use policy::*;
+pub use state::*;
+pub use util::*;
 
 // -----------------------------------------------------------------------------
 
 use std::collections::BTreeMap;
 
-use crate::rpc::message::{IdentityInfo, SignerAccount};
+use crate::rpc::message::IdentityInfo;
 
 #[cfg_attr(
     feature = "serde",
@@ -30,10 +35,8 @@ use crate::rpc::message::{IdentityInfo, SignerAccount};
     serde(crate = "serde_crate")
 )]
 #[derive(Clone, PartialEq, Debug, Default, StrictEncode, StrictDecode)]
-#[strict_encoding_crate(lnpbp::strict_encoding)]
-pub struct Data {
-    pub wallets: BTreeMap<WalletId, Wallet>,
-    pub signers: BTreeMap<SignerId, SignerAccount>,
+pub struct Wallet {
+    pub contracts: BTreeMap<ContractId, Contract>,
     pub identities: BTreeMap<rgb::ContractId, IdentityInfo>,
     pub assets: BTreeMap<rgb::ContractId, rgb20::Asset>,
 }

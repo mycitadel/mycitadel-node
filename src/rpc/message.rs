@@ -17,7 +17,18 @@ use std::io;
 use std::ops::RangeInclusive;
 
 use lnpbp::strict_encoding::{self, StrictDecode, StrictEncode};
+use wallet::bip32::PubkeyChain;
 use wallet::descriptor;
+
+#[derive(
+    Clone, Eq, PartialEq, Hash, Debug, Display, StrictEncode, StrictDecode,
+)]
+#[display("{category}({pubkey_chain})")]
+pub struct CreateSingleSig {
+    pub name: String,
+    pub pubkey_chain: PubkeyChain,
+    pub category: descriptor::OuterCategory,
+}
 
 #[cfg_attr(
     feature = "serde",

@@ -21,14 +21,14 @@ use lnpbp::strict_encoding::{StrictDecode, StrictEncode};
 use microservices::FileFormat;
 
 use super::{Driver, Error};
-use crate::data::{Data, Wallet, WalletContract};
+use crate::model::{Contract, Wallet};
 use crate::rpc::message::{IdentityInfo, SignerAccount};
 
 #[derive(Debug)]
 pub struct FileDriver {
     fd: fs::File,
     config: FileConfig,
-    data: Data,
+    data: Wallet,
 }
 
 #[derive(
@@ -44,7 +44,6 @@ pub struct FileDriver {
     StrictEncode,
     StrictDecode,
 )]
-#[strict_encoding_crate(lnpbp::strict_encoding)]
 #[serde(crate = "serde_crate")]
 pub struct FileConfig {
     pub location: String,
@@ -92,7 +91,7 @@ impl FileDriver {
         self.fd.seek(io::SeekFrom::Start(0))?;
         trace!("Parsing data (expected format {})", self.config.format);
         self.data = match self.config.format {
-            FileFormat::StrictEncode => Data::strict_decode(&mut self.fd)?,
+            FileFormat::StrictEncode => Wallet::strict_decode(&mut self.fd)?,
             #[cfg(feature = "serde_yaml")]
             FileFormat::Yaml => serde_yaml::from_reader(&mut self.fd)?,
             #[cfg(feature = "toml")]
@@ -142,19 +141,12 @@ impl FileDriver {
 }
 
 impl Driver for FileDriver {
-    fn wallets(&self) -> Result<Vec<WalletContract>, Error> {
-        Ok(self
-            .data
-            .wallets
-            .values()
-            .map(Wallet::contract)
-            .cloned()
-            .collect())
+    fn contracts(&self) -> Result<Vec<Contract>, Error> {
+        Ok(self.data.contracts.values().cloned().collect())
     }
 
-    fn add_wallet(&mut self, contract: WalletContract) -> Result<(), Error> {
-        let wallet = Wallet::with(contract);
-        self.data.wallets.insert(*wallet.id(), wallet);
+    fn add_contract(&mut self, contract: Contract) -> Result<(), Error> {
+        self.data.contracts.insert(*contract.id(), contract);
         self.store()?;
         Ok(())
     }
@@ -163,7 +155,7 @@ impl Driver for FileDriver {
         unimplemented!()
     }
 
-    fn add_signer(&mut self, account: SignerAccount) -> Result<(), Error> {
+    fn add_signer(&mut self, _account: SignerAccount) -> Result<(), Error> {
         unimplemented!()
     }
 
@@ -171,7 +163,7 @@ impl Driver for FileDriver {
         unimplemented!()
     }
 
-    fn add_identity(&mut self, identity: IdentityInfo) -> Result<(), Error> {
+    fn add_identity(&mut self, _identity: IdentityInfo) -> Result<(), Error> {
         unimplemented!()
     }
 }

@@ -19,14 +19,12 @@ pub use file::{FileConfig, FileDriver};
 
 // -----------------------------------------------------------------------------
 
-use rgb::ContractId;
-
-use crate::data::{SignerId, WalletContract, WalletId};
+use crate::model::{self, Contract};
 use crate::rpc::message::{IdentityInfo, SignerAccount};
 
 pub trait Driver {
-    fn wallets(&self) -> Result<Vec<WalletContract>, Error>;
-    fn add_wallet(&mut self, contract: WalletContract) -> Result<(), Error>;
+    fn contracts(&self) -> Result<Vec<Contract>, Error>;
+    fn add_contract(&mut self, contract: Contract) -> Result<(), Error>;
 
     fn signers(&self) -> Result<Vec<SignerAccount>, Error>;
     fn add_signer(&mut self, account: SignerAccount) -> Result<(), Error>;
@@ -49,15 +47,11 @@ pub enum Error {
     ///
     /// Details on existing wallet: {0}
     #[from]
-    WalletExists(WalletId),
-
-    /// Signer with the provided id {0} already exists
-    #[from]
-    SignerExists(SignerId),
+    ContractExists(model::ContractId),
 
     /// Identity with the provided id {0} already exists
     #[from]
-    IdentityExists(ContractId),
+    IdentityExists(rgb::ContractId),
 
     /// Error in strict data encoding: {0}
     /// Make sure that the storage is not broken.

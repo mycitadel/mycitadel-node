@@ -19,9 +19,6 @@ _mycitadel-cli() {
             create)
                 cmd+="__create"
                 ;;
-            current)
-                cmd+="__current"
-                ;;
             help)
                 cmd+="__help"
                 ;;
@@ -30,6 +27,9 @@ _mycitadel-cli() {
                 ;;
             list)
                 cmd+="__list"
+                ;;
+            single-sig)
+                cmd+="__single__sig"
                 ;;
             wallet)
                 cmd+="__wallet"
@@ -156,7 +156,7 @@ _mycitadel-cli() {
             return 0
             ;;
         mycitadel__cli__wallet__create)
-            opts=" -v -h -V  --verbose --help --version  current"
+            opts=" -v -h -V  --verbose --help --version  single-sig list"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -170,18 +170,29 @@ _mycitadel-cli() {
             COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
             return 0
             ;;
-        mycitadel__cli__wallet__create__current)
-            opts=" -v -h -V  --variants --verbose --help --version  <name> <template> "
+        mycitadel__cli__wallet__create__list)
+            opts=" -v -h -V  --verbose --help --version  "
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 4 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
             fi
             case "${prev}" in
                 
-                --variants)
-                    COMPREPLY=($(compgen -f "${cur}"))
-                    return 0
+                *)
+                    COMPREPLY=()
                     ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        mycitadel__cli__wallet__create__single__sig)
+            opts=" -v -h -V  --bare --legacy --segwit --taproot --verbose --help --version  <name> <pubkey-chain> "
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 4 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                
                 *)
                     COMPREPLY=()
                     ;;

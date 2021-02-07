@@ -16,8 +16,8 @@ use microservices::shell::Exec;
 use wallet::descriptor;
 
 use super::{AssetCommand, Command, WalletCommand, WalletCreateCommand};
-use crate::data::WalletContract;
 use crate::rpc;
+use crate::rpc::Reply;
 use crate::{Client, Error};
 
 impl rpc::Reply {
@@ -53,7 +53,7 @@ impl Exec for WalletCommand {
         match self {
             WalletCommand::Create { subcommand } => subcommand.exec(client),
             WalletCommand::List => client
-                .wallet_list()?
+                .contract_list()?
                 .report_error("listing wallets")
                 .map(|reply| {
                     eprintln!("Known wallets:");
@@ -73,22 +73,52 @@ impl Exec for WalletCreateCommand {
 
     fn exec(self, client: &mut Self::Client) -> Result<(), Self::Error> {
         match self {
-            WalletCreateCommand::Current {
+            WalletCreateCommand::SingleSig {
                 name,
-                variants,
-                template,
+                pubkey_chain,
+                bare,
+                legacy,
+                segwit: _, // Default parameter, the actual value doesn't matter
+                taproot,
             } => {
-                let descriptor = descriptor::Generator { variants, template };
-                eprintln!("Creating current wallet with descriptor template generator {}", descriptor.to_string().yellow());
-                let contract = WalletContract::Current {
-                    name: name.clone(),
-                    descriptor: descriptor.clone(),
+                let category = if bare {
+                    descriptor::OuterCategory::Bare
+                } else if legacy {
+                    descriptor::OuterCategory::Hashed
+                } else if taproot {
+                    descriptor::OuterCategory::Taproot
+                } else {
+                    descriptor::OuterCategory::SegWit
                 };
-                let id = contract.id();
-                client.wallet_create_current(contract)?.report_error("during wallet creation").map(|_| {
-                    eprint!("Wallet named '{}' was successfully created.\nUse the following string as the wallet id: ", name.yellow().bold());
-                    println!("{}", id.to_string().bright_yellow());
-                })
+                eprintln!(
+                    "Creating single-sig {} wallet with public key generator {}",
+                    category.to_string().yellow(),
+                    pubkey_chain.to_string().yellow(),
+
+                );
+                client
+                    .create_single_sig(name, pubkey_chain, category)?
+                    .report_error("during wallet creation")
+                    .map(|reply| {
+                        match reply {
+                            Reply::Contract(contract) => {
+                                eprint!(
+                                    "Wallet named '{}' was successfully created.
+                                    Use the following string as the wallet id: ", 
+                                    contract.name().yellow().bold()
+                                );
+                                println!("{}", contract.id().to_string().bright_yellow());
+                            }
+                            _ => eprintln!(
+                                "Unexpected server response; please check that \
+                                the client version matches server"
+                            )
+                        }
+                    })
+            }
+
+            WalletCreateCommand::List => {
+                unimplemented!()
             }
         }
     }

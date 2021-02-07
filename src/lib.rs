@@ -53,7 +53,7 @@ pub mod rpc;
 pub mod client;
 #[cfg(feature = "node")]
 pub mod daemon;
-pub mod data;
+pub mod model;
 #[cfg(all(feature = "cli", feature = "node"))]
 mod mycitadel;
 #[cfg(feature = "node")]

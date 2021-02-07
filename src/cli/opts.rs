@@ -11,8 +11,8 @@
 // along with this software.
 // If not, see <https://www.gnu.org/licenses/agpl-3.0-standalone.html>.
 
-use clap::{AppSettings, Clap, ValueHint};
-use wallet::descriptor;
+use clap::{AppSettings, ArgGroup, Clap, ValueHint};
+use wallet::bip32::PubkeyChain;
 
 pub const MYCITADEL_CLI_CONFIG: &'static str = "{data_dir}/mycitadel-cli.toml";
 
@@ -80,20 +80,57 @@ pub enum WalletCommand {
 
 #[derive(Clap, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Debug, Display)]
 pub enum WalletCreateCommand {
-    /// Creates current wallet account
-    #[display("current {name} {template} --variants {variants}")]
-    Current {
+    /// Creates current single-sig wallet account
+    #[display("single-sig {name} {pubkey_chain}")]
+    #[clap(group = ArgGroup::new("descriptor").required(false))]
+    SingleSig {
         /// Wallet name
         #[clap()]
         name: String,
 
-        #[clap(long, default_value = "segwit")]
-        variants: descriptor::Variants,
-
+        /// Extended public key with derivation info.
+        ///
+        /// It should be a BIP32 derivation string which provides an extended
+        /// public key value at the level after which no hardened
+        /// derives is used. For instance,
+        /// `m/84'/0'=[xpub661MyMwAqRbcFtXgS5sYJABqqG9YLmC4Q1Rdap9gSE8NqtwybGhePY2gZ29ESFjqJoCu1Rupje8YtGqsefD265TMg7usUDFdp6W1EGMcet8]/*`,
+        /// or, simply
+        /// `[xpub661MyMwAqRbcFtXgS5sYJABqqG9YLmC4Q1Rdap9gSE8NqtwybGhePY2gZ29ESFjqJoCu1Rupje8YtGqsefD265TMg7usUDFdp6W1EGMcet8]/*`,
+        /// if you dont want your wallet to keep public key source information.
+        ///
+        /// You can use more advanced scenarios allowing full record of the
+        /// key origin and extending derivation paths with range values:
+        /// `![6734cda8]/84'/0'/1'
+        /// =[xpub661MyMwAqRbcFtXgS5sYJABqqG9YLmC4Q1Rdap9gSE8NqtwybGhePY2gZ29ESFjqJoCu1Rupje8YtGqsefD265TMg7usUDFdp6W1EGMcet8]/
+        /// 0-1/*`
         #[clap()]
-        /// Wallet descriptor template
-        template: descriptor::Template,
+        pubkey_chain: PubkeyChain,
+
+        /// Creates old "bare" wallets, where public key is kept in the
+        /// explicit form within bitcoin transaction P2PK output
+        #[clap(long, takes_value = false, group = "descriptor")]
+        bare: bool,
+
+        /// Whether create a pre-SegWit wallet (P2PKH) rather than SegWit
+        /// (P2WPKH). If you'd like to use legacy SegWit-style addresses
+        /// (P2WPKH-in-P2SH), do not use this flag, create normal
+        /// SegWit wallet instead and specify `--legacy` option when
+        /// requesting new address
+        #[clap(long, takes_value = false, group = "descriptor")]
+        legacy: bool,
+
+        /// Recommended SegWit wallet with P2WKH and P2WPKH-in-P2SH outputs
+        #[clap(long, takes_value = false, group = "descriptor")]
+        segwit: bool,
+
+        /// Reserved for the future taproot P2TR outputs
+        #[clap(long, takes_value = false, group = "descriptor")]
+        taproot: bool,
     },
+
+    /// Lists existing wallets
+    #[display("list")]
+    List,
 }
 
 #[derive(Clap, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Debug, Display)]

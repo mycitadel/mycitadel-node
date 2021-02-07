@@ -21,9 +21,10 @@ use internet2::{
 use rgb::Genesis;
 
 use super::Config;
-use crate::data::WalletContract;
-use crate::rpc::{Reply, Request};
+use crate::rpc::{message, Reply, Request};
 use crate::Error;
+use wallet::bip32::PubkeyChain;
+use wallet::descriptor::OuterCategory;
 
 #[repr(C)]
 pub struct Client {
@@ -64,15 +65,21 @@ impl Client {
 }
 
 impl Client {
-    pub fn wallet_list(&mut self) -> Result<Reply, Error> {
-        self.request(Request::ListWallets)
+    pub fn contract_list(&mut self) -> Result<Reply, Error> {
+        self.request(Request::ListContracts)
     }
 
-    pub fn wallet_create_current(
+    pub fn create_single_sig(
         &mut self,
-        contract: WalletContract,
+        name: String,
+        pubkey_chain: PubkeyChain,
+        category: OuterCategory,
     ) -> Result<Reply, Error> {
-        self.request(Request::AddWallet(contract))
+        self.request(Request::CreateSingleSig(message::CreateSingleSig {
+            name,
+            pubkey_chain,
+            category,
+        }))
     }
 
     pub fn asset_list(&mut self) -> Result<Reply, Error> {

@@ -13,17 +13,15 @@
 
 use rgb::Genesis;
 
-use super::message::{IdentityInfo, SignerAccount};
-use crate::data::WalletContract;
+use super::message::{CreateSingleSig, IdentityInfo, SignerAccount};
 
 #[derive(Clone, Debug, Display, Api)]
 #[api(encoding = "strict")]
-#[strict_encoding_crate(lnpbp::strict_encoding)]
 #[non_exhaustive]
 pub enum Request {
     #[api(type = 0x0010)]
-    #[display("list_wallets()")]
-    ListWallets,
+    #[display("list_contracts()")]
+    ListContracts,
 
     #[api(type = 0x0012)]
     #[display("list_identities()")]
@@ -34,8 +32,8 @@ pub enum Request {
     ListAssets,
 
     #[api(type = 0x0020)]
-    #[display("add_wallet({0})")]
-    AddWallet(WalletContract),
+    #[display("create_single_sig({0})")]
+    CreateSingleSig(CreateSingleSig),
 
     #[api(type = 0x0030)]
     #[display("add_signing({0})")]

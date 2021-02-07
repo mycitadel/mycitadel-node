@@ -11,8 +11,6 @@
 // along with this software.
 // If not, see <https://www.gnu.org/licenses/agpl-3.0-standalone.html>.
 
-use std::{thread, time};
-
 use internet2::zmqsocket::{self, ZmqType};
 use internet2::ZmqSocketAddr;
 use internet2::{
@@ -25,8 +23,10 @@ use microservices::FileFormat;
 use rgb20::Asset;
 use rgb_node::rpc::reply::SyncFormat;
 use rgb_node::util::ToBech32Data;
+use wallet::descriptor::ContractDescriptor;
 
 use super::Config;
+use crate::model::{Contract, Policy};
 use crate::rpc::{Reply, Request};
 use crate::storage::{self, Driver, FileDriver};
 use crate::Error;
@@ -82,9 +82,8 @@ impl Runtime {
                 network: config.chain.clone(),
                 run_embedded: false,
             })
-            .map_err(|err| Error::EmbeddedNodeError)?;
+            .map_err(|_| Error::EmbeddedNodeError)?;
 
-        thread::sleep(time::Duration::from_secs(1));
         debug!("RGB node runtime has successfully connected");
 
         info!("MyCitadel runtime started successfully");
@@ -143,8 +142,8 @@ impl Runtime {
             message
         );
         match message {
-            Request::ListWallets => {
-                self.storage.wallets().map(|list| Reply::Wallets(list))
+            Request::ListContracts => {
+                self.storage.contracts().map(|list| Reply::Contracts(list))
             }
             Request::ListIdentities => self
                 .storage
@@ -159,8 +158,15 @@ impl Runtime {
                         .map_err(storage::Error::from)
                 })
                 .map(|assets| Reply::Assets(assets)),
-            Request::AddWallet(contract) => {
-                self.storage.add_wallet(contract).map(|_| Reply::Success)
+            Request::CreateSingleSig(req) => {
+                let contract = Contract::with(
+                    Policy::Current(ContractDescriptor::SingleSig {
+                        category: req.category,
+                        pk: req.pubkey_chain,
+                    }),
+                    req.name,
+                );
+                self.storage.add_contract(contract).map(|_| Reply::Success)
             }
             Request::AddSigner(account) => {
                 self.storage.add_signer(account).map(|_| Reply::Success)

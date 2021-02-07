@@ -14,7 +14,7 @@
 use internet2::presentation;
 use microservices::{rpc, rpc_connection};
 
-use crate::data::WalletContract;
+use crate::model::Contract;
 use crate::rpc::message::IdentityInfo;
 use crate::Error;
 
@@ -24,7 +24,6 @@ use crate::Error;
     serde(crate = "serde_crate", untagged)
 )]
 #[derive(Clone, Debug, Display, Api)]
-#[strict_encoding_crate(lnpbp::strict_encoding)]
 #[api(encoding = "strict")]
 #[non_exhaustive]
 pub enum Reply {
@@ -37,18 +36,22 @@ pub enum Reply {
     Failure(microservices::rpc::Failure),
 
     #[api(type = 0x0200)]
-    #[display("wallets(...)")]
-    Wallets(Vec<WalletContract>),
+    #[display("contracts(...)")]
+    Contracts(Vec<Contract>),
 
     #[api(type = 0x0201)]
+    #[display("contracts(...)")]
+    Contract(Contract),
+
+    #[api(type = 0x0202)]
     #[display("asset({0})")]
     Asset(rgb20::Asset),
 
-    #[api(type = 0x0202)]
+    #[api(type = 0x0203)]
     #[display("assets(...)")]
     Assets(Vec<rgb20::Asset>),
 
-    #[api(type = 0x0203)]
+    #[api(type = 0x0204)]
     #[display("identities(...)")]
     Identities(Vec<IdentityInfo>),
 }
