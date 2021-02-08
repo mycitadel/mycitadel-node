@@ -11,4 +11,9 @@
 // along with this software.
 // If not, see <https://www.gnu.org/licenses/agpl-3.0-standalone.html>.
 
-pub trait Driver {}
+use super::Error;
+use crate::model::{ContractId, TxBalance};
+
+pub trait Driver {
+    fn balance(&self, contact_id: ContractId) -> Result<Vec<TxBalance>, Error>;
+}

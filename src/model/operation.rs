@@ -14,9 +14,11 @@
 use chrono::NaiveDateTime;
 #[cfg(feature = "serde")]
 use serde_with::{As, DisplayFromStr};
+use std::collections::BTreeMap;
 use std::str::FromStr;
 
 use bitcoin::Txid;
+use lnpbp::chain::AssetId;
 use wallet::blockchain::ParseError;
 use wallet::TimeHeight;
 
@@ -159,4 +161,35 @@ pub struct Operation {
     pub invoice: String,
 
     pub details: String,
+}
+
+#[cfg_attr(
+    feature = "serde",
+    serde_as,
+    derive(Serialize, Deserialize),
+    serde(crate = "serde_crate")
+)]
+#[derive(
+    Clone,
+    Ord,
+    PartialOrd,
+    Eq,
+    PartialEq,
+    Hash,
+    Debug,
+    StrictEncode,
+    StrictDecode,
+)]
+pub struct TxBalance {
+    pub txid: Txid,
+    pub depth: i32,
+    pub spent_by: Option<Txid>,
+    pub spent_mined: bool,
+    #[cfg_attr(
+        feature = "serde",
+        serde(
+            with = "As::<BTreeMap<DisplayFromStr, (DisplayFromStr, DisplayFromStr)>>"
+        )
+    )]
+    pub allocations: BTreeMap<u16, (AssetId, rgb::AtomicValue)>,
 }

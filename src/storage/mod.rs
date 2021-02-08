@@ -24,13 +24,19 @@ use crate::rpc::message::{IdentityInfo, SignerAccountInfo};
 
 pub trait Driver {
     fn contracts(&self) -> Result<Vec<Contract>, Error>;
-    fn add_contract(&mut self, contract: Contract) -> Result<(), Error>;
+    fn add_contract(&mut self, contract: Contract) -> Result<Contract, Error>;
 
     fn signers(&self) -> Result<Vec<SignerAccountInfo>, Error>;
-    fn add_signer(&mut self, account: SignerAccountInfo) -> Result<(), Error>;
+    fn add_signer(
+        &mut self,
+        account: SignerAccountInfo,
+    ) -> Result<SignerAccountInfo, Error>;
 
     fn identities(&self) -> Result<Vec<IdentityInfo>, Error>;
-    fn add_identity(&mut self, identity: IdentityInfo) -> Result<(), Error>;
+    fn add_identity(
+        &mut self,
+        identity: IdentityInfo,
+    ) -> Result<IdentityInfo, Error>;
 }
 
 #[derive(Clone, Eq, PartialEq, Hash, Debug, Display, Error, From)]

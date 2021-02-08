@@ -26,9 +26,10 @@ use rgb_node::util::ToBech32Data;
 use wallet::descriptor::ContractDescriptor;
 
 use super::Config;
+use crate::cache::{self, Driver as CacheDriver};
 use crate::model::{Contract, Policy};
 use crate::rpc::{Reply, Request};
-use crate::storage::{self, Driver, FileDriver};
+use crate::storage::{self, Driver as StorageDriver};
 use crate::Error;
 
 pub fn run(config: Config) -> Result<(), Error> {
@@ -46,8 +47,11 @@ pub struct Runtime {
     /// Stored sessions
     session_rpc: session::Raw<PlainTranscoder, zmqsocket::Connection>,
 
-    /// Secure key vault
-    storage: FileDriver,
+    /// Wallet data storage
+    storage: storage::FileDriver,
+
+    /// Wallet data cache
+    cache: cache::FileDriver,
 
     /// Unmarshaller instance used for parsing RPC request
     unmarshaller: Unmarshaller<Request>,
@@ -58,8 +62,11 @@ pub struct Runtime {
 
 impl Runtime {
     pub fn init(config: Config) -> Result<Self, Error> {
-        debug!("Initializing data storage {:?}", config.storage_conf());
-        let storage = FileDriver::with(config.storage_conf())?;
+        debug!("Initializing wallet storage {:?}", config.storage_conf());
+        let storage = storage::FileDriver::with(config.storage_conf())?;
+
+        debug!("Initializing wallet cache {:?}", config.cache_conf());
+        let cache = cache::FileDriver::with(config.cache_conf())?;
 
         debug!("Opening RPC API socket {}", config.rpc_endpoint);
         let session_rpc = session::Raw::with_zmq_unencrypted(
@@ -92,6 +99,7 @@ impl Runtime {
             config,
             session_rpc,
             storage,
+            cache,
             rgb20_client,
             unmarshaller: Request::create_unmarshaller(),
         })
@@ -142,13 +150,21 @@ impl Runtime {
             message
         );
         match message {
-            Request::ListContracts => {
-                self.storage.contracts().map(|list| Reply::Contracts(list))
-            }
+            Request::ListContracts => self
+                .storage
+                .contracts()
+                .map(Reply::Contracts)
+                .map_err(Error::from),
+            Request::ContractBalance(id) => self
+                .cache
+                .balance(id)
+                .map(Reply::ContractBalance)
+                .map_err(Error::from),
             Request::ListIdentities => self
                 .storage
                 .identities()
-                .map(|list| Reply::Identities(list)),
+                .map(Reply::Identities)
+                .map_err(Error::from),
             Request::ListAssets => self
                 .rgb20_client
                 .list_assets(FileFormat::StrictEncode)
@@ -157,7 +173,8 @@ impl Runtime {
                     Vec::<Asset>::strict_deserialize(data)
                         .map_err(storage::Error::from)
                 })
-                .map(|assets| Reply::Assets(assets)),
+                .map(Reply::Assets)
+                .map_err(Error::from),
             Request::CreateSingleSig(req) => {
                 let contract = Contract::with(
                     Policy::Current(ContractDescriptor::SingleSig {
@@ -167,23 +184,27 @@ impl Runtime {
                     req.name,
                 );
                 self.storage
-                    .add_contract(contract.clone())
-                    .map(|_| Reply::Contract(contract))
+                    .add_contract(contract)
+                    .map(Reply::Contract)
+                    .map_err(Error::from)
             }
-            Request::AddSigner(account) => {
-                self.storage.add_signer(account).map(|_| Reply::Success)
-            }
-            Request::AddIdentity(identity) => {
-                self.storage.add_identity(identity).map(|_| Reply::Success)
-            }
+            Request::AddSigner(account) => self
+                .storage
+                .add_signer(account)
+                .map(|_| Reply::Success)
+                .map_err(Error::from),
+            Request::AddIdentity(identity) => self
+                .storage
+                .add_identity(identity)
+                .map(|_| Reply::Success)
+                .map_err(Error::from),
             Request::ImportAsset(genesis) => self
                 .rgb20_client
                 .import_asset(genesis)
-                .map_err(|_| storage::Error::Remote)
-                .map(|asset| Reply::Asset(asset)),
+                .map(Reply::Asset)
+                .map_err(Error::from),
             _ => unimplemented!(),
         }
-        .map_err(Error::from)
         .map_err(Error::into)
     }
 }

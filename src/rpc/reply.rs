@@ -14,7 +14,7 @@
 use internet2::presentation;
 use microservices::{rpc, rpc_connection};
 
-use crate::model::Contract;
+use crate::model::{Contract, TxBalance};
 use crate::rpc::message::IdentityInfo;
 use crate::Error;
 
@@ -42,6 +42,10 @@ pub enum Reply {
     #[api(type = 0x0201)]
     #[display("contracts(...)")]
     Contract(Contract),
+
+    #[api(type = 0x0202)]
+    #[display("contract_balance(...)")]
+    ContractBalance(Vec<TxBalance>),
 
     #[api(type = 0x0202)]
     #[display("asset({0})")]

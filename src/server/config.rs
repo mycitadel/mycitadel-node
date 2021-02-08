@@ -19,8 +19,8 @@ use lnpbp::Chain;
 
 #[cfg(feature = "shell")]
 use super::Opts;
-use crate::server::opts::MYCITADEL_STORAGE_FORMAT;
-use crate::storage;
+use crate::server::opts::{MYCITADEL_CACHE_FORMAT, MYCITADEL_STORAGE_FORMAT};
+use crate::{cache, storage};
 
 /// Final configuration resulting from data contained in config file environment
 /// variables and command-line options. For security reasons node key is kept
@@ -48,12 +48,17 @@ pub struct Config {
 }
 
 impl Config {
-    pub fn storage_conf(&self) -> storage::file::FileConfig {
-        let format = MYCITADEL_STORAGE_FORMAT;
-
-        storage::file::FileConfig {
+    pub fn storage_conf(&self) -> storage::FileConfig {
+        storage::FileConfig {
             location: self.data_dir.to_string_lossy().to_string(),
-            format,
+            format: MYCITADEL_STORAGE_FORMAT,
+        }
+    }
+
+    pub fn cache_conf(&self) -> cache::FileConfig {
+        cache::FileConfig {
+            location: self.data_dir.to_string_lossy().to_string(),
+            format: MYCITADEL_CACHE_FORMAT,
         }
     }
 }

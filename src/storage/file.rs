@@ -146,17 +146,20 @@ impl Driver for FileDriver {
         Ok(self.data.contracts.values().cloned().collect())
     }
 
-    fn add_contract(&mut self, contract: Contract) -> Result<(), Error> {
-        self.data.contracts.insert(*contract.id(), contract);
+    fn add_contract(&mut self, contract: Contract) -> Result<Contract, Error> {
+        self.data.contracts.insert(*contract.id(), contract.clone());
         self.store()?;
-        Ok(())
+        Ok(contract)
     }
 
     fn signers(&self) -> Result<Vec<SignerAccountInfo>, Error> {
         unimplemented!()
     }
 
-    fn add_signer(&mut self, _account: SignerAccountInfo) -> Result<(), Error> {
+    fn add_signer(
+        &mut self,
+        _account: SignerAccountInfo,
+    ) -> Result<SignerAccountInfo, Error> {
         unimplemented!()
     }
 
@@ -164,7 +167,10 @@ impl Driver for FileDriver {
         unimplemented!()
     }
 
-    fn add_identity(&mut self, _identity: IdentityInfo) -> Result<(), Error> {
+    fn add_identity(
+        &mut self,
+        _identity: IdentityInfo,
+    ) -> Result<IdentityInfo, Error> {
         unimplemented!()
     }
 }

@@ -20,7 +20,7 @@ use internet2::{presentation, transport};
 #[cfg(any(feature = "node", feature = "client"))]
 use microservices::rpc;
 
-use crate::storage;
+use crate::{cache, storage};
 
 #[derive(Clone, Debug, Display, From, Error)]
 #[display(doc_comments)]
@@ -48,10 +48,20 @@ pub enum Error {
     #[cfg(any(feature = "node", feature = "client"))]
     NotSupported(TypeId),
 
-    /// storage-level error: {0}
+    /// RGB node error: {0}
+    #[cfg(any(feature = "server", feature = "embedded"))]
+    #[from(rgb_node::i9n::Error)]
+    RrbNode,
+
+    /// storage error: {0}
     #[cfg(any(feature = "server", feature = "embedded"))]
     #[from]
     StorageDriver(storage::Error),
+
+    /// cache error: {0}
+    #[cfg(any(feature = "server", feature = "embedded"))]
+    #[from]
+    CacheDriver(cache::Error),
 
     // TODO: split client- and server-side error types
     /// server-reported failure

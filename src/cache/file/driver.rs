@@ -12,6 +12,11 @@
 // If not, see <https://www.gnu.org/licenses/agpl-3.0-standalone.html>.
 
 use super::FileDriver;
-use crate::cache::Driver;
+use crate::cache::{Driver, Error};
+use crate::model::{ContractId, TxBalance};
 
-impl Driver for FileDriver {}
+impl Driver for FileDriver {
+    fn balance(&self, contact_id: ContractId) -> Result<Vec<TxBalance>, Error> {
+        unimplemented!()
+    }
+}

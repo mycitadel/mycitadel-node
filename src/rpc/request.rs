@@ -27,6 +27,10 @@ pub enum Request {
     #[display("list_contracts()")]
     ListContracts,
 
+    #[api(type = 0x0101)]
+    #[display("contract_balance({0})")]
+    ContractBalance(ContractId),
+
     #[api(type = 0x0110)]
     #[display(inner)]
     CreateSingleSig(SingleSigInfo),
@@ -56,10 +60,6 @@ pub enum Request {
     #[api(type = 0x0332)]
     #[display("mark_unused({0})")]
     MarkUnused(Address),
-
-    #[api(type = 0x0400)]
-    #[display(inner)]
-    ListUtxo(u8),
 
     #[api(type = 0x0500)]
     #[display("list_identities()")]
