@@ -19,17 +19,38 @@ use bitcoin::{Address, Txid};
 use wallet::bip32::UnhardenedIndex;
 use wallet::{TimeHeight, Utxo};
 
+use crate::model::ContractId;
+
 #[cfg_attr(
     feature = "serde",
     serde_as,
     derive(Serialize, Deserialize),
     serde(crate = "serde_crate")
 )]
-#[derive(Getters, Clone, PartialEq, Debug, StrictEncode, StrictDecode)]
-pub(super) struct ContractCache {
+#[derive(
+    Getters, Clone, PartialEq, Debug, Default, StrictEncode, StrictDecode,
+)]
+pub(super) struct Cache {
     #[cfg_attr(feature = "serde", serde(with = "As::<DisplayFromStr>"))]
     pub rescanned_at: TimeHeight,
 
+    pub descriptors: BTreeMap<ContractId, ContractCache>,
+
+    #[cfg_attr(
+        feature = "serde",
+        serde(with = "As::<BTreeMap<DisplayFromStr, DisplayFromStr>>")
+    )]
+    pub mine_info: BTreeMap<Txid, TimeHeight>,
+}
+
+#[cfg_attr(
+    feature = "serde",
+    serde_as,
+    derive(Serialize, Deserialize),
+    serde(crate = "serde_crate")
+)]
+#[derive(Clone, PartialEq, Debug, StrictEncode, StrictDecode)]
+pub(super) struct ContractCache {
     pub addresses: BTreeMap<Address, UnhardenedIndex>,
 
     pub used: BTreeMap<UnhardenedIndex, Address>,
@@ -39,10 +60,4 @@ pub(super) struct ContractCache {
         serde(with = "As::<BTreeMap<DisplayFromStr, DisplayFromStr>>")
     )]
     pub utxo: BTreeMap<Address, Utxo>,
-
-    #[cfg_attr(
-        feature = "serde",
-        serde(with = "As::<BTreeMap<DisplayFromStr, DisplayFromStr>>")
-    )]
-    pub tx_block: BTreeMap<Txid, TimeHeight>,
 }

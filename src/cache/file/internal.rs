@@ -18,8 +18,8 @@ use std::{fs, io};
 use lnpbp::strict_encoding::{StrictDecode, StrictEncode};
 use microservices::FileFormat;
 
+use super::Cache;
 use crate::cache::Error;
-use crate::model::Wallet;
 use crate::server::opts::MYCITADEL_CACHE_FILE;
 
 #[derive(
@@ -54,7 +54,7 @@ impl FileConfig {
 pub struct FileDriver {
     fd: fs::File,
     config: FileConfig,
-    cache: Wallet,
+    cache: Cache,
 }
 
 impl FileDriver {
@@ -72,7 +72,7 @@ impl FileDriver {
         let mut me = Self {
             fd,
             config: config.clone(),
-            cache: Default::default(),
+            cache: none!(),
         };
         if !exists {
             warn!(
@@ -89,7 +89,7 @@ impl FileDriver {
         self.fd.seek(io::SeekFrom::Start(0))?;
         trace!("Parsing cache (expected format {})", self.config.format);
         self.cache = match self.config.format {
-            FileFormat::StrictEncode => Wallet::strict_decode(&mut self.fd)?,
+            FileFormat::StrictEncode => Cache::strict_decode(&mut self.fd)?,
             #[cfg(feature = "serde_yaml")]
             FileFormat::Yaml => serde_yaml::from_reader(&mut self.fd)?,
             #[cfg(feature = "toml")]

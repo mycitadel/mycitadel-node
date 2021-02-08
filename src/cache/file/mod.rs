@@ -15,6 +15,7 @@
 
 mod driver;
 mod internal;
-pub(self) mod model;
+mod model;
 
 pub use internal::{FileConfig, FileDriver};
+pub(self) use model::Cache;
