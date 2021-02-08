@@ -18,68 +18,12 @@ use std::collections::BTreeMap;
 use std::io;
 use std::time::{SystemTime, UNIX_EPOCH};
 
-use bitcoin::hashes::{sha256, sha256t};
 use bitcoin::{OutPoint, Txid};
-use lnpbp::bech32::ToBech32IdString;
 use lnpbp::client_side_validation::{CommitEncode, ConsensusCommit};
-use lnpbp::commit_verify::CommitVerify;
-use lnpbp::{tagged_hash, TaggedHash};
 use strict_encoding::StrictEncode;
-use wallet::Psbt;
+use wallet::{Psbt, TimeHeight};
 
-use super::{
-    BlockchainTimepair, Operation, PaymentSlip, Policy, PolicyType, State,
-};
-
-pub struct ContractIdTag;
-
-impl sha256t::Tag for ContractIdTag {
-    #[inline]
-    fn engine() -> sha256::HashEngine {
-        let midstate = sha256::Midstate::from_inner(
-            **tagged_hash::Midstate::with("mycitadel:contract"),
-        );
-        sha256::HashEngine::from_midstate(midstate, 64)
-    }
-}
-
-#[cfg_attr(
-    feature = "serde",
-    derive(Serialize, Deserialize),
-    serde(crate = "serde_crate")
-)]
-#[derive(
-    Wrapper,
-    Copy,
-    Clone,
-    PartialEq,
-    Eq,
-    PartialOrd,
-    Ord,
-    Hash,
-    Display,
-    Default,
-    From,
-    StrictEncode,
-    StrictDecode,
-)]
-#[wrapper(
-    Debug, FromStr, LowerHex, Index, IndexRange, IndexFrom, IndexTo, IndexFull
-)]
-#[display(ContractId::to_bech32_id_string)]
-pub struct ContractId(sha256t::Hash<ContractIdTag>);
-
-impl<MSG> CommitVerify<MSG> for ContractId
-where
-    MSG: AsRef<[u8]>,
-{
-    #[inline]
-    fn commit(msg: &MSG) -> ContractId {
-        <ContractId as TaggedHash<_>>::hash(msg)
-    }
-}
-
-// --- Contract structure
+use super::{ContractId, Operation, PaymentSlip, Policy, PolicyType, State};
 
 #[cfg_attr(
     feature = "serde",
@@ -108,19 +52,27 @@ pub struct Contract {
 
     policy: Policy,
 
-    state: State,
-
     #[cfg_attr(
         feature = "serde",
         serde(with = "As::<chrono::DateTime<chrono::Utc>>")
     )]
     created_at: NaiveDateTime,
 
-    #[cfg_attr(
-        feature = "serde",
-        serde(with = "As::<Option<DisplayFromStr>>")
-    )]
-    checked_at: Option<BlockchainTimepair>,
+    #[cfg_attr(feature = "serde", serde(flatten))]
+    data: ContractData,
+}
+
+#[cfg_attr(
+    feature = "serde",
+    serde_as,
+    derive(Serialize, Deserialize),
+    serde(crate = "serde_crate")
+)]
+#[derive(
+    Getters, Clone, PartialEq, Debug, Default, StrictEncode, StrictDecode,
+)]
+pub struct ContractData {
+    state: State,
 
     // TODO: Must be moved into rgb-node
     #[cfg_attr(
@@ -149,7 +101,7 @@ pub struct Contract {
     )]*/
     // Due to some weird bug the variant above ^^^ is not working
     #[serde_as(as = "Vec<(DisplayFromStr, _)>")]
-    operations: BTreeMap<BlockchainTimepair, Operation>,
+    operations: BTreeMap<TimeHeight, Operation>,
 }
 
 impl ConsensusCommit for Contract {
@@ -173,18 +125,11 @@ impl Contract {
             id: policy.id(),
             name,
             policy,
-            state: none!(),
             created_at: NaiveDateTime::from_timestamp(
                 timestamp.as_secs() as i64,
                 0,
             ),
-            checked_at: None,
-            blinding_factors: empty!(),
-            sent_invoices: empty!(),
-            received_invoices: empty!(),
-            paid_invoices: empty!(),
-            transactions: empty!(),
-            operations: empty!(),
+            data: ContractData::default(),
         }
     }
 

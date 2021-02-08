@@ -17,8 +17,8 @@ use serde_with::{As, DisplayFromStr};
 use std::str::FromStr;
 
 use bitcoin::Txid;
-
-use super::{BlockchainTimepair, FromStrError};
+use wallet::blockchain::ParseError;
+use wallet::TimeHeight;
 
 #[derive(
     Clone,
@@ -38,7 +38,7 @@ pub enum PaymentConfirmation {
 }
 
 impl FromStr for PaymentConfirmation {
-    type Err = FromStrError;
+    type Err = ParseError;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         Ok(PaymentConfirmation::Txid(s.parse()?))
@@ -67,23 +67,23 @@ impl FromStr for PaymentConfirmation {
 #[display("{confirmation}@{paid}")]
 pub struct PaymentSlip {
     #[cfg_attr(feature = "serde", serde(with = "As::<DisplayFromStr>"))]
-    paid: BlockchainTimepair,
+    paid: TimeHeight,
 
     #[cfg_attr(feature = "serde", serde(with = "As::<DisplayFromStr>"))]
     confirmation: PaymentConfirmation,
 }
 
 impl FromStr for PaymentSlip {
-    type Err = FromStrError;
+    type Err = ParseError;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         let mut data = s.split(&[':', '@'][..]);
         let me = Self {
-            paid: data.next().ok_or(FromStrError)?.parse()?,
-            confirmation: data.next().ok_or(FromStrError)?.parse()?,
+            paid: data.next().ok_or(ParseError)?.parse()?,
+            confirmation: data.next().ok_or(ParseError)?.parse()?,
         };
         if data.next().is_some() {
-            Err(FromStrError)
+            Err(ParseError)
         } else {
             Ok(me)
         }
@@ -146,7 +146,7 @@ pub struct Operation {
     pub created_at: NaiveDateTime,
 
     #[cfg_attr(feature = "serde", serde(with = "As::<DisplayFromStr>"))]
-    pub mined_at: BlockchainTimepair,
+    pub mined_at: TimeHeight,
 
     #[cfg_attr(feature = "serde", serde(with = "As::<DisplayFromStr>"))]
     pub txid: Txid,
