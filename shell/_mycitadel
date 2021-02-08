@@ -62,6 +62,10 @@ case $state in
         case $line[1] in
             (create)
 _arguments "${_arguments_options[@]}" \
+'--bare[Creates old "bare" wallets, where public key is kept in the explicit form within bitcoin transaction P2PK output]' \
+'--legacy[Whether create a pre-SegWit wallet (P2PKH) rather than SegWit (P2WPKH). If you'\''d like to use legacy SegWit-style addresses (P2WPKH-in-P2SH), do not use this flag, create normal SegWit wallet instead and specify `--legacy` option when requesting new address]' \
+'--segwit[Recommended SegWit wallet with P2WKH and P2WPKH-in-P2SH outputs]' \
+'--taproot[Reserved for the future taproot P2TR outputs]' \
 '*-v[Set verbosity level]' \
 '*--verbose[Set verbosity level]' \
 '-h[Prints help information]' \
@@ -91,16 +95,6 @@ _arguments "${_arguments_options[@]}" \
 '--version[Prints version information]' \
 ':name -- Wallet name:' \
 ':pubkey-chain -- Extended public key with derivation info:' \
-&& ret=0
-;;
-(list)
-_arguments "${_arguments_options[@]}" \
-'*-v[Set verbosity level]' \
-'*--verbose[Set verbosity level]' \
-'-h[Prints help information]' \
-'--help[Prints help information]' \
-'-V[Prints version information]' \
-'--version[Prints version information]' \
 && ret=0
 ;;
         esac
@@ -197,7 +191,6 @@ _mycitadel__asset_commands() {
 _mycitadel__wallet__create_commands() {
     local commands; commands=(
         "single-sig:Creates current single-sig wallet account" \
-"list:Lists existing wallets" \
     )
     _describe -t commands 'mycitadel wallet create commands' commands "$@"
 }
@@ -221,13 +214,6 @@ _mycitadel__asset__list_commands() {
         
     )
     _describe -t commands 'mycitadel asset list commands' commands "$@"
-}
-(( $+functions[_mycitadel__wallet__create__list_commands] )) ||
-_mycitadel__wallet__create__list_commands() {
-    local commands; commands=(
-        
-    )
-    _describe -t commands 'mycitadel wallet create list commands' commands "$@"
 }
 (( $+functions[_mycitadel__wallet__list_commands] )) ||
 _mycitadel__wallet__list_commands() {

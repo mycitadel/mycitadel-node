@@ -92,7 +92,7 @@ pub enum PolicyType {
 #[cfg_attr(
     feature = "serde",
     derive(Serialize, Deserialize),
-    serde(crate = "serde_crate", rename_all = "lowercase", tag = "account")
+    serde(crate = "serde_crate", rename_all = "lowercase")
 )]
 #[non_exhaustive]
 #[display(inner)]

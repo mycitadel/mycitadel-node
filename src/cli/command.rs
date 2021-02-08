@@ -51,34 +51,12 @@ impl Exec for WalletCommand {
 
     fn exec(self, client: &mut Self::Client) -> Result<(), Self::Error> {
         match self {
-            WalletCommand::Create { subcommand } => subcommand.exec(client),
-            WalletCommand::List => client
-                .contract_list()?
-                .report_error("listing wallets")
-                .map(|reply| {
-                    eprintln!("Known wallets:");
-                    println!(
-                        "{}",
-                        serde_yaml::to_string(&reply)
-                            .expect("Error presenting data as YAML")
-                    );
-                }),
-        }
-    }
-}
-
-impl Exec for WalletCreateCommand {
-    type Client = Client;
-    type Error = Error;
-
-    fn exec(self, client: &mut Self::Client) -> Result<(), Self::Error> {
-        match self {
-            WalletCreateCommand::SingleSig {
-                name,
-                pubkey_chain,
+            WalletCommand::Create {
+                subcommand:
+                    WalletCreateCommand::SingleSig { name, pubkey_chain },
                 bare,
                 legacy,
-                segwit: _, // Default parameter, the actual value doesn't matter
+                segwit: _,
                 taproot,
             } => {
                 let category = if bare {
@@ -92,8 +70,8 @@ impl Exec for WalletCreateCommand {
                 };
                 eprintln!(
                     "Creating single-sig {} wallet with public key generator {}",
-                    category.to_string().yellow(),
-                    pubkey_chain.to_string().yellow(),
+                    category.to_string().green(),
+                    pubkey_chain.to_string().green(),
 
                 );
                 client
@@ -103,23 +81,30 @@ impl Exec for WalletCreateCommand {
                         match reply {
                             Reply::Contract(contract) => {
                                 eprint!(
-                                    "Wallet named '{}' was successfully created.
-                                    Use the following string as the wallet id: ", 
-                                    contract.name().yellow().bold()
+                                    "Wallet named '{}' was successfully created.\
+                                     Use the following string as the wallet id: ",
+                                    contract.name().green().bold()
                                 );
-                                println!("{}", contract.id().to_string().bright_yellow());
+                                println!("{}", contract.id().to_string().bright_green());
                             }
                             _ => eprintln!(
                                 "Unexpected server response; please check that \
-                                the client version matches server"
+                                 the client version matches server"
                             )
                         }
                     })
             }
-
-            WalletCreateCommand::List => {
-                unimplemented!()
-            }
+            WalletCommand::List => client
+                .contract_list()?
+                .report_error("listing wallets")
+                .map(|reply| {
+                    eprintln!("Known wallets:");
+                    println!(
+                        "{}",
+                        serde_yaml::to_string(&reply)
+                            .expect("Error presenting data as YAML")
+                    );
+                }),
         }
     }
 }

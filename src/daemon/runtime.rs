@@ -166,7 +166,9 @@ impl Runtime {
                     }),
                     req.name,
                 );
-                self.storage.add_contract(contract).map(|_| Reply::Success)
+                self.storage
+                    .add_contract(contract.clone())
+                    .map(|_| Reply::Contract(contract))
             }
             Request::AddSigner(account) => {
                 self.storage.add_signer(account).map(|_| Reply::Success)

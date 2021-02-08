@@ -16,10 +16,10 @@ use std::path::PathBuf;
 
 use internet2::zmqsocket::ZmqSocketAddr;
 use lnpbp::Chain;
-use microservices::FileFormat;
 
 #[cfg(feature = "shell")]
 use super::Opts;
+use crate::daemon::opts::MYCITADEL_STORAGE_FORMAT;
 use crate::storage;
 
 /// Final configuration resulting from data contained in config file environment
@@ -49,7 +49,7 @@ pub struct Config {
 
 impl Config {
     pub fn storage_conf(&self) -> storage::file::FileConfig {
-        let format = FileFormat::Yaml;
+        let format = MYCITADEL_STORAGE_FORMAT;
 
         storage::file::FileConfig {
             location: self.data_dir.to_string_lossy().to_string(),

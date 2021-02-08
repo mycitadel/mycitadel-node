@@ -21,6 +21,7 @@ use lnpbp::strict_encoding::{StrictDecode, StrictEncode};
 use microservices::FileFormat;
 
 use super::{Driver, Error};
+use crate::daemon::opts::MYCITADEL_STORAGE_FILE;
 use crate::model::{Contract, Wallet};
 use crate::rpc::message::{IdentityInfo, SignerAccount};
 
@@ -53,7 +54,7 @@ pub struct FileConfig {
 impl FileConfig {
     pub fn filename(&self) -> PathBuf {
         let mut filename = PathBuf::from(self.location.clone());
-        filename.push("citadel");
+        filename.push(MYCITADEL_STORAGE_FILE);
         filename.set_extension(self.format.extension());
         filename
     }
@@ -62,7 +63,7 @@ impl FileConfig {
 impl FileDriver {
     pub fn with(config: FileConfig) -> Result<Self, Error> {
         info!("Initializing file driver for data in {}", &config.location);
-        fs::create_dir_all(&config.location);
+        fs::create_dir_all(&config.location)?;
 
         let filename = config.filename();
         let exists = filename.exists();

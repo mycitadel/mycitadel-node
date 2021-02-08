@@ -156,23 +156,8 @@ _mycitadel-cli() {
             return 0
             ;;
         mycitadel__cli__wallet__create)
-            opts=" -v -h -V  --verbose --help --version  single-sig list"
+            opts=" -v -h -V  --bare --legacy --segwit --taproot --verbose --help --version  single-sig"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
-                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
-                return 0
-            fi
-            case "${prev}" in
-                
-                *)
-                    COMPREPLY=()
-                    ;;
-            esac
-            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
-            return 0
-            ;;
-        mycitadel__cli__wallet__create__list)
-            opts=" -v -h -V  --verbose --help --version  "
-            if [[ ${cur} == -* || ${COMP_CWORD} -eq 4 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
             fi

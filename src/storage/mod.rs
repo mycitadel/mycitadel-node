@@ -58,20 +58,16 @@ pub enum Error {
     #[from]
     StrictEncoding(strict_encoding::Error),
 
-    /// Error in YAML data encoding: {0}
-    /// Make sure that the storage is not broken.
+    /// error in YAML data encoding: {0}
     #[cfg(feature = "serde_yaml")]
-    #[from(serde_yaml::Error)]
-    YamlEncoding,
+    YamlEncoding(String),
 
-    /// Error in YAML data encoding: {0}
-    /// Make sure that the storage is not broken.
+    /// error in YAML data encoding
     #[cfg(feature = "serde_json")]
     #[from(serde_json::Error)]
     JsonEncoding,
 
-    /// Error in YAML data encoding: {0}
-    /// Make sure that the storage is not broken.
+    /// error in YAML data encoding
     #[cfg(feature = "toml")]
     #[from(toml::de::Error)]
     #[from(toml::ser::Error)]
@@ -79,4 +75,10 @@ pub enum Error {
 
     /// Error by remote RGB runtime
     Remote,
+}
+
+impl From<serde_yaml::Error> for Error {
+    fn from(err: serde_yaml::Error) -> Self {
+        Error::YamlEncoding(err.to_string())
+    }
 }

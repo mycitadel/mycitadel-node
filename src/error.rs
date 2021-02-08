@@ -26,7 +26,7 @@ use crate::storage;
 #[display(doc_comments)]
 #[non_exhaustive]
 pub enum Error {
-    /// Generic I/O error: {0:?}
+    /// generic I/O error: {0:?}
     #[from(io::Error)]
     Io(IoError),
 
@@ -35,30 +35,30 @@ pub enum Error {
     #[from]
     Rpc(rpc::Error),
 
-    /// General networking error: {0}
+    /// general networking error: {0}
     #[from]
     Networking(presentation::Error),
 
-    /// Transport-level interface error: {0}
+    /// transport-level interface error: {0}
     #[cfg(any(feature = "node", feature = "client"))]
     #[from]
     Transport(transport::Error),
 
-    /// Provided RPC request (type id {0}) is not supported
+    /// provided RPC request (type id {0}) is not supported
     #[cfg(any(feature = "node", feature = "client"))]
     NotSupported(TypeId),
 
-    /// Storage-level error:\n {0}
+    /// storage-level error: {0}
     #[cfg(any(feature = "server", feature = "embedded"))]
     #[from]
     StorageDriver(storage::Error),
 
     // TODO: split client- and server-side error types
-    /// Server-reported failure
+    /// server-reported failure
     #[from]
     ServerFailure(rpc::Failure),
 
-    /// Error initializing embedded node
+    /// error initializing embedded node
     EmbeddedNodeError,
 }
 

@@ -22,7 +22,8 @@ pub const MYCITADEL_CLI_CONFIG: &'static str = "{data_dir}/mycitadel-cli.toml";
     bin_name = "mycitadel-cli",
     author,
     version,
-    setting = AppSettings::ColoredHelp
+    setting = AppSettings::ColoredHelp,
+    group = ArgGroup::new("descriptor").required(false)
 )]
 pub struct Opts {
     /// These params can be read also from the configuration file, not just
@@ -48,6 +49,7 @@ pub struct Opts {
 }
 
 #[derive(Clap, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Debug, Display)]
+#[clap(setting = AppSettings::ColoredHelp)]
 pub enum Command {
     /// Wallet management commands
     #[display("wallet {subcommand}")]
@@ -65,12 +67,34 @@ pub enum Command {
 }
 
 #[derive(Clap, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Debug, Display)]
+#[clap(setting = AppSettings::ColoredHelp)]
 pub enum WalletCommand {
     /// Creates wallet with a given name and descriptor parameters
     #[display("create {subcommand}")]
     Create {
         #[clap(subcommand)]
         subcommand: WalletCreateCommand,
+
+        /// Creates old "bare" wallets, where public key is kept in the
+        /// explicit form within bitcoin transaction P2PK output
+        #[clap(long, takes_value = false, group = "descriptor", global = true)]
+        bare: bool,
+
+        /// Whether create a pre-SegWit wallet (P2PKH) rather than SegWit
+        /// (P2WPKH). If you'd like to use legacy SegWit-style addresses
+        /// (P2WPKH-in-P2SH), do not use this flag, create normal
+        /// SegWit wallet instead and specify `--legacy` option when
+        /// requesting new address
+        #[clap(long, takes_value = false, group = "descriptor", global = true)]
+        legacy: bool,
+
+        /// Recommended SegWit wallet with P2WKH and P2WPKH-in-P2SH outputs
+        #[clap(long, takes_value = false, group = "descriptor", global = true)]
+        segwit: bool,
+
+        /// Reserved for the future taproot P2TR outputs
+        #[clap(long, takes_value = false, group = "descriptor", global = true)]
+        taproot: bool,
     },
 
     /// Lists existing wallets
@@ -79,10 +103,10 @@ pub enum WalletCommand {
 }
 
 #[derive(Clap, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Debug, Display)]
+#[clap(setting = AppSettings::ColoredHelp)]
 pub enum WalletCreateCommand {
     /// Creates current single-sig wallet account
     #[display("single-sig {name} {pubkey_chain}")]
-    #[clap(group = ArgGroup::new("descriptor").required(false))]
     SingleSig {
         /// Wallet name
         #[clap()]
@@ -105,35 +129,11 @@ pub enum WalletCreateCommand {
         /// 0-1/*`
         #[clap()]
         pubkey_chain: PubkeyChain,
-
-        /// Creates old "bare" wallets, where public key is kept in the
-        /// explicit form within bitcoin transaction P2PK output
-        #[clap(long, takes_value = false, group = "descriptor")]
-        bare: bool,
-
-        /// Whether create a pre-SegWit wallet (P2PKH) rather than SegWit
-        /// (P2WPKH). If you'd like to use legacy SegWit-style addresses
-        /// (P2WPKH-in-P2SH), do not use this flag, create normal
-        /// SegWit wallet instead and specify `--legacy` option when
-        /// requesting new address
-        #[clap(long, takes_value = false, group = "descriptor")]
-        legacy: bool,
-
-        /// Recommended SegWit wallet with P2WKH and P2WPKH-in-P2SH outputs
-        #[clap(long, takes_value = false, group = "descriptor")]
-        segwit: bool,
-
-        /// Reserved for the future taproot P2TR outputs
-        #[clap(long, takes_value = false, group = "descriptor")]
-        taproot: bool,
     },
-
-    /// Lists existing wallets
-    #[display("list")]
-    List,
 }
 
 #[derive(Clap, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Debug, Display)]
+#[clap(setting = AppSettings::ColoredHelp)]
 pub enum AssetCommand {
     /// Lists known assets
     #[display("list")]
