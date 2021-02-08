@@ -11,8 +11,6 @@
 // along with this software.
 // If not, see <https://www.gnu.org/licenses/agpl-3.0-standalone.html>.
 
-//! File storage driver
-
 use std::io::{Read, Seek, Write};
 use std::path::PathBuf;
 use std::{fs, io};
@@ -20,17 +18,9 @@ use std::{fs, io};
 use lnpbp::strict_encoding::{StrictDecode, StrictEncode};
 use microservices::FileFormat;
 
-use super::{Driver, Error};
-use crate::model::{Contract, Wallet};
-use crate::rpc::message::{IdentityInfo, SignerAccountInfo};
-use crate::server::opts::MYCITADEL_STORAGE_FILE;
-
-#[derive(Debug)]
-pub struct FileDriver {
-    fd: fs::File,
-    config: FileConfig,
-    data: Wallet,
-}
+use crate::cache::Error;
+use crate::model::Wallet;
+use crate::server::opts::MYCITADEL_CACHE_FILE;
 
 #[derive(
     Clone,
@@ -54,15 +44,22 @@ pub struct FileConfig {
 impl FileConfig {
     pub fn filename(&self) -> PathBuf {
         let mut filename = PathBuf::from(self.location.clone());
-        filename.push(MYCITADEL_STORAGE_FILE);
+        filename.push(MYCITADEL_CACHE_FILE);
         filename.set_extension(self.format.extension());
         filename
     }
 }
 
+#[derive(Debug)]
+pub struct FileDriver {
+    fd: fs::File,
+    config: FileConfig,
+    cache: Wallet,
+}
+
 impl FileDriver {
     pub fn with(config: FileConfig) -> Result<Self, Error> {
-        info!("Initializing file driver for data in {}", &config.location);
+        info!("Initializing file driver for cache in {}", &config.location);
         fs::create_dir_all(&config.location)?;
 
         let filename = config.filename();
@@ -75,11 +72,11 @@ impl FileDriver {
         let mut me = Self {
             fd,
             config: config.clone(),
-            data: Default::default(),
+            cache: Default::default(),
         };
         if !exists {
             warn!(
-                "Data file `{:?}` does not exist: initializing empty citadel storage",
+                "Cache file `{:?}` does not exist: initializing empty citadel cache",
                 filename
             );
             me.store()?;
@@ -88,10 +85,10 @@ impl FileDriver {
     }
 
     fn load(&mut self) -> Result<(), Error> {
-        debug!("Loading data from `{:?}`", self.config.filename());
+        debug!("Loading cache from `{:?}`", self.config.filename());
         self.fd.seek(io::SeekFrom::Start(0))?;
-        trace!("Parsing data (expected format {})", self.config.format);
-        self.data = match self.config.format {
+        trace!("Parsing cache (expected format {})", self.config.format);
+        self.cache = match self.config.format {
             FileFormat::StrictEncode => Wallet::strict_decode(&mut self.fd)?,
             #[cfg(feature = "serde_yaml")]
             FileFormat::Yaml => serde_yaml::from_reader(&mut self.fd)?,
@@ -105,13 +102,13 @@ impl FileDriver {
             FileFormat::Json => serde_json::from_reader(&mut self.fd)?,
             _ => unimplemented!(),
         };
-        trace!("Data loaded from storage");
+        trace!("Cache loaded from storage");
         Ok(())
     }
 
     fn store(&mut self) -> Result<(), Error> {
         debug!(
-            "Storing data to the file `{:?}` in {} format",
+            "Storing cache to the file `{:?}` in {} format",
             self.config.filename(),
             self.config.format
         );
@@ -119,52 +116,24 @@ impl FileDriver {
         self.fd.set_len(0)?;
         match self.config.format {
             FileFormat::StrictEncode => {
-                self.data.strict_encode(&mut self.fd)?;
+                self.cache.strict_encode(&mut self.fd)?;
             }
             #[cfg(feature = "serde_yaml")]
             FileFormat::Yaml => {
-                serde_yaml::to_writer(&mut self.fd, &self.data)?;
+                serde_yaml::to_writer(&mut self.fd, &self.cache)?;
             }
             #[cfg(feature = "toml")]
             FileFormat::Toml => {
-                let data = toml::to_vec(&self.data)?;
+                let data = toml::to_vec(&self.cache)?;
                 self.fd.write_all(&data)?;
             }
             #[cfg(feature = "serde_json")]
             FileFormat::Json => {
-                serde_json::to_writer(&mut self.fd, &self.data)?;
+                serde_json::to_writer(&mut self.fd, &self.cache)?;
             }
             _ => unimplemented!(),
         };
-        trace!("MyCitadel data stored");
+        trace!("Cache stored");
         Ok(())
-    }
-}
-
-impl Driver for FileDriver {
-    fn contracts(&self) -> Result<Vec<Contract>, Error> {
-        Ok(self.data.contracts.values().cloned().collect())
-    }
-
-    fn add_contract(&mut self, contract: Contract) -> Result<(), Error> {
-        self.data.contracts.insert(*contract.id(), contract);
-        self.store()?;
-        Ok(())
-    }
-
-    fn signers(&self) -> Result<Vec<SignerAccountInfo>, Error> {
-        unimplemented!()
-    }
-
-    fn add_signer(&mut self, _account: SignerAccountInfo) -> Result<(), Error> {
-        unimplemented!()
-    }
-
-    fn identities(&self) -> Result<Vec<IdentityInfo>, Error> {
-        unimplemented!()
-    }
-
-    fn add_identity(&mut self, _identity: IdentityInfo) -> Result<(), Error> {
-        unimplemented!()
     }
 }

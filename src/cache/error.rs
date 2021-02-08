@@ -11,28 +11,6 @@
 // along with this software.
 // If not, see <https://www.gnu.org/licenses/agpl-3.0-standalone.html>.
 
-//! Storage drivers
-
-pub mod file;
-
-pub use file::{FileConfig, FileDriver};
-
-// -----------------------------------------------------------------------------
-
-use crate::model::{self, Contract};
-use crate::rpc::message::{IdentityInfo, SignerAccountInfo};
-
-pub trait Driver {
-    fn contracts(&self) -> Result<Vec<Contract>, Error>;
-    fn add_contract(&mut self, contract: Contract) -> Result<(), Error>;
-
-    fn signers(&self) -> Result<Vec<SignerAccountInfo>, Error>;
-    fn add_signer(&mut self, account: SignerAccountInfo) -> Result<(), Error>;
-
-    fn identities(&self) -> Result<Vec<IdentityInfo>, Error>;
-    fn add_identity(&mut self, identity: IdentityInfo) -> Result<(), Error>;
-}
-
 #[derive(Clone, Eq, PartialEq, Hash, Debug, Display, Error, From)]
 #[display(doc_comments)]
 #[non_exhaustive]
@@ -41,17 +19,6 @@ pub enum Error {
     #[from]
     #[from(std::io::Error)]
     Io(amplify::IoError),
-
-    /// Wallet corresponding to the provided descriptor already exists.
-    /// If you are trying to update wallet name use wallet rename command.
-    ///
-    /// Details on existing wallet: {0}
-    #[from]
-    ContractExists(model::ContractId),
-
-    /// Identity with the provided id {0} already exists
-    #[from]
-    IdentityExists(rgb::ContractId),
 
     /// Error in strict data encoding: {0}
     /// Make sure that the storage is not broken.
@@ -72,9 +39,6 @@ pub enum Error {
     #[from(toml::de::Error)]
     #[from(toml::ser::Error)]
     TomlEncoding,
-
-    /// Error by remote RGB runtime
-    Remote,
 }
 
 impl From<serde_yaml::Error> for Error {

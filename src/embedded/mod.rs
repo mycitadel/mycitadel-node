@@ -21,11 +21,11 @@ use internet2::ZmqSocketAddr;
 use microservices::FileFormat;
 
 use crate::client::{self, Client};
-use crate::daemon;
+use crate::server;
 use crate::Error;
 use microservices::node::TryService;
 
-pub fn run_embedded(mut config: daemon::Config) -> Result<Client, Error> {
+pub fn run_embedded(mut config: server::Config) -> Result<Client, Error> {
     trace!("MyCitadel runtime configuration: {:#?}", &config);
     config.process();
     trace!("Processed configuration: {:#?}", &config);
@@ -78,7 +78,7 @@ pub fn run_embedded(mut config: daemon::Config) -> Result<Client, Error> {
 
     let rpc_endpoint = config.rpc_endpoint.clone();
     thread::spawn(move || {
-        daemon::run(config).expect("Error in MyCitadel daemon runtime")
+        server::run(config).expect("Error in MyCitadel runtime")
     });
 
     Client::with(client::Config {

@@ -27,7 +27,7 @@ pub struct Opts {
     /// These params can be read also from the configuration file, not just
     /// command-line args or environment variables
     #[clap(flatten)]
-    pub daemon: crate::daemon::Opts,
+    pub daemon: crate::server::Opts,
 
     /// Command to execute
     #[clap(subcommand)]

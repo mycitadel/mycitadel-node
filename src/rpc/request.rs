@@ -11,39 +11,73 @@
 // along with this software.
 // If not, see <https://www.gnu.org/licenses/agpl-3.0-standalone.html>.
 
+use bitcoin::Address;
 use rgb::Genesis;
 
-use super::message::{CreateSingleSig, IdentityInfo, SignerAccount};
+use super::message::{
+    ContractRenameRequest, IdentityInfo, SignerAccountInfo, SingleSigInfo,
+};
+use crate::model::ContractId;
 
 #[derive(Clone, Debug, Display, Api)]
 #[api(encoding = "strict")]
 #[non_exhaustive]
 pub enum Request {
-    #[api(type = 0x0010)]
+    #[api(type = 0x0100)]
     #[display("list_contracts()")]
     ListContracts,
 
-    #[api(type = 0x0012)]
+    #[api(type = 0x0110)]
+    #[display(inner)]
+    CreateSingleSig(SingleSigInfo),
+
+    // Multisig 112
+    // Scripted 114
+    #[api(type = 0x0120)]
+    #[display(inner)]
+    RenameContract(ContractRenameRequest),
+
+    #[api(type = 0x0140)]
+    #[display("delete_contract({0})")]
+    DeleteContract(ContractId),
+
+    #[api(type = 0x0300)]
+    #[display(inner)]
+    ListAddresses(u8),
+
+    #[api(type = 0x0310)]
+    #[display(inner)]
+    CreateAddress(u8),
+
+    #[api(type = 0x0320)]
+    #[display("mark_used({0})")]
+    MarkUsed(Address),
+
+    #[api(type = 0x0332)]
+    #[display("mark_unused({0})")]
+    MarkUnused(Address),
+
+    #[api(type = 0x0400)]
+    #[display(inner)]
+    ListUtxo(u8),
+
+    #[api(type = 0x0500)]
     #[display("list_identities()")]
     ListIdentities,
 
-    #[api(type = 0x0014)]
-    #[display("list_assets()")]
-    ListAssets,
-
-    #[api(type = 0x0020)]
-    #[display("create_single_sig({0})")]
-    CreateSingleSig(CreateSingleSig),
-
-    #[api(type = 0x0030)]
+    #[api(type = 0x0610)]
     #[display("add_signing({0})")]
-    AddSigner(SignerAccount),
+    AddSigner(SignerAccountInfo),
 
-    #[api(type = 0x0040)]
+    #[api(type = 0x0510)]
     #[display("add_identity({0})")]
     AddIdentity(IdentityInfo),
 
-    #[api(type = 0x0050)]
+    #[api(type = 0x0700)]
+    #[display("list_assets()")]
+    ListAssets,
+
+    #[api(type = 0x0710)]
     #[display("import_asset({0})")]
     ImportAsset(Genesis),
 }

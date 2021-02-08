@@ -19,7 +19,7 @@ use lnpbp::Chain;
 
 #[cfg(feature = "shell")]
 use super::Opts;
-use crate::daemon::opts::MYCITADEL_STORAGE_FORMAT;
+use crate::server::opts::MYCITADEL_STORAGE_FORMAT;
 use crate::storage;
 
 /// Final configuration resulting from data contained in config file environment

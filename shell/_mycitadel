@@ -60,7 +60,17 @@ case $state in
         (( CURRENT += 1 ))
         curcontext="${curcontext%:*:*}:mycitadel-wallet-command-$line[1]:"
         case $line[1] in
-            (create)
+            (list)
+_arguments "${_arguments_options[@]}" \
+'*-v[Set verbosity level]' \
+'*--verbose[Set verbosity level]' \
+'-h[Prints help information]' \
+'--help[Prints help information]' \
+'-V[Prints version information]' \
+'--version[Prints version information]' \
+&& ret=0
+;;
+(create)
 _arguments "${_arguments_options[@]}" \
 '--bare[Creates old "bare" wallets, where public key is kept in the explicit form within bitcoin transaction P2PK output]' \
 '--legacy[Whether create a pre-SegWit wallet (P2PKH) rather than SegWit (P2WPKH). If you'\''d like to use legacy SegWit-style addresses (P2WPKH-in-P2SH), do not use this flag, create normal SegWit wallet instead and specify `--legacy` option when requesting new address]' \
@@ -101,7 +111,7 @@ _arguments "${_arguments_options[@]}" \
     ;;
 esac
 ;;
-(list)
+(rename)
 _arguments "${_arguments_options[@]}" \
 '*-v[Set verbosity level]' \
 '*--verbose[Set verbosity level]' \
@@ -109,6 +119,90 @@ _arguments "${_arguments_options[@]}" \
 '--help[Prints help information]' \
 '-V[Prints version information]' \
 '--version[Prints version information]' \
+':wallet-id -- Wallet id to rename:' \
+':name -- New name of the wallet:' \
+&& ret=0
+;;
+(delete)
+_arguments "${_arguments_options[@]}" \
+'*-v[Set verbosity level]' \
+'*--verbose[Set verbosity level]' \
+'-h[Prints help information]' \
+'--help[Prints help information]' \
+'-V[Prints version information]' \
+'--version[Prints version information]' \
+':wallet-id -- Wallet id to delete:' \
+&& ret=0
+;;
+        esac
+    ;;
+esac
+;;
+(address)
+_arguments "${_arguments_options[@]}" \
+'*-v[Set verbosity level]' \
+'*--verbose[Set verbosity level]' \
+'-h[Prints help information]' \
+'--help[Prints help information]' \
+'-V[Prints version information]' \
+'--version[Prints version information]' \
+":: :_mycitadel__address_commands" \
+"*::: :->address" \
+&& ret=0
+case $state in
+    (address)
+        words=($line[1] "${words[@]}")
+        (( CURRENT += 1 ))
+        curcontext="${curcontext%:*:*}:mycitadel-address-command-$line[1]:"
+        case $line[1] in
+            (list-used)
+_arguments "${_arguments_options[@]}" \
+'-d+[Extra depth for address scan when no more address uses are found]' \
+'--depth=[Extra depth for address scan when no more address uses are found]' \
+'-l+[Limit the number of addresses printed]' \
+'--limit=[Limit the number of addresses printed]' \
+'-f+[How the command output should be formatted]' \
+'--format=[How the command output should be formatted]' \
+'-r[Whether to re-scan addresses space with Electrum server]' \
+'--rescan[Whether to re-scan addresses space with Electrum server]' \
+'*-v[Set verbosity level]' \
+'*--verbose[Set verbosity level]' \
+'-h[Prints help information]' \
+'--help[Prints help information]' \
+'-V[Prints version information]' \
+'--version[Prints version information]' \
+':wallet-id -- Which wallet to use for address listing:' \
+&& ret=0
+;;
+(create)
+_arguments "${_arguments_options[@]}" \
+'-i+[Create address at custom index number]' \
+'--index=[Create address at custom index number]' \
+'-n+[Number of addresses to create]' \
+'--no=[Number of addresses to create]' \
+'-u[Whether to mark address as used]' \
+'--unmarked[Whether to mark address as used]' \
+'--legacy[Use SegWit legacy address format (applicable only to a SegWit wallets)]' \
+'*-v[Set verbosity level]' \
+'*--verbose[Set verbosity level]' \
+'-h[Prints help information]' \
+'--help[Prints help information]' \
+'-V[Prints version information]' \
+'--version[Prints version information]' \
+&& ret=0
+;;
+(mark-used)
+_arguments "${_arguments_options[@]}" \
+'--legacy[Use SegWit legacy address format (applicable only to a SegWit wallets)]' \
+'-u[Remove use mark (inverses the command)]' \
+'--unmark[Remove use mark (inverses the command)]' \
+'*-v[Set verbosity level]' \
+'*--verbose[Set verbosity level]' \
+'-h[Prints help information]' \
+'--help[Prints help information]' \
+'-V[Prints version information]' \
+'--version[Prints version information]' \
+'::index -- Index of address derivation path (use `address list` command to see address indexes:' \
 && ret=0
 ;;
         esac
@@ -174,10 +268,20 @@ esac
 _mycitadel_commands() {
     local commands; commands=(
         "wallet:Wallet management commands" \
+"address:Address-related commands" \
 "asset:Asset management commands" \
 "help:Prints this message or the help of the given subcommand(s)" \
     )
     _describe -t commands 'mycitadel commands' commands "$@"
+}
+(( $+functions[_mycitadel__address_commands] )) ||
+_mycitadel__address_commands() {
+    local commands; commands=(
+        "list-used:Print address list" \
+"create:" \
+"mark-used:" \
+    )
+    _describe -t commands 'mycitadel address commands' commands "$@"
 }
 (( $+functions[_mycitadel__asset_commands] )) ||
 _mycitadel__asset_commands() {
@@ -187,12 +291,26 @@ _mycitadel__asset_commands() {
     )
     _describe -t commands 'mycitadel asset commands' commands "$@"
 }
+(( $+functions[_mycitadel__address__create_commands] )) ||
+_mycitadel__address__create_commands() {
+    local commands; commands=(
+        
+    )
+    _describe -t commands 'mycitadel address create commands' commands "$@"
+}
 (( $+functions[_mycitadel__wallet__create_commands] )) ||
 _mycitadel__wallet__create_commands() {
     local commands; commands=(
         "single-sig:Creates current single-sig wallet account" \
     )
     _describe -t commands 'mycitadel wallet create commands' commands "$@"
+}
+(( $+functions[_mycitadel__wallet__delete_commands] )) ||
+_mycitadel__wallet__delete_commands() {
+    local commands; commands=(
+        
+    )
+    _describe -t commands 'mycitadel wallet delete commands' commands "$@"
 }
 (( $+functions[_mycitadel__help_commands] )) ||
 _mycitadel__help_commands() {
@@ -222,6 +340,27 @@ _mycitadel__wallet__list_commands() {
     )
     _describe -t commands 'mycitadel wallet list commands' commands "$@"
 }
+(( $+functions[_mycitadel__address__list-used_commands] )) ||
+_mycitadel__address__list-used_commands() {
+    local commands; commands=(
+        
+    )
+    _describe -t commands 'mycitadel address list-used commands' commands "$@"
+}
+(( $+functions[_mycitadel__address__mark-used_commands] )) ||
+_mycitadel__address__mark-used_commands() {
+    local commands; commands=(
+        
+    )
+    _describe -t commands 'mycitadel address mark-used commands' commands "$@"
+}
+(( $+functions[_mycitadel__wallet__rename_commands] )) ||
+_mycitadel__wallet__rename_commands() {
+    local commands; commands=(
+        
+    )
+    _describe -t commands 'mycitadel wallet rename commands' commands "$@"
+}
 (( $+functions[_mycitadel__wallet__create__single-sig_commands] )) ||
 _mycitadel__wallet__create__single-sig_commands() {
     local commands; commands=(
@@ -232,8 +371,10 @@ _mycitadel__wallet__create__single-sig_commands() {
 (( $+functions[_mycitadel__wallet_commands] )) ||
 _mycitadel__wallet_commands() {
     local commands; commands=(
-        "create:Creates wallet with a given name and descriptor parameters" \
-"list:Lists existing wallets" \
+        "list:Lists existing wallets" \
+"create:Creates wallet with a given name and descriptor parameters" \
+"rename:Change a name of a wallet" \
+"delete:Delete existing wallet contract" \
     )
     _describe -t commands 'mycitadel wallet commands' commands "$@"
 }

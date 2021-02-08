@@ -11,10 +11,10 @@
 // along with this software.
 // If not, see <https://www.gnu.org/licenses/agpl-3.0-standalone.html>.
 
-mod config;
-pub(crate) mod opts;
-mod runtime;
+//! Module responsible for requesting blockchain data
 
-pub use config::Config;
-pub use opts::Opts;
-pub use runtime::{run, Runtime};
+mod driver;
+mod electrum;
+
+pub use driver::Driver;
+pub use electrum::{ElectrumConfig, ElectrumDriver};

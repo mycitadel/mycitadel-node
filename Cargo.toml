@@ -69,6 +69,7 @@ amplify = "3"
 amplify_derive = "2.4.2"
 descriptor-wallet = { git = "https://github.com/LNP-BP/descriptor-wallet" }
 lnpbp = { git = "https://github.com/LNP-BP/rust-lnpbp" }
+bitcoin = "0.26"
 internet2 = { git = "https://github.com/internet2-org/rust-internet2" }
 microservices = { git = "https://github.com/internet2-org/rust-internet2", default-features = false }
 lazy_static = "1.4"
@@ -77,6 +78,8 @@ clap_generate = "3.0.0-beta.2"
 log = { version = "0.4", features = ["max_level_trace", "release_max_level_debug"] }
 shellexpand = "2"
 configure_me_codegen = "0.4"
+serde_crate = { package = "serde", version = "1", features = ["derive"], optional = true }
+serde_with = { version = "1.5", optional = true, features = ["hex", "chrono"] }
 
 # Recommended set of features:
 # 1. Standalone node: `server` (=`node`+`shell`)

@@ -181,6 +181,7 @@ impl Runtime {
                 .import_asset(genesis)
                 .map_err(|_| storage::Error::Remote)
                 .map(|asset| Reply::Asset(asset)),
+            _ => unimplemented!(),
         }
         .map_err(Error::from)
         .map_err(Error::into)

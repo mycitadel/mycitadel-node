@@ -12,9 +12,47 @@
 // If not, see <https://www.gnu.org/licenses/agpl-3.0-standalone.html>.
 
 use clap::{AppSettings, ArgGroup, Clap, ValueHint};
+use std::str::FromStr;
 use wallet::bip32::PubkeyChain;
 
+use crate::model;
+
 pub const MYCITADEL_CLI_CONFIG: &'static str = "{data_dir}/mycitadel-cli.toml";
+
+#[derive(
+    Clap, Copy, Clone, Ord, PartialOrd, Eq, PartialEq, Hash, Debug, Display,
+)]
+pub enum Formatting {
+    #[display("id")]
+    Id,
+
+    #[display("tab")]
+    Tab,
+
+    #[display("csv")]
+    Csv,
+
+    #[display("yaml")]
+    Yaml,
+
+    #[display("json")]
+    Json,
+}
+
+impl FromStr for Formatting {
+    type Err = String;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        Ok(match s {
+            "id" => Formatting::Id,
+            "tab" => Formatting::Tab,
+            "csv" => Formatting::Csv,
+            "yaml" => Formatting::Yaml,
+            "json" => Formatting::Json,
+            _ => Err("Unknown format name")?,
+        })
+    }
+}
 
 #[derive(Clap, Clone, Debug)]
 #[clap(
@@ -58,6 +96,13 @@ pub enum Command {
         subcommand: WalletCommand,
     },
 
+    /// Address-related commands
+    #[display("address {subcommand}")]
+    Address {
+        #[clap(subcommand)]
+        subcommand: AddressCommand,
+    },
+
     /// Asset management commands
     #[display("asset {subcommand}")]
     Asset {
@@ -69,6 +114,10 @@ pub enum Command {
 #[derive(Clap, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Debug, Display)]
 #[clap(setting = AppSettings::ColoredHelp)]
 pub enum WalletCommand {
+    /// Lists existing wallets
+    #[display("list")]
+    List,
+
     /// Creates wallet with a given name and descriptor parameters
     #[display("create {subcommand}")]
     Create {
@@ -97,9 +146,25 @@ pub enum WalletCommand {
         taproot: bool,
     },
 
-    /// Lists existing wallets
-    #[display("list")]
-    List,
+    /// Change a name of a wallet
+    #[display("rename {wallet_id} \"{name}\"")]
+    Rename {
+        /// Wallet id to rename
+        #[clap()]
+        wallet_id: model::ContractId,
+
+        /// New name of the wallet
+        #[clap()]
+        name: String,
+    },
+
+    /// Delete existing wallet contract
+    #[display("delete {wallet_id}")]
+    Delete {
+        /// Wallet id to delete
+        #[clap()]
+        wallet_id: model::ContractId,
+    },
 }
 
 #[derive(Clap, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Debug, Display)]
@@ -129,6 +194,68 @@ pub enum WalletCreateCommand {
         /// 0-1/*`
         #[clap()]
         pubkey_chain: PubkeyChain,
+    },
+}
+
+#[derive(Clap, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Debug, Display)]
+#[clap(setting = AppSettings::ColoredHelp)]
+pub enum AddressCommand {
+    /// Print address list
+    #[display("list {wallet_id}")]
+    ListUsed {
+        /// Which wallet to use for address listing
+        #[clap()]
+        wallet_id: model::ContractId,
+
+        /// Whether to re-scan addresses space with Electrum server
+        #[clap(short, long)]
+        rescan: bool,
+
+        /// Extra depth for address scan when no more address uses are found
+        #[clap(short, long, default_value = "20", requires = "rescan")]
+        depth: u16,
+
+        /// Limit the number of addresses printed
+        #[clap(short, long)]
+        limit: Option<usize>,
+
+        /// How the command output should be formatted
+        #[clap(short, long, default_value = "yaml")]
+        format: Formatting,
+    },
+
+    Create {
+        /// Create address at custom index number
+        #[clap(short, long)]
+        index: Option<u32>,
+
+        /// Whether to mark address as used
+        #[clap(short = 'u', long = "unmarked", parse(from_flag = std::ops::Not::not))]
+        mark_used: bool,
+
+        /// Number of addresses to create
+        #[clap(short, long, default_value = "1")]
+        no: u8,
+
+        /// Use SegWit legacy address format (applicable only to a SegWit
+        /// wallets)
+        #[clap(long, takes_value = false)]
+        legacy: bool,
+    },
+
+    MarkUsed {
+        /// Index of address derivation path (use `address list` command to see
+        /// address indexes
+        index: Option<u32>,
+
+        /// Use SegWit legacy address format (applicable only to a SegWit
+        /// wallets)
+        #[clap(long, takes_value = false)]
+        legacy: bool,
+
+        /// Remove use mark (inverses the command)
+        #[clap(short, long, takes_value = false)]
+        unmark: bool,
     },
 }
 

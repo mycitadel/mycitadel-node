@@ -41,6 +41,7 @@ impl Exec for Command {
         match self {
             Command::Wallet { subcommand } => subcommand.exec(client),
             Command::Asset { subcommand } => subcommand.exec(client),
+            _ => unimplemented!(),
         }
     }
 }
@@ -105,6 +106,7 @@ impl Exec for WalletCommand {
                             .expect("Error presenting data as YAML")
                     );
                 }),
+            _ => unimplemented!(),
         }
     }
 }
@@ -130,7 +132,7 @@ impl Exec for AssetCommand {
                 .asset_import(genesis)?
                 .report_error("importing asset")
                 .map(|reply| {
-                    eprintln!("Asset succesfully imported:");
+                    eprintln!("Asset successfully imported:");
                     println!(
                         "{}",
                         serde_yaml::to_string(&reply)

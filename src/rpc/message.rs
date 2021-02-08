@@ -20,14 +20,40 @@ use lnpbp::strict_encoding::{self, StrictDecode, StrictEncode};
 use wallet::bip32::PubkeyChain;
 use wallet::descriptor;
 
+use crate::model;
+
+#[cfg_attr(
+    feature = "serde",
+    serde_as,
+    derive(Serialize, Deserialize),
+    serde(crate = "serde_crate")
+)]
 #[derive(
     Clone, Eq, PartialEq, Hash, Debug, Display, StrictEncode, StrictDecode,
 )]
-#[display("{category}({pubkey_chain})")]
-pub struct CreateSingleSig {
+#[display("create_single_sig({category}({pubkey_chain}), \"{name}\")")]
+pub struct SingleSigInfo {
     pub name: String,
+    #[cfg_attr(feature = "serde", serde(with = "As::<DisplayFromStr>"))]
     pub pubkey_chain: PubkeyChain,
+    #[cfg_attr(feature = "serde", serde(with = "As::<DisplayFromStr>"))]
     pub category: descriptor::OuterCategory,
+}
+
+#[cfg_attr(
+    feature = "serde",
+    serde_as,
+    derive(Serialize, Deserialize),
+    serde(crate = "serde_crate")
+)]
+#[derive(
+    Clone, Eq, PartialEq, Hash, Debug, Display, StrictEncode, StrictDecode,
+)]
+#[display("rename_contract({contract_id}, \"{name}\")")]
+pub struct ContractRenameRequest {
+    #[cfg_attr(feature = "serde", serde(with = "As::<DisplayFromStr>"))]
+    pub contract_id: model::ContractId,
+    pub name: String,
 }
 
 #[cfg_attr(
@@ -38,14 +64,14 @@ pub struct CreateSingleSig {
 )]
 #[derive(Clone, Eq, PartialEq, Hash, Debug, Display)]
 #[display("{key}")]
-pub struct SignerAccount {
+pub struct SignerAccountInfo {
     pub title: String,
     #[cfg_attr(feature = "serde", serde(with = "As::<DisplayFromStr>"))]
     pub key: descriptor::SingleSig,
     pub used: Vec<RangeInclusive<u32>>,
 }
 
-impl StrictEncode for SignerAccount {
+impl StrictEncode for SignerAccountInfo {
     fn strict_encode<E: io::Write>(
         &self,
         mut e: E,
@@ -60,7 +86,7 @@ impl StrictEncode for SignerAccount {
     }
 }
 
-impl StrictDecode for SignerAccount {
+impl StrictDecode for SignerAccountInfo {
     fn strict_decode<D: io::Read>(
         mut d: D,
     ) -> Result<Self, strict_encoding::Error> {

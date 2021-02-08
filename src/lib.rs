@@ -44,6 +44,7 @@ extern crate serde_with;
 #[cfg(feature = "cli")]
 pub mod cli;
 mod error;
+pub mod model;
 #[cfg(feature = "shell")]
 pub mod opts;
 #[cfg(feature = "_rpc")]
@@ -51,16 +52,22 @@ pub mod rpc;
 
 #[cfg(feature = "client")]
 pub mod client;
-#[cfg(feature = "node")]
-pub mod daemon;
-pub mod model;
 #[cfg(all(feature = "cli", feature = "node"))]
-mod mycitadel;
+mod embedded;
+#[cfg(feature = "node")]
+pub mod server;
+
+#[cfg(feature = "node")]
+pub mod cache;
+#[cfg(feature = "node")]
+pub mod chainapi;
+#[cfg(feature = "node")]
+pub mod chainwatch;
 #[cfg(feature = "node")]
 pub mod storage;
 
 #[cfg(feature = "client")]
 pub use client::Client;
-pub use error::Error;
 #[cfg(all(feature = "cli", feature = "node"))]
-pub use mycitadel::{run_embedded, Opts as EmbeddedOpts};
+pub use embedded::{run_embedded, Opts as EmbeddedOpts};
+pub use error::Error;

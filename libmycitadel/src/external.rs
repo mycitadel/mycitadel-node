@@ -30,7 +30,7 @@ pub extern "C" fn mycitadel_run_embedded(
 ) -> *mut mycitadel_client_t {
     let chain = ptr_to_string(chain);
     let client = if let Ok(chain) = Chain::from_str(&chain) {
-        mycitadel::run_embedded(mycitadel::daemon::Config {
+        mycitadel::run_embedded(mycitadel::server::Config {
             verbose: 4,
             chain,
             rpc_endpoint: ZmqSocketAddr::Inproc(s!("mycitadel.rpc")),

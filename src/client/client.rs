@@ -75,7 +75,7 @@ impl Client {
         pubkey_chain: PubkeyChain,
         category: OuterCategory,
     ) -> Result<Reply, Error> {
-        self.request(Request::CreateSingleSig(message::CreateSingleSig {
+        self.request(Request::CreateSingleSig(message::SingleSigInfo {
             name,
             pubkey_chain,
             category,

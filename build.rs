@@ -13,9 +13,16 @@
 
 #[macro_use]
 extern crate amplify_derive;
+#[macro_use]
+extern crate serde_with;
+extern crate serde_crate as serde;
 
 use clap::IntoApp;
 use clap_generate::{generate_to, generators::*};
+
+pub mod model {
+    include!("src/model/ids.rs");
+}
 
 pub mod opts {
     include!("src/opts.rs");
@@ -24,20 +31,20 @@ pub mod opts {
 pub mod cli {
     include!("src/cli/opts.rs");
 }
-pub mod daemon {
-    include!("src/daemon/opts.rs");
+pub mod server {
+    include!("src/server/opts.rs");
 }
-pub mod mycitadel {
-    include!("src/mycitadel/opts.rs");
+pub mod embedded {
+    include!("src/embedded/opts.rs");
 }
 
 fn main() -> Result<(), configure_me_codegen::Error> {
     let outdir = "./shell";
 
     for app in [
-        daemon::Opts::into_app(),
+        server::Opts::into_app(),
         cli::Opts::into_app(),
-        mycitadel::Opts::into_app(),
+        embedded::Opts::into_app(),
     ]
     .iter_mut()
     {
