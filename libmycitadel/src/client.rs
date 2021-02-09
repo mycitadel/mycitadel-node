@@ -88,7 +88,7 @@ impl mycitadel_client_t {
             Error::NotSupported(_) => ERRNO_NOTSUPPORTED,
             Error::StorageDriver(_) => ERRNO_STORAGE,
             Error::ServerFailure(_) => ERRNO_SERVERFAIL,
-            Error::EmbeddedNodeError => ERRNO_EMBEDDEDFAIL,
+            Error::EmbeddedNodeInitError => ERRNO_EMBEDDEDFAIL,
             _ => c_int::MAX,
         };
         self.set_error_details(err_no, &err.to_string());

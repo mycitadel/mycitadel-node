@@ -127,6 +127,22 @@ _arguments "${_arguments_options[@]}" \
 ':wallet-id -- Wallet id to delete:' \
 && ret=0
 ;;
+(balance)
+_arguments "${_arguments_options[@]}" \
+'--lookup-depth=[How many addresses should be scanned at least after the final address with no transactions is reached]' \
+'-f+[How the command output should be formatted]' \
+'--format=[How the command output should be formatted]' \
+'-r[Whether to re-scan addresses space with Electrum server]' \
+'--rescan[Whether to re-scan addresses space with Electrum server]' \
+'*-v[Set verbosity level]' \
+'*--verbose[Set verbosity level]' \
+'-h[Prints help information]' \
+'--help[Prints help information]' \
+'-V[Prints version information]' \
+'--version[Prints version information]' \
+':wallet-id -- Wallet id for the operation:' \
+&& ret=0
+;;
         esac
     ;;
 esac
@@ -150,12 +166,11 @@ case $state in
         case $line[1] in
             (list-used)
 _arguments "${_arguments_options[@]}" \
-'-d+[Extra depth for address scan when no more address uses are found]' \
-'--depth=[Extra depth for address scan when no more address uses are found]' \
-'-l+[Limit the number of addresses printed]' \
-'--limit=[Limit the number of addresses printed]' \
+'--lookup-depth=[How many addresses should be scanned at least after the final address with no transactions is reached]' \
 '-f+[How the command output should be formatted]' \
 '--format=[How the command output should be formatted]' \
+'-l+[Limit the number of addresses printed]' \
+'--limit=[Limit the number of addresses printed]' \
 '-r[Whether to re-scan addresses space with Electrum server]' \
 '--rescan[Whether to re-scan addresses space with Electrum server]' \
 '*-v[Set verbosity level]' \
@@ -164,7 +179,7 @@ _arguments "${_arguments_options[@]}" \
 '--help[Prints help information]' \
 '-V[Prints version information]' \
 '--version[Prints version information]' \
-':wallet-id -- Which wallet to use for address listing:' \
+':wallet-id -- Wallet id for the operation:' \
 && ret=0
 ;;
 (create)
@@ -284,6 +299,13 @@ _mycitadel-cli__asset_commands() {
     )
     _describe -t commands 'mycitadel-cli asset commands' commands "$@"
 }
+(( $+functions[_mycitadel-cli__wallet__balance_commands] )) ||
+_mycitadel-cli__wallet__balance_commands() {
+    local commands; commands=(
+        
+    )
+    _describe -t commands 'mycitadel-cli wallet balance commands' commands "$@"
+}
 (( $+functions[_mycitadel-cli__address__create_commands] )) ||
 _mycitadel-cli__address__create_commands() {
     local commands; commands=(
@@ -368,6 +390,7 @@ _mycitadel-cli__wallet_commands() {
 "create:Creates wallet with a given name and descriptor parameters" \
 "rename:Change a name of a wallet" \
 "delete:Delete existing wallet contract" \
+"balance:Returns detailed wallet balance information" \
     )
     _describe -t commands 'mycitadel-cli wallet commands' commands "$@"
 }

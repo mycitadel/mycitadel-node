@@ -19,6 +19,9 @@ _mycitadel-cli() {
             asset)
                 cmd+="__asset"
                 ;;
+            balance)
+                cmd+="__balance"
+                ;;
             create)
                 cmd+="__create"
                 ;;
@@ -142,26 +145,14 @@ _mycitadel-cli() {
             return 0
             ;;
         mycitadel__cli__address__list__used)
-            opts=" -r -d -l -f -v -h -V  --rescan --depth --limit --format --verbose --help --version  <wallet-id> "
+            opts=" -r -f -l -v -h -V  --rescan --lookup-depth --format --limit --verbose --help --version  <wallet-id> "
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
             fi
             case "${prev}" in
                 
-                --depth)
-                    COMPREPLY=($(compgen -f "${cur}"))
-                    return 0
-                    ;;
-                    -d)
-                    COMPREPLY=($(compgen -f "${cur}"))
-                    return 0
-                    ;;
-                --limit)
-                    COMPREPLY=($(compgen -f "${cur}"))
-                    return 0
-                    ;;
-                    -l)
+                --lookup-depth)
                     COMPREPLY=($(compgen -f "${cur}"))
                     return 0
                     ;;
@@ -170,6 +161,14 @@ _mycitadel-cli() {
                     return 0
                     ;;
                     -f)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                --limit)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                    -l)
                     COMPREPLY=($(compgen -f "${cur}"))
                     return 0
                     ;;
@@ -256,13 +255,40 @@ _mycitadel-cli() {
             return 0
             ;;
         mycitadel__cli__wallet)
-            opts=" -v -h -V  --verbose --help --version  list create rename delete"
+            opts=" -v -h -V  --verbose --help --version  list create rename delete balance"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
             fi
             case "${prev}" in
                 
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        mycitadel__cli__wallet__balance)
+            opts=" -r -f -v -h -V  --rescan --lookup-depth --format --verbose --help --version  <wallet-id> "
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                
+                --lookup-depth)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                --format)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                    -f)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
                 *)
                     COMPREPLY=()
                     ;;

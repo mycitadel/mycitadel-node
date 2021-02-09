@@ -19,12 +19,13 @@ use internet2::{
     Unmarshall, Unmarshaller,
 };
 use rgb::Genesis;
-
-use super::Config;
-use crate::rpc::{message, Reply, Request};
-use crate::Error;
 use wallet::bip32::PubkeyChain;
 use wallet::descriptor::OuterCategory;
+
+use super::Config;
+use crate::model::ContractId;
+use crate::rpc::{message, Reply, Request};
+use crate::Error;
 
 #[repr(C)]
 pub struct Client {
@@ -82,17 +83,33 @@ impl Client {
         }))
     }
 
+    pub fn contract_balance(
+        &mut self,
+        contract_id: ContractId,
+        rescan: bool,
+        lookup_depth: u8,
+    ) -> Result<Reply, Error> {
+        if rescan {
+            self.request(Request::SyncContract(message::SyncContractRequest {
+                contract_id,
+                lookup_depth,
+            }))
+        } else {
+            self.request(Request::ContractUnspent(contract_id))
+        }
+    }
+
     pub fn asset_list(&mut self) -> Result<Reply, Error> {
         self.request(Request::ListAssets)
     }
 
     pub fn asset_import(
         &mut self,
-        genesis1bech: String,
+        genesis_bech: String,
     ) -> Result<Reply, Error> {
-        let genesis = Genesis::from_str(&genesis1bech).map_err(|err| {
+        let genesis = Genesis::from_str(&genesis_bech).map_err(|err| {
             error!("Wrong genesis data: {}", err);
-            Error::EmbeddedNodeError
+            Error::EmbeddedNodeInitError
         })?;
         self.request(Request::ImportAsset(genesis))
     }

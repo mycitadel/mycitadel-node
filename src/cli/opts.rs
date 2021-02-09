@@ -23,18 +23,29 @@ pub const MYCITADEL_CLI_CONFIG: &'static str = "{data_dir}/mycitadel-cli.toml";
     Clap, Copy, Clone, Ord, PartialOrd, Eq, PartialEq, Hash, Debug, Display,
 )]
 pub enum Formatting {
+    /// Print only data identifier strings (in Bech32m format), one per line
     #[display("id")]
     Id,
 
+    /// Print a single entry per line formatted with a compact formatting
+    /// option (type-specifc). This can be, for instance, `<txid>:<vout>`
+    /// format for transaction outpoint, etc.
+    #[display("compact")]
+    Compact,
+
+    /// Print tab-separated list of items
     #[display("tab")]
     Tab,
 
+    /// Print comma-separated list of items
     #[display("csv")]
     Csv,
 
+    /// Output data as formatted YAML
     #[display("yaml")]
     Yaml,
 
+    /// Output data as JSON
     #[display("json")]
     Json,
 }
@@ -45,6 +56,7 @@ impl FromStr for Formatting {
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         Ok(match s {
             "id" => Formatting::Id,
+            "compact" => Formatting::Compact,
             "tab" => Formatting::Tab,
             "csv" => Formatting::Csv,
             "yaml" => Formatting::Yaml,
@@ -97,7 +109,7 @@ pub enum Command {
     },
 
     /// Address-related commands
-    #[display("address {subcommand}")]
+    #[display("address")]
     Address {
         #[clap(subcommand)]
         subcommand: AddressCommand,
@@ -165,6 +177,12 @@ pub enum WalletCommand {
         #[clap()]
         wallet_id: model::ContractId,
     },
+
+    /// Returns detailed wallet balance information
+    Balance {
+        #[clap(flatten)]
+        opts: WalletOpts,
+    },
 }
 
 #[derive(Clap, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Debug, Display)]
@@ -197,31 +215,17 @@ pub enum WalletCreateCommand {
     },
 }
 
-#[derive(Clap, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Debug, Display)]
+#[derive(Clap, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Debug)]
 #[clap(setting = AppSettings::ColoredHelp)]
 pub enum AddressCommand {
     /// Print address list
-    #[display("list {wallet_id}")]
     ListUsed {
-        /// Which wallet to use for address listing
-        #[clap()]
-        wallet_id: model::ContractId,
-
-        /// Whether to re-scan addresses space with Electrum server
-        #[clap(short, long)]
-        rescan: bool,
-
-        /// Extra depth for address scan when no more address uses are found
-        #[clap(short, long, default_value = "20", requires = "rescan")]
-        depth: u16,
+        #[clap(flatten)]
+        scan_opts: WalletOpts,
 
         /// Limit the number of addresses printed
         #[clap(short, long)]
         limit: Option<usize>,
-
-        /// How the command output should be formatted
-        #[clap(short, long, default_value = "yaml")]
-        format: Formatting,
     },
 
     Create {
@@ -274,4 +278,24 @@ pub enum AssetCommand {
         #[clap()]
         genesis: String,
     },
+}
+
+#[derive(Clap, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Debug)]
+pub struct WalletOpts {
+    /// Wallet id for the operation
+    #[clap()]
+    pub wallet_id: model::ContractId,
+
+    /// Whether to re-scan addresses space with Electrum server
+    #[clap(short, long)]
+    pub rescan: bool,
+
+    /// How many addresses should be scanned at least after the final address
+    /// with no transactions is reached
+    #[clap(long, default_value = "20", requires = "rescan")]
+    pub lookup_depth: u8,
+
+    /// How the command output should be formatted
+    #[clap(short, long, default_value = "yaml")]
+    pub format: Formatting,
 }

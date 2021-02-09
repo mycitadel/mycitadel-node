@@ -15,7 +15,10 @@ use colored::Colorize;
 use microservices::shell::Exec;
 use wallet::descriptor;
 
-use super::{AssetCommand, Command, WalletCommand, WalletCreateCommand};
+use super::{
+    AssetCommand, Command, OutputFormat, WalletCommand, WalletCreateCommand,
+    WalletOpts,
+};
 use crate::rpc;
 use crate::rpc::Reply;
 use crate::{Client, Error};
@@ -78,20 +81,18 @@ impl Exec for WalletCommand {
                 client
                     .create_single_sig(name, pubkey_chain, category)?
                     .report_error("during wallet creation")
-                    .map(|reply| {
+                    .and_then(|reply| {
                         match reply {
-                            Reply::Contract(contract) => {
+                            Reply::Contract(ref contract) => {
                                 eprint!(
                                     "Wallet named '{}' was successfully created.\
                                      Use the following string as the wallet id: ",
                                     contract.name().green().bold()
                                 );
                                 println!("{}", contract.id().to_string().bright_green());
+                                Ok(())
                             }
-                            _ => eprintln!(
-                                "Unexpected server response; please check that \
-                                 the client version matches server"
-                            )
+                            _ => Err(Error::UnexpectedApi)
                         }
                     })
             }
@@ -106,6 +107,22 @@ impl Exec for WalletCommand {
                             .expect("Error presenting data as YAML")
                     );
                 }),
+            WalletCommand::Balance {
+                opts:
+                    WalletOpts {
+                        wallet_id,
+                        rescan,
+                        lookup_depth,
+                        format,
+                    },
+            } => client
+                .contract_balance(wallet_id, rescan, lookup_depth)?
+                .report_error("retrieving wallet balance")
+                .and_then(|reply| match reply {
+                    Reply::ContractUnspent(unspent) => Ok(unspent),
+                    _ => Err(Error::UnexpectedApi),
+                })
+                .map(|unspent| unspent.output_print(format)),
             _ => unimplemented!(),
         }
     }

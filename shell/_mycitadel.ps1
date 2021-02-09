@@ -56,6 +56,7 @@ Register-ArgumentCompleter -Native -CommandName 'mycitadel' -ScriptBlock {
             [CompletionResult]::new('create', 'create', [CompletionResultType]::ParameterValue, 'Creates wallet with a given name and descriptor parameters')
             [CompletionResult]::new('rename', 'rename', [CompletionResultType]::ParameterValue, 'Change a name of a wallet')
             [CompletionResult]::new('delete', 'delete', [CompletionResultType]::ParameterValue, 'Delete existing wallet contract')
+            [CompletionResult]::new('balance', 'balance', [CompletionResultType]::ParameterValue, 'Returns detailed wallet balance information')
             break
         }
         'mycitadel;wallet;list' {
@@ -112,6 +113,20 @@ Register-ArgumentCompleter -Native -CommandName 'mycitadel' -ScriptBlock {
             [CompletionResult]::new('--version', 'version', [CompletionResultType]::ParameterName, 'Prints version information')
             break
         }
+        'mycitadel;wallet;balance' {
+            [CompletionResult]::new('--lookup-depth', 'lookup-depth', [CompletionResultType]::ParameterName, 'How many addresses should be scanned at least after the final address with no transactions is reached')
+            [CompletionResult]::new('-f', 'f', [CompletionResultType]::ParameterName, 'How the command output should be formatted')
+            [CompletionResult]::new('--format', 'format', [CompletionResultType]::ParameterName, 'How the command output should be formatted')
+            [CompletionResult]::new('-r', 'r', [CompletionResultType]::ParameterName, 'Whether to re-scan addresses space with Electrum server')
+            [CompletionResult]::new('--rescan', 'rescan', [CompletionResultType]::ParameterName, 'Whether to re-scan addresses space with Electrum server')
+            [CompletionResult]::new('-v', 'v', [CompletionResultType]::ParameterName, 'Set verbosity level')
+            [CompletionResult]::new('--verbose', 'verbose', [CompletionResultType]::ParameterName, 'Set verbosity level')
+            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Prints help information')
+            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Prints help information')
+            [CompletionResult]::new('-V', 'V', [CompletionResultType]::ParameterName, 'Prints version information')
+            [CompletionResult]::new('--version', 'version', [CompletionResultType]::ParameterName, 'Prints version information')
+            break
+        }
         'mycitadel;address' {
             [CompletionResult]::new('-v', 'v', [CompletionResultType]::ParameterName, 'Set verbosity level')
             [CompletionResult]::new('--verbose', 'verbose', [CompletionResultType]::ParameterName, 'Set verbosity level')
@@ -125,12 +140,11 @@ Register-ArgumentCompleter -Native -CommandName 'mycitadel' -ScriptBlock {
             break
         }
         'mycitadel;address;list-used' {
-            [CompletionResult]::new('-d', 'd', [CompletionResultType]::ParameterName, 'Extra depth for address scan when no more address uses are found')
-            [CompletionResult]::new('--depth', 'depth', [CompletionResultType]::ParameterName, 'Extra depth for address scan when no more address uses are found')
-            [CompletionResult]::new('-l', 'l', [CompletionResultType]::ParameterName, 'Limit the number of addresses printed')
-            [CompletionResult]::new('--limit', 'limit', [CompletionResultType]::ParameterName, 'Limit the number of addresses printed')
+            [CompletionResult]::new('--lookup-depth', 'lookup-depth', [CompletionResultType]::ParameterName, 'How many addresses should be scanned at least after the final address with no transactions is reached')
             [CompletionResult]::new('-f', 'f', [CompletionResultType]::ParameterName, 'How the command output should be formatted')
             [CompletionResult]::new('--format', 'format', [CompletionResultType]::ParameterName, 'How the command output should be formatted')
+            [CompletionResult]::new('-l', 'l', [CompletionResultType]::ParameterName, 'Limit the number of addresses printed')
+            [CompletionResult]::new('--limit', 'limit', [CompletionResultType]::ParameterName, 'Limit the number of addresses printed')
             [CompletionResult]::new('-r', 'r', [CompletionResultType]::ParameterName, 'Whether to re-scan addresses space with Electrum server')
             [CompletionResult]::new('--rescan', 'rescan', [CompletionResultType]::ParameterName, 'Whether to re-scan addresses space with Electrum server')
             [CompletionResult]::new('-v', 'v', [CompletionResultType]::ParameterName, 'Set verbosity level')

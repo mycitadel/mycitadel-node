@@ -78,7 +78,11 @@ pub enum Error {
     StrictEncoding(strict_encoding::Error),
 
     /// error initializing embedded node
-    EmbeddedNodeError,
+    EmbeddedNodeInitError,
+
+    /// unexpected RPC API message; please check that the client version
+    /// matches server
+    UnexpectedApi,
 }
 
 impl microservices::error::Error for Error {}

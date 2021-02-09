@@ -108,7 +108,7 @@ impl Runtime {
                 network: config.chain.clone(),
                 run_embedded: false,
             })
-            .map_err(|_| Error::EmbeddedNodeError)?;
+            .map_err(|_| Error::EmbeddedNodeInitError)?;
         debug!("RGB node runtime successfully connected");
 
         info!("MyCitadel runtime started successfully");

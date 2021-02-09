@@ -13,7 +13,10 @@
 
 mod command;
 mod opts;
+mod output;
 
 pub use opts::{
-    AssetCommand, Command, Opts, WalletCommand, WalletCreateCommand,
+    AssetCommand, Command, Formatting, Opts, WalletCommand,
+    WalletCreateCommand, WalletOpts,
 };
+pub use output::OutputFormat;
