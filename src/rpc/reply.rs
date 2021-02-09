@@ -11,6 +11,8 @@
 // along with this software.
 // If not, see <https://www.gnu.org/licenses/agpl-3.0-standalone.html>.
 
+use std::collections::BTreeMap;
+
 use internet2::presentation;
 use microservices::{rpc, rpc_connection};
 
@@ -45,7 +47,7 @@ pub enum Reply {
 
     #[api(type = 0x0202)]
     #[display("contract_unspent(...)")]
-    ContractUnspent(Vec<Unspent>),
+    ContractUnspent(BTreeMap<rgb::ContractId, Vec<Unspent>>),
 
     #[api(type = 0x0202)]
     #[display("asset({0})")]

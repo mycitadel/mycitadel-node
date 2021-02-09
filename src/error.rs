@@ -51,7 +51,11 @@ pub enum Error {
     /// RGB node error: {0}
     #[cfg(any(feature = "server", feature = "embedded"))]
     #[from(rgb_node::i9n::Error)]
-    RrbNode,
+    RgbNode,
+
+    /// electrum server error: {0}
+    #[from(electrum_client::Error)]
+    Electrum,
 
     /// storage error: {0}
     #[cfg(any(feature = "server", feature = "embedded"))]
@@ -67,6 +71,11 @@ pub enum Error {
     /// server-reported failure
     #[from]
     ServerFailure(rpc::Failure),
+
+    /// Error in strict data encoding: {0}
+    /// Make sure that the storage is not broken.
+    #[from]
+    StrictEncoding(strict_encoding::Error),
 
     /// error initializing embedded node
     EmbeddedNodeError,

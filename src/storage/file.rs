@@ -21,7 +21,7 @@ use lnpbp::strict_encoding::{StrictDecode, StrictEncode};
 use microservices::FileFormat;
 
 use super::{Driver, Error};
-use crate::model::{Contract, Wallet};
+use crate::model::{Contract, ContractId, Policy, Wallet};
 use crate::rpc::message::{IdentityInfo, SignerAccountInfo};
 use crate::server::opts::MYCITADEL_STORAGE_FILE;
 
@@ -150,6 +150,14 @@ impl Driver for FileDriver {
         self.data.contracts.insert(*contract.id(), contract.clone());
         self.store()?;
         Ok(contract)
+    }
+
+    fn policy(&self, contract_id: ContractId) -> Result<&Policy, Error> {
+        self.data
+            .contracts
+            .get(&contract_id)
+            .ok_or(Error::ContractNotFound(contract_id))
+            .map(Contract::policy)
     }
 
     fn signers(&self) -> Result<Vec<SignerAccountInfo>, Error> {

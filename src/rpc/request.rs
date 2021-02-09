@@ -18,6 +18,7 @@ use super::message::{
     ContractRenameRequest, IdentityInfo, SignerAccountInfo, SingleSigInfo,
 };
 use crate::model::ContractId;
+use crate::rpc::message::SyncContractRequest;
 
 #[derive(Clone, Debug, Display, Api)]
 #[api(encoding = "strict")]
@@ -28,6 +29,10 @@ pub enum Request {
     ListContracts,
 
     #[api(type = 0x0101)]
+    #[display(inner)]
+    SyncContract(SyncContractRequest),
+
+    #[api(type = 0x0102)]
     #[display("contract_unspent({0})")]
     ContractUnspent(ContractId),
 
@@ -35,8 +40,6 @@ pub enum Request {
     #[display(inner)]
     CreateSingleSig(SingleSigInfo),
 
-    // Multisig 112
-    // Scripted 114
     #[api(type = 0x0120)]
     #[display(inner)]
     RenameContract(ContractRenameRequest),

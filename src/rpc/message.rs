@@ -49,6 +49,21 @@ pub struct SingleSigInfo {
 #[derive(
     Clone, Eq, PartialEq, Hash, Debug, Display, StrictEncode, StrictDecode,
 )]
+#[display("sync_contract({contract_id}, depth: {lookup_depth}")]
+pub struct SyncContractRequest {
+    pub contract_id: model::ContractId,
+    pub lookup_depth: u8,
+}
+
+#[cfg_attr(
+    feature = "serde",
+    serde_as,
+    derive(Serialize, Deserialize),
+    serde(crate = "serde_crate")
+)]
+#[derive(
+    Clone, Eq, PartialEq, Hash, Debug, Display, StrictEncode, StrictDecode,
+)]
 #[display("rename_contract({contract_id}, \"{name}\")")]
 pub struct ContractRenameRequest {
     #[cfg_attr(feature = "serde", serde(with = "As::<DisplayFromStr>"))]

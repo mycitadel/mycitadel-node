@@ -19,12 +19,13 @@ pub use file::{FileConfig, FileDriver};
 
 // -----------------------------------------------------------------------------
 
-use crate::model::{self, Contract};
+use crate::model::{self, Contract, ContractId, Policy};
 use crate::rpc::message::{IdentityInfo, SignerAccountInfo};
 
 pub trait Driver {
     fn contracts(&self) -> Result<Vec<Contract>, Error>;
     fn add_contract(&mut self, contract: Contract) -> Result<Contract, Error>;
+    fn policy(&self, contract_id: ContractId) -> Result<&Policy, Error>;
 
     fn signers(&self) -> Result<Vec<SignerAccountInfo>, Error>;
     fn add_signer(
@@ -55,6 +56,9 @@ pub enum Error {
     #[from]
     ContractExists(model::ContractId),
 
+    /// Contract with the given id {0} is not found
+    ContractNotFound(model::ContractId),
+
     /// Identity with the provided id {0} already exists
     #[from]
     IdentityExists(rgb::ContractId),
@@ -78,9 +82,6 @@ pub enum Error {
     #[from(toml::de::Error)]
     #[from(toml::ser::Error)]
     TomlEncoding,
-
-    /// Error by remote RGB runtime
-    Remote,
 }
 
 impl From<serde_yaml::Error> for Error {

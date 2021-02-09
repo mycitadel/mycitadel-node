@@ -14,12 +14,16 @@
 #[cfg(feature = "serde")]
 use serde_with::{As, DisplayFromStr};
 use std::io;
+use std::ops::Range;
 
+use bitcoin::util::bip32::ChildNumber;
+use bitcoin::Script;
 use internet2::RemoteNodeAddr;
 use lnp::ChannelId;
 use lnpbp::client_side_validation::{CommitEncode, ConsensusCommit};
+use miniscript::{Descriptor, DescriptorTrait, TranslatePk2};
 use strict_encoding::{self, StrictDecode, StrictEncode};
-use wallet::bip32::PubkeyChain;
+use wallet::bip32::{ChildIndex, PubkeyChain, TerminalStep};
 use wallet::descriptor::ContractDescriptor;
 
 use super::ContractId;
@@ -133,6 +137,45 @@ impl Policy {
             Policy::Saving { .. } => PolicyType::Saving,
         }
     }
+
+    pub fn to_descriptor(&self) -> Descriptor<PubkeyChain> {
+        match self {
+            Policy::Current(descriptor) => descriptor.to_descriptor(false),
+            Policy::Instant(channel) => channel.to_descriptor(),
+            Policy::Saving(descriptor) => descriptor.to_descriptor(false),
+        }
+    }
+
+    pub fn derive_scripts(&self, range: Range<u32>) -> Vec<Script> {
+        let d = self.to_descriptor();
+        let mut scripts = vec![];
+        for index in range {
+            scripts.push(
+                d.translate_pk2_infallible(|chain| {
+                    // TODO: Add convenience PubkeyChain methods
+                    let mut path = chain.terminal_path.clone();
+                    if path.last() == Some(&TerminalStep::Wildcard) {
+                        path.remove(path.len() - 1);
+                    }
+                    path.push(TerminalStep::Index(index.into()));
+                    chain
+                        .branch_xpub
+                        .derive_pub(
+                            &wallet::SECP256K1,
+                            &path
+                                .into_iter()
+                                .filter_map(TerminalStep::index)
+                                .map(|index| ChildNumber::Normal { index })
+                                .collect::<Vec<_>>(),
+                        )
+                        .expect("Unhardened derivation can't fail")
+                        .public_key
+                })
+                .script_pubkey(),
+            )
+        }
+        scripts
+    }
 }
 
 #[cfg_attr(
@@ -159,4 +202,13 @@ pub struct ChannelDescriptor {
 
     #[cfg_attr(feature = "serde", serde(with = "As::<Vec<DisplayFromStr>>"))]
     peers: Vec<RemoteNodeAddr>,
+}
+
+impl ChannelDescriptor {
+    // TODO: Store base points in the channel descriptor and use them to derive
+    //       descriptors for all channel transaction outputs to monitor their
+    //       onchain status
+    pub fn to_descriptor(&self) -> Descriptor<PubkeyChain> {
+        unimplemented!()
+    }
 }

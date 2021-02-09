@@ -11,16 +11,41 @@
 // along with this software.
 // If not, see <https://www.gnu.org/licenses/agpl-3.0-standalone.html>.
 
+use std::collections::BTreeMap;
+
 use super::FileDriver;
 use crate::cache::{Driver, Error};
 use crate::model::{ContractId, Unspent};
 
 impl Driver for FileDriver {
-    fn unspent(&self, contract_id: ContractId) -> Result<Vec<Unspent>, Error> {
+    fn unspent(
+        &self,
+        contract_id: ContractId,
+    ) -> Result<BTreeMap<rgb::ContractId, Vec<Unspent>>, Error> {
         self.cache
             .descriptors
             .get(&contract_id)
             .map(|c| c.unspent.clone())
             .ok_or(Error::NotFound(contract_id.to_string()))
+    }
+
+    fn update(
+        &mut self,
+        contract_id: ContractId,
+        updated_height: Option<u32>,
+        unspent: BTreeMap<rgb::ContractId, Vec<Unspent>>,
+    ) -> Result<(), Error> {
+        // TODO: Update address & txid & used index cache
+        let ptr = self
+            .cache
+            .descriptors
+            .get_mut(&contract_id)
+            .ok_or(Error::NotFound(contract_id.to_string()))?;
+        ptr.unspent = unspent;
+        if let Some(height) = updated_height {
+            self.cache.known_height = height;
+            ptr.updated_height = height;
+        }
+        Ok(())
     }
 }

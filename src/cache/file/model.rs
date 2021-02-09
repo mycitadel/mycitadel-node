@@ -31,8 +31,7 @@ use crate::model::{ContractId, Unspent};
     Getters, Clone, PartialEq, Debug, Default, StrictEncode, StrictDecode,
 )]
 pub(super) struct Cache {
-    #[cfg_attr(feature = "serde", serde(with = "As::<DisplayFromStr>"))]
-    pub known_height: usize,
+    pub known_height: u32,
 
     pub descriptors: BTreeMap<ContractId, ContractCache>,
 
@@ -49,7 +48,7 @@ pub(super) struct Cache {
         )
     )]
     /// Mapping transaction id to the block height and block offset
-    pub mine_info: BTreeMap<Txid, (usize, usize)>,
+    pub mine_info: BTreeMap<Txid, (u32, u16)>,
 }
 
 #[cfg_attr(
@@ -60,10 +59,15 @@ pub(super) struct Cache {
 )]
 #[derive(Clone, PartialEq, Debug, StrictEncode, StrictDecode)]
 pub(super) struct ContractCache {
+    pub updated_height: u32,
+
     pub addresses: BTreeMap<Address, UnhardenedIndex>,
 
     pub used: BTreeMap<UnhardenedIndex, Address>,
 
-    #[cfg_attr(feature = "serde", serde(with = "As::<Vec<DisplayFromStr>>"))]
-    pub unspent: Vec<Unspent>,
+    #[cfg_attr(
+        feature = "serde",
+        serde(with = "As::<BTreeMap<DisplayFromStr, Vec<DisplayFromStr>>>")
+    )]
+    pub unspent: BTreeMap<rgb::ContractId, Vec<Unspent>>,
 }
