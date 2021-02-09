@@ -1,7 +1,7 @@
 [package]
 name = "mycitadel"
 description = "Node operating MyCitadel wallet (can be embedded, self- or cloud-hosted)"
-version = "0.1.0-alpha.2"
+version = "0.1.0-beta"
 license = "AGPL-3.0-only"
 authors = ["Dr. Maxim Orlovsky <orlovsky@mycitadel.io>"]
 keywords = ["bitcoin", "rgb", "wallet", "lightning"]

@@ -41,12 +41,9 @@ pub struct SharedOpts {
     )]
     pub tor_proxy: Option<Option<SocketAddr>>,
 
-    /// ZMQ socket name/address for daemon RPC interface
+    /// ZMQ socket name/address for MyCitadel node RPC interface
     ///
-    /// Internal interface for control PRC protocol communications
-    /// Defaults to `ctl.rpc` file inside `--data-dir` directory, unless
-    /// `--use-threads` is specified; in that cases uses in-memory
-    /// communication protocol.
+    /// Internal interface for control PRC protocol communications.
     #[clap(
         short = 'x',
         long,

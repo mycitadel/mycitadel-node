@@ -63,11 +63,15 @@ where
     T: OutputFormat,
 {
     fn output_print(&self, format: Formatting) {
+        if self.is_empty() {
+            eprintln!("{}", "No items".red());
+            return;
+        }
         let headers = T::output_headers();
         if format == Formatting::Tab {
-            println!("{}\n", headers.join("\t").bright_green())
+            println!("{}", headers.join("\t").bright_green())
         } else if format == Formatting::Csv {
-            println!("{}\n", headers.join(","))
+            println!("{}", headers.join(","))
         }
         self.iter().for_each(|t| t.output_print(format));
     }
@@ -106,9 +110,9 @@ where
     fn output_print(&self, format: Formatting) {
         let headers = Self::output_headers();
         if format == Formatting::Tab {
-            println!("{}\n", headers.join("\t").bright_green())
+            println!("{}", headers.join("\t").bright_green())
         } else if format == Formatting::Csv {
-            println!("{}\n", headers.join(","))
+            println!("{}", headers.join(","))
         }
 
         let records = || {
@@ -169,7 +173,7 @@ where
 
 impl OutputCompact for Contract {
     fn output_compact(&self) -> String {
-        format!("{}#{}", self.policy(), self.id())
+        format!("{}", self.policy())
     }
 }
 

@@ -1253,7 +1253,7 @@ dependencies = [
 
 [[package]]
 name = "mycitadel"
-version = "0.1.0-alpha.2"
+version = "0.1.0-beta"
 dependencies = [
  "amplify",
  "amplify_derive",

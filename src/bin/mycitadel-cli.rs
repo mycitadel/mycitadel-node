@@ -35,10 +35,6 @@ use mycitadel::cli::Opts;
 use mycitadel::client::{Client, Config};
 
 fn main() {
-    println!(
-        "mycitadel-cli: command-line tool for working with MyCitadel node"
-    );
-
     let opts = Opts::parse();
     LogLevel::from_verbosity_flag_count(opts.shared.verbose).apply();
     trace!("Command-line arguments: {:#?}", &opts);

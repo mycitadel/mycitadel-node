@@ -27,7 +27,13 @@ impl rpc::Reply {
     pub fn report_error(self, msg: &str) -> Result<Self, Error> {
         match self {
             rpc::Reply::Failure(failure) => {
-                error!("Error {} #{}: {}", msg, failure.code, failure.info);
+                error!(
+                    "{} {} #{}: {}",
+                    "Error".bright_red(),
+                    msg.bright_red(),
+                    failure.code.to_string().bright_red().bold(),
+                    failure.info.red()
+                );
                 Err(failure)?
             }
             _ => Ok(self),
@@ -87,8 +93,8 @@ impl Exec for WalletCommand {
                     })
                     .map(|contract| {
                         eprintln!(
-                            "Wallet named '{}' was successfully created.\n
-                             Use the following string as the wallet id:",
+                            "Wallet named '{}' was successfully created.\n\
+                            Use the following string as the wallet id:",
                             contract.name().green().bold()
                         );
                         println!(

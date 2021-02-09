@@ -22,8 +22,8 @@ Register-ArgumentCompleter -Native -CommandName 'mycitadeld' -ScriptBlock {
         'mycitadeld' {
             [CompletionResult]::new('-T', 'T', [CompletionResultType]::ParameterName, 'Use Tor')
             [CompletionResult]::new('--tor-proxy', 'tor-proxy', [CompletionResultType]::ParameterName, 'Use Tor')
-            [CompletionResult]::new('-x', 'x', [CompletionResultType]::ParameterName, 'ZMQ socket name/address for daemon RPC interface')
-            [CompletionResult]::new('--rpc-endpoint', 'rpc-endpoint', [CompletionResultType]::ParameterName, 'ZMQ socket name/address for daemon RPC interface')
+            [CompletionResult]::new('-x', 'x', [CompletionResultType]::ParameterName, 'ZMQ socket name/address for MyCitadel node RPC interface')
+            [CompletionResult]::new('--rpc-endpoint', 'rpc-endpoint', [CompletionResultType]::ParameterName, 'ZMQ socket name/address for MyCitadel node RPC interface')
             [CompletionResult]::new('-n', 'n', [CompletionResultType]::ParameterName, 'Blockchain to use')
             [CompletionResult]::new('--chain', 'chain', [CompletionResultType]::ParameterName, 'Blockchain to use')
             [CompletionResult]::new('-d', 'd', [CompletionResultType]::ParameterName, 'Data directory path')

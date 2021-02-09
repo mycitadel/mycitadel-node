@@ -37,6 +37,8 @@ use crate::rpc::message::IdentityInfo;
 #[derive(Clone, PartialEq, Debug, Default, StrictEncode, StrictDecode)]
 pub struct Wallet {
     pub contracts: BTreeMap<ContractId, Contract>,
+
     pub identities: BTreeMap<rgb::ContractId, IdentityInfo>,
+
     pub assets: BTreeMap<rgb::ContractId, rgb20::Asset>,
 }

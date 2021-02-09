@@ -95,19 +95,22 @@ impl Runtime {
         debug!("Subscribing to new block notifications");
         electrum.block_headers_subscribe()?;
 
-        debug!("Connecting RGB node embedded runtime...");
-        let rgb20_client =
-            rgb_node::i9n::Runtime::init(rgb_node::i9n::Config {
-                verbose: config.verbose,
-                data_dir: config.data_dir.clone().to_string_lossy().to_string(),
-                electrum_server: config.electrum_server.clone(),
-                stash_rpc_endpoint: ZmqSocketAddr::Inproc(s!("stash.rpc")),
-                contract_endpoints: map! {
-                    rgb_node::rgbd::ContractName::Fungible => config.rgb20_endpoint.clone()
-                },
-                network: config.chain.clone(),
-                run_embedded: false,
-            })
+        let rgb_config = rgb_node::i9n::Config {
+            verbose: config.verbose,
+            data_dir: config.data_dir.clone().to_string_lossy().to_string(),
+            electrum_server: config.electrum_server.clone(),
+            stash_rpc_endpoint: ZmqSocketAddr::Inproc(s!("stash.rpc")),
+            contract_endpoints: map! {
+                rgb_node::rgbd::ContractName::Fungible => config.rgb20_endpoint.clone()
+            },
+            network: config.chain.clone(),
+            run_embedded: false,
+        };
+        debug!(
+            "Connecting RGB node embedded runtime using config {}...",
+            rgb_config
+        );
+        let rgb20_client = rgb_node::i9n::Runtime::init(rgb_config)
             .map_err(|_| Error::EmbeddedNodeInitError)?;
         debug!("RGB node runtime successfully connected");
 

@@ -80,6 +80,8 @@ impl FileDriver {
                 filename
             );
             me.store()?;
+        } else {
+            me.load()?;
         }
         Ok(me)
     }

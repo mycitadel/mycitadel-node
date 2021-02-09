@@ -17,8 +17,8 @@ _mycitadel() {
     _arguments "${_arguments_options[@]}" \
 '*-T+[Use Tor]: :_hosts' \
 '*--tor-proxy=[Use Tor]: :_hosts' \
-'-x+[ZMQ socket name/address for daemon RPC interface]: :_files' \
-'--rpc-endpoint=[ZMQ socket name/address for daemon RPC interface]: :_files' \
+'-x+[ZMQ socket name/address for MyCitadel node RPC interface]: :_files' \
+'--rpc-endpoint=[ZMQ socket name/address for MyCitadel node RPC interface]: :_files' \
 '-n+[Blockchain to use]' \
 '--chain=[Blockchain to use]' \
 '-d+[Data directory path]: :_files -/' \

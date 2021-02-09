@@ -72,6 +72,7 @@ impl FromStr for Formatting {
     bin_name = "mycitadel-cli",
     author,
     version,
+    about = "Command-line tool for working with MyCitadel node",
     setting = AppSettings::ColoredHelp,
     group = ArgGroup::new("descriptor").required(false)
 )]
