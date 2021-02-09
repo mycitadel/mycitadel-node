@@ -28,8 +28,8 @@ pub enum Request {
     ListContracts,
 
     #[api(type = 0x0101)]
-    #[display("contract_balance({0})")]
-    ContractBalance(ContractId),
+    #[display("contract_unspent({0})")]
+    ContractUnspent(ContractId),
 
     #[api(type = 0x0110)]
     #[display(inner)]

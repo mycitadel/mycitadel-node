@@ -12,8 +12,8 @@
 // If not, see <https://www.gnu.org/licenses/agpl-3.0-standalone.html>.
 
 use super::Error;
-use crate::model::{ContractId, TxBalance};
+use crate::model::{ContractId, Unspent};
 
 pub trait Driver {
-    fn balance(&self, contact_id: ContractId) -> Result<Vec<TxBalance>, Error>;
+    fn unspent(&self, contract_id: ContractId) -> Result<Vec<Unspent>, Error>;
 }

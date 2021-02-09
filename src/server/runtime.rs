@@ -155,10 +155,10 @@ impl Runtime {
                 .contracts()
                 .map(Reply::Contracts)
                 .map_err(Error::from),
-            Request::ContractBalance(id) => self
+            Request::ContractUnspent(id) => self
                 .cache
-                .balance(id)
-                .map(Reply::ContractBalance)
+                .unspent(id)
+                .map(Reply::ContractUnspent)
                 .map_err(Error::from),
             Request::ListIdentities => self
                 .storage

@@ -20,6 +20,9 @@ pub enum Error {
     #[from(std::io::Error)]
     Io(amplify::IoError),
 
+    /// item with id {0} is not found
+    NotFound(String),
+
     /// Error in strict data encoding: {0}
     /// Make sure that the storage is not broken.
     #[from]

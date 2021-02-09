@@ -11,15 +11,15 @@
 // along with this software.
 // If not, see <https://www.gnu.org/licenses/agpl-3.0-standalone.html>.
 
+use chrono::NaiveDateTime;
 #[cfg(feature = "serde")]
 use serde_with::{As, DisplayFromStr};
 use std::collections::BTreeMap;
 
-use bitcoin::{Address, Txid};
+use bitcoin::{Address, BlockHash, Txid};
 use wallet::bip32::UnhardenedIndex;
-use wallet::{TimeHeight, Utxo};
 
-use crate::model::ContractId;
+use crate::model::{ContractId, Unspent};
 
 #[cfg_attr(
     feature = "serde",
@@ -32,15 +32,24 @@ use crate::model::ContractId;
 )]
 pub(super) struct Cache {
     #[cfg_attr(feature = "serde", serde(with = "As::<DisplayFromStr>"))]
-    pub rescanned_at: TimeHeight,
+    pub known_height: usize,
 
     pub descriptors: BTreeMap<ContractId, ContractCache>,
 
     #[cfg_attr(
         feature = "serde",
-        serde(with = "As::<BTreeMap<DisplayFromStr, DisplayFromStr>>")
+        serde(with = "As::<Vec<(DisplayFromStr, DisplayFromStr)>>")
     )]
-    pub mine_info: BTreeMap<Txid, TimeHeight>,
+    pub block_info: Vec<(BlockHash, NaiveDateTime)>,
+
+    #[cfg_attr(
+        feature = "serde",
+        serde(
+            with = "As::<BTreeMap<DisplayFromStr, (DisplayFromStr, DisplayFromStr)>>"
+        )
+    )]
+    /// Mapping transaction id to the block height and block offset
+    pub mine_info: BTreeMap<Txid, (usize, usize)>,
 }
 
 #[cfg_attr(
@@ -55,9 +64,6 @@ pub(super) struct ContractCache {
 
     pub used: BTreeMap<UnhardenedIndex, Address>,
 
-    #[cfg_attr(
-        feature = "serde",
-        serde(with = "As::<BTreeMap<DisplayFromStr, DisplayFromStr>>")
-    )]
-    pub utxo: BTreeMap<Address, Utxo>,
+    #[cfg_attr(feature = "serde", serde(with = "As::<Vec<DisplayFromStr>>"))]
+    pub unspent: Vec<Unspent>,
 }

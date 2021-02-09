@@ -14,11 +14,10 @@
 use chrono::NaiveDateTime;
 #[cfg(feature = "serde")]
 use serde_with::{As, DisplayFromStr};
-use std::collections::BTreeMap;
 use std::str::FromStr;
 
 use bitcoin::Txid;
-use lnpbp::chain::AssetId;
+use wallet::bip32::UnhardenedIndex;
 use wallet::blockchain::ParseError;
 use wallet::TimeHeight;
 
@@ -177,19 +176,59 @@ pub struct Operation {
     PartialEq,
     Hash,
     Debug,
+    Display,
     StrictEncode,
     StrictDecode,
 )]
-pub struct TxBalance {
-    pub txid: Txid,
-    pub depth: i32,
-    pub spent_by: Option<Txid>,
-    pub spent_mined: bool,
-    #[cfg_attr(
-        feature = "serde",
-        serde(
-            with = "As::<BTreeMap<DisplayFromStr, (DisplayFromStr, DisplayFromStr)>>"
-        )
-    )]
-    pub allocations: BTreeMap<u16, (AssetId, rgb::AtomicValue)>,
+#[repr(C)]
+#[display("{value}@{height}>{offset}>{vout}%{index}")]
+pub struct Unspent {
+    /// Amount (in native atomic asset amount) of unspent asset
+    pub value: u64,
+
+    /// Height of the block where transaction is mined.
+    /// Set to 0 for transactions in the mempool
+    pub height: u32,
+
+    /// Offset of the transaction within the block
+    pub offset: u16,
+
+    /// Transaction output containing asset
+    pub vout: u16,
+
+    /// Index used by the description in deriving script from the transaction
+    /// output
+    pub index: UnhardenedIndex,
+}
+
+impl FromStr for Unspent {
+    type Err = ParseError;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        let mut split = s.split(&['@', '>', '%'][..]);
+        match (
+            split.next(),
+            split.next(),
+            split.next(),
+            split.next(),
+            split.next(),
+            split.next(),
+        ) {
+            (
+                Some(value),
+                Some(height),
+                Some(offset),
+                Some(vout),
+                Some(index),
+                None,
+            ) => Ok(Unspent {
+                value: value.parse()?,
+                height: height.parse()?,
+                offset: offset.parse()?,
+                vout: vout.parse()?,
+                index: index.parse().map_err(|_| ParseError)?,
+            }),
+            _ => Err(ParseError),
+        }
+    }
 }

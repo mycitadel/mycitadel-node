@@ -13,10 +13,14 @@
 
 use super::FileDriver;
 use crate::cache::{Driver, Error};
-use crate::model::{ContractId, TxBalance};
+use crate::model::{ContractId, Unspent};
 
 impl Driver for FileDriver {
-    fn balance(&self, contact_id: ContractId) -> Result<Vec<TxBalance>, Error> {
-        unimplemented!()
+    fn unspent(&self, contract_id: ContractId) -> Result<Vec<Unspent>, Error> {
+        self.cache
+            .descriptors
+            .get(&contract_id)
+            .map(|c| c.unspent.clone())
+            .ok_or(Error::NotFound(contract_id.to_string()))
     }
 }

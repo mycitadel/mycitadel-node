@@ -54,7 +54,7 @@ impl FileConfig {
 pub struct FileDriver {
     fd: fs::File,
     config: FileConfig,
-    cache: Cache,
+    pub(super) cache: Cache,
 }
 
 impl FileDriver {
