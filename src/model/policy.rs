@@ -11,8 +11,7 @@
 // along with this software.
 // If not, see <https://www.gnu.org/licenses/agpl-3.0-standalone.html>.
 
-#[cfg(feature = "serde")]
-use serde_with::{As, DisplayFromStr};
+use serde_with::DisplayFromStr;
 use std::io;
 use std::ops::Range;
 
@@ -30,12 +29,19 @@ use super::ContractId;
 
 /// Defines a type of a wallet contract basing on the banking use case,
 /// abstracting the underlying technology(ies) into specific contract details
-#[derive(Clone, Ord, PartialOrd, Eq, PartialEq, Hash, Debug, Display)]
-#[cfg_attr(
-    feature = "serde",
-    derive(Serialize, Deserialize),
-    serde(crate = "serde_crate", rename = "lowercase")
+#[derive(
+    Clone,
+    Ord,
+    PartialOrd,
+    Eq,
+    PartialEq,
+    Hash,
+    Debug,
+    Display,
+    Serialize,
+    Deserialize,
 )]
+#[serde(rename = "lowercase")]
 #[non_exhaustive]
 pub enum PolicyType {
     /// Accounts that allow spending with a simple procedure (like single
@@ -81,6 +87,9 @@ pub enum PolicyType {
     Computing,
 }
 
+#[serde_as]
+#[derive(Serialize, Deserialize)]
+#[serde(rename_all = "lowercase")]
 #[derive(
     Clone,
     Ord,
@@ -93,25 +102,14 @@ pub enum PolicyType {
     StrictEncode,
     StrictDecode,
 )]
-#[cfg_attr(
-    feature = "serde",
-    derive(Serialize, Deserialize),
-    serde(crate = "serde_crate", rename_all = "lowercase")
-)]
 #[non_exhaustive]
 #[display(inner)]
 pub enum Policy {
-    Current(
-        #[cfg_attr(feature = "serde", serde(with = "As::<DisplayFromStr>"))]
-        ContractDescriptor<PubkeyChain>,
-    ),
+    Current(#[serde_as(as = "DisplayFromStr")] ContractDescriptor<PubkeyChain>),
 
     Instant(ChannelDescriptor),
 
-    Saving(
-        #[cfg_attr(feature = "serde", serde(with = "As::<DisplayFromStr>"))]
-        ContractDescriptor<PubkeyChain>,
-    ),
+    Saving(#[serde_as(as = "DisplayFromStr")] ContractDescriptor<PubkeyChain>),
 }
 
 impl ConsensusCommit for Policy {
@@ -178,13 +176,10 @@ impl Policy {
     }
 }
 
-#[cfg_attr(
-    feature = "serde",
-    serde_as,
-    derive(Serialize, Deserialize),
-    serde(crate = "serde_crate")
-)]
+#[serde_as]
 #[derive(
+    Serialize,
+    Deserialize,
     Clone,
     Ord,
     PartialOrd,
@@ -200,7 +195,7 @@ impl Policy {
 pub struct ChannelDescriptor {
     channel_id: ChannelId,
 
-    #[cfg_attr(feature = "serde", serde(with = "As::<Vec<DisplayFromStr>>"))]
+    #[serde_as(as = "Vec<DisplayFromStr>")]
     peers: Vec<RemoteNodeAddr>,
 }
 

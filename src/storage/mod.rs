@@ -69,16 +69,13 @@ pub enum Error {
     StrictEncoding(strict_encoding::Error),
 
     /// error in YAML data encoding: {0}
-    #[cfg(feature = "serde_yaml")]
     YamlEncoding(String),
 
     /// error in YAML data encoding
-    #[cfg(feature = "serde_json")]
     #[from(serde_json::Error)]
     JsonEncoding,
 
     /// error in YAML data encoding
-    #[cfg(feature = "toml")]
     #[from(toml::de::Error)]
     #[from(toml::ser::Error)]
     TomlEncoding,

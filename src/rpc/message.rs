@@ -11,8 +11,7 @@
 // along with this software.
 // If not, see <https://www.gnu.org/licenses/agpl-3.0-standalone.html>.
 
-#[cfg(feature = "serde")]
-use serde_with::{As, DisplayFromStr};
+use serde_with::DisplayFromStr;
 use std::io;
 use std::ops::RangeInclusive;
 
@@ -22,32 +21,39 @@ use wallet::descriptor;
 
 use crate::model;
 
-#[cfg_attr(
-    feature = "serde",
-    serde_as,
-    derive(Serialize, Deserialize),
-    serde(crate = "serde_crate")
-)]
+#[serde_as]
 #[derive(
-    Clone, Eq, PartialEq, Hash, Debug, Display, StrictEncode, StrictDecode,
+    Serialize,
+    Deserialize,
+    Clone,
+    Eq,
+    PartialEq,
+    Hash,
+    Debug,
+    Display,
+    StrictEncode,
+    StrictDecode,
 )]
 #[display("create_single_sig({category}({pubkey_chain}), \"{name}\")")]
 pub struct SingleSigInfo {
     pub name: String,
-    #[cfg_attr(feature = "serde", serde(with = "As::<DisplayFromStr>"))]
+    #[serde_as(as = "DisplayFromStr")]
     pub pubkey_chain: PubkeyChain,
-    #[cfg_attr(feature = "serde", serde(with = "As::<DisplayFromStr>"))]
+    #[serde_as(as = "DisplayFromStr")]
     pub category: descriptor::OuterCategory,
 }
 
-#[cfg_attr(
-    feature = "serde",
-    serde_as,
-    derive(Serialize, Deserialize),
-    serde(crate = "serde_crate")
-)]
 #[derive(
-    Clone, Eq, PartialEq, Hash, Debug, Display, StrictEncode, StrictDecode,
+    Serialize,
+    Deserialize,
+    Clone,
+    Eq,
+    PartialEq,
+    Hash,
+    Debug,
+    Display,
+    StrictEncode,
+    StrictDecode,
 )]
 #[display("sync_contract({contract_id}, depth: {lookup_depth}")]
 pub struct SyncContractRequest {
@@ -55,33 +61,34 @@ pub struct SyncContractRequest {
     pub lookup_depth: u8,
 }
 
-#[cfg_attr(
-    feature = "serde",
-    serde_as,
-    derive(Serialize, Deserialize),
-    serde(crate = "serde_crate")
-)]
+#[serde_as]
 #[derive(
-    Clone, Eq, PartialEq, Hash, Debug, Display, StrictEncode, StrictDecode,
+    Serialize,
+    Deserialize,
+    Clone,
+    Eq,
+    PartialEq,
+    Hash,
+    Debug,
+    Display,
+    StrictEncode,
+    StrictDecode,
 )]
 #[display("rename_contract({contract_id}, \"{name}\")")]
 pub struct ContractRenameRequest {
-    #[cfg_attr(feature = "serde", serde(with = "As::<DisplayFromStr>"))]
+    #[serde_as(as = "DisplayFromStr")]
     pub contract_id: model::ContractId,
     pub name: String,
 }
 
-#[cfg_attr(
-    feature = "serde",
-    serde_as,
-    derive(Serialize, Deserialize),
-    serde(crate = "serde_crate")
+#[serde_as]
+#[derive(
+    Serialize, Deserialize, Clone, Eq, PartialEq, Hash, Debug, Display,
 )]
-#[derive(Clone, Eq, PartialEq, Hash, Debug, Display)]
 #[display("{key}")]
 pub struct SignerAccountInfo {
     pub title: String,
-    #[cfg_attr(feature = "serde", serde(with = "As::<DisplayFromStr>"))]
+    #[serde_as(as = "DisplayFromStr")]
     pub key: descriptor::SingleSig,
     pub used: Vec<RangeInclusive<u32>>,
 }
@@ -116,17 +123,14 @@ impl StrictDecode for SignerAccountInfo {
     }
 }
 
-#[cfg_attr(
-    feature = "serde",
-    serde_as,
-    derive(Serialize, Deserialize),
-    serde(crate = "serde_crate")
+#[serde_as]
+#[derive(
+    Serialize, Deserialize, Clone, Eq, PartialEq, Hash, Debug, Display,
 )]
-#[derive(Clone, Eq, PartialEq, Hash, Debug, Display)]
 #[display("{key}")]
 pub struct IdentityInfo {
     pub name: String,
-    #[cfg_attr(feature = "serde", serde(with = "As::<DisplayFromStr>"))]
+    #[serde_as(as = "DisplayFromStr")]
     pub key: descriptor::SingleSig,
     pub known: Vec<RangeInclusive<u32>>,
 }

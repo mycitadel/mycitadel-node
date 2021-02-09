@@ -15,7 +15,6 @@
 extern crate amplify_derive;
 #[macro_use]
 extern crate serde_with;
-extern crate serde_crate as serde;
 
 use clap::IntoApp;
 use clap_generate::{generate_to, generators::*};

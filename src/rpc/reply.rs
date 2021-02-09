@@ -11,6 +11,7 @@
 // along with this software.
 // If not, see <https://www.gnu.org/licenses/agpl-3.0-standalone.html>.
 
+use serde_with::{As, DisplayFromStr};
 use std::collections::BTreeMap;
 
 use internet2::presentation;
@@ -20,12 +21,7 @@ use crate::model::{Contract, Unspent};
 use crate::rpc::message::IdentityInfo;
 use crate::Error;
 
-#[cfg_attr(
-    feature = "serde",
-    derive(Serialize, Deserialize),
-    serde(crate = "serde_crate", untagged)
-)]
-#[derive(Clone, Debug, Display, Api)]
+#[derive(Serialize, Deserialize, Clone, Debug, Display, Api)]
 #[api(encoding = "strict")]
 #[non_exhaustive]
 pub enum Reply {
@@ -45,6 +41,7 @@ pub enum Reply {
     #[display("contracts(...)")]
     Contract(Contract),
 
+    #[serde(with = "As::<BTreeMap<DisplayFromStr, Vec<DisplayFromStr>>>")]
     #[api(type = 0x0202)]
     #[display("contract_unspent(...)")]
     ContractUnspent(BTreeMap<rgb::ContractId, Vec<Unspent>>),

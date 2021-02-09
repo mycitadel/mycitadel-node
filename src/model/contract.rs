@@ -12,8 +12,7 @@
 // If not, see <https://www.gnu.org/licenses/agpl-3.0-standalone.html>.
 
 use chrono::NaiveDateTime;
-#[cfg(feature = "serde")]
-use serde_with::{As, DisplayFromStr};
+use serde_with::DisplayFromStr;
 use std::collections::BTreeMap;
 use std::io;
 use std::time::{SystemTime, UNIX_EPOCH};
@@ -25,14 +24,17 @@ use wallet::{Psbt, TimeHeight};
 
 use super::{ContractId, Operation, PaymentSlip, Policy, PolicyType, State};
 
-#[cfg_attr(
-    feature = "serde",
-    serde_as,
-    derive(Serialize, Deserialize),
-    serde(crate = "serde_crate")
-)]
+#[serde_as]
 #[derive(
-    Getters, Clone, PartialEq, Debug, Display, StrictEncode, StrictDecode,
+    Serialize,
+    Deserialize,
+    Getters,
+    Clone,
+    PartialEq,
+    Debug,
+    Display,
+    StrictEncode,
+    StrictDecode,
 )]
 #[display("{policy}#{id}")]
 pub struct Contract {
@@ -45,61 +47,48 @@ pub struct Contract {
     /// The id is kept pre-computed: the contract policy can't be changed after
     /// the creation, so there is no need to perform expensive commitment
     /// process each time we need contract id
-    #[cfg_attr(feature = "serde", serde(with = "As::<DisplayFromStr>"))]
+    #[serde_as(as = "DisplayFromStr")]
     id: ContractId,
 
     name: String,
 
     policy: Policy,
 
-    #[cfg_attr(
-        feature = "serde",
-        serde(with = "As::<chrono::DateTime<chrono::Utc>>")
-    )]
+    #[serde_as(as = "chrono::DateTime<chrono::Utc>")]
     created_at: NaiveDateTime,
 
-    #[cfg_attr(feature = "serde", serde(flatten))]
+    #[serde(flatten)]
     data: ContractData,
 }
 
-#[cfg_attr(
-    feature = "serde",
-    serde_as,
-    derive(Serialize, Deserialize),
-    serde(crate = "serde_crate")
-)]
+#[serde_as]
 #[derive(
-    Getters, Clone, PartialEq, Debug, Default, StrictEncode, StrictDecode,
+    Serialize,
+    Deserialize,
+    Getters,
+    Clone,
+    PartialEq,
+    Debug,
+    Default,
+    StrictEncode,
+    StrictDecode,
 )]
 pub struct ContractData {
     state: State,
 
     // TODO: Must be moved into rgb-node
-    #[cfg_attr(
-        feature = "serde",
-        serde(with = "As::<Vec<(DisplayFromStr, DisplayFromStr)>>")
-    )]
+    #[serde_as(as = "Vec<(DisplayFromStr, _)>")]
     blinding_factors: BTreeMap<OutPoint, u64>,
 
-    #[cfg_attr(feature = "serde", serde(with = "As::<Vec<DisplayFromStr>>"))]
     sent_invoices: Vec<String>,
 
-    #[cfg_attr(feature = "serde", serde(with = "As::<Vec<DisplayFromStr>>"))]
     received_invoices: Vec<String>,
 
-    #[cfg_attr(
-        feature = "serde",
-        serde(with = "As::<Vec<(DisplayFromStr, DisplayFromStr)>>")
-    )]
+    #[serde_as(as = "BTreeMap<_, DisplayFromStr>")]
     paid_invoices: BTreeMap<String, PaymentSlip>,
 
     transactions: BTreeMap<Txid, Psbt>,
 
-    /* #[cfg_attr(
-        feature = "serde",
-        serde(with = "As::<Vec<(DisplayFromStr, _)>>")
-    )]*/
-    // Due to some weird bug the variant above ^^^ is not working
     #[serde_as(as = "Vec<(DisplayFromStr, _)>")]
     operations: BTreeMap<TimeHeight, Operation>,
 }

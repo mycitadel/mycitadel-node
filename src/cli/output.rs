@@ -12,7 +12,6 @@
 // If not, see <https://www.gnu.org/licenses/agpl-3.0-standalone.html>.
 
 use colored::Colorize;
-#[cfg(feature = "serde")]
 use serde::Serialize;
 use std::collections::BTreeMap;
 use std::fmt::Display;
@@ -31,11 +30,9 @@ pub trait OutputFormat: OutputCompact + Serialize {
             Formatting::Compact => println!("{}", self.output_compact()),
             Formatting::Tab => println!("{}", self.output_fields().join("\t")),
             Formatting::Csv => println!("{}", self.output_fields().join(",")),
-            #[cfg(feature = "serde_yaml")]
             Formatting::Yaml => {
                 println!("{}", serde_yaml::to_string(self).unwrap_or_default())
             }
-            #[cfg(feature = "serde_json")]
             Formatting::Json => {
                 println!("{}", serde_json::to_string(self).unwrap_or_default())
             }
@@ -124,13 +121,11 @@ where
                 .collect::<BTreeMap<_, _>>()
         };
         match format {
-            #[cfg(feature = "serde_yaml")]
             Formatting::Yaml => println!(
                 "{}",
                 serde_yaml::to_string(&records()).unwrap_or_default()
             ),
 
-            #[cfg(feature = "serde_json")]
             Formatting::Json => println!(
                 "{}",
                 serde_json::to_string(&records()).unwrap_or_default()

@@ -11,17 +11,13 @@
 // along with this software.
 // If not, see <https://www.gnu.org/licenses/agpl-3.0-standalone.html>.
 
-#[cfg(feature = "serde")]
-use serde_with::{As, DisplayFromStr};
+use serde_with::DisplayFromStr;
 use wallet::Slice32;
 
-#[cfg_attr(
-    feature = "serde",
-    serde_as,
-    derive(Serialize, Deserialize),
-    serde(crate = "serde_crate")
-)]
+#[serde_as]
 #[derive(
+    Serialize,
+    Deserialize,
     Copy,
     Clone,
     Ord,
@@ -37,6 +33,6 @@ use wallet::Slice32;
 )]
 #[display("<internal state data>")]
 pub struct State {
-    #[cfg_attr(feature = "serde", serde(with = "As::<DisplayFromStr>"))]
+    #[serde_as(as = "DisplayFromStr")]
     pub mu_sig: Slice32,
 }

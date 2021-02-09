@@ -45,7 +45,6 @@ pub struct FileDriver {
     StrictEncode,
     StrictDecode,
 )]
-#[serde(crate = "serde_crate")]
 pub struct FileConfig {
     pub location: String,
     pub format: FileFormat,
@@ -95,15 +94,12 @@ impl FileDriver {
         trace!("Parsing data (expected format {})", self.config.format);
         self.data = match self.config.format {
             FileFormat::StrictEncode => Wallet::strict_decode(&mut self.fd)?,
-            #[cfg(feature = "serde_yaml")]
             FileFormat::Yaml => serde_yaml::from_reader(&mut self.fd)?,
-            #[cfg(feature = "toml")]
             FileFormat::Toml => {
                 let mut data: Vec<u8> = vec![];
                 self.fd.read_to_end(&mut data)?;
                 toml::from_slice(&data)?
             }
-            #[cfg(feature = "serde_json")]
             FileFormat::Json => serde_json::from_reader(&mut self.fd)?,
             _ => unimplemented!(),
         };
@@ -123,16 +119,13 @@ impl FileDriver {
             FileFormat::StrictEncode => {
                 self.data.strict_encode(&mut self.fd)?;
             }
-            #[cfg(feature = "serde_yaml")]
             FileFormat::Yaml => {
                 serde_yaml::to_writer(&mut self.fd, &self.data)?;
             }
-            #[cfg(feature = "toml")]
             FileFormat::Toml => {
                 let data = toml::to_vec(&self.data)?;
                 self.fd.write_all(&data)?;
             }
-            #[cfg(feature = "serde_json")]
             FileFormat::Json => {
                 serde_json::to_writer(&mut self.fd, &self.data)?;
             }

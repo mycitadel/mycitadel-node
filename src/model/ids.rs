@@ -29,12 +29,9 @@ impl sha256t::Tag for ContractIdTag {
     }
 }
 
-#[cfg_attr(
-    feature = "serde",
-    derive(Serialize, Deserialize),
-    serde(crate = "serde_crate")
-)]
 #[derive(
+    Serialize,
+    Deserialize,
     Wrapper,
     Copy,
     Clone,

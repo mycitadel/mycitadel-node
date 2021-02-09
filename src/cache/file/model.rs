@@ -12,8 +12,7 @@
 // If not, see <https://www.gnu.org/licenses/agpl-3.0-standalone.html>.
 
 use chrono::NaiveDateTime;
-#[cfg(feature = "serde")]
-use serde_with::{As, DisplayFromStr};
+use serde_with::DisplayFromStr;
 use std::collections::BTreeMap;
 
 use bitcoin::{Address, BlockHash, Txid};
@@ -21,43 +20,35 @@ use wallet::bip32::UnhardenedIndex;
 
 use crate::model::{ContractId, Unspent};
 
-#[cfg_attr(
-    feature = "serde",
-    serde_as,
-    derive(Serialize, Deserialize),
-    serde(crate = "serde_crate")
-)]
+#[serde_as]
 #[derive(
-    Getters, Clone, PartialEq, Debug, Default, StrictEncode, StrictDecode,
+    Serialize,
+    Deserialize,
+    Getters,
+    Clone,
+    PartialEq,
+    Debug,
+    Default,
+    StrictEncode,
+    StrictDecode,
 )]
 pub(super) struct Cache {
     pub known_height: u32,
 
     pub descriptors: BTreeMap<ContractId, ContractCache>,
 
-    #[cfg_attr(
-        feature = "serde",
-        serde(with = "As::<Vec<(DisplayFromStr, DisplayFromStr)>>")
-    )]
+    #[serde_as(as = "Vec<(DisplayFromStr, _)>")]
     pub block_info: Vec<(BlockHash, NaiveDateTime)>,
 
-    #[cfg_attr(
-        feature = "serde",
-        serde(
-            with = "As::<BTreeMap<DisplayFromStr, (DisplayFromStr, DisplayFromStr)>>"
-        )
-    )]
+    #[serde_as(as = "BTreeMap<DisplayFromStr, (_, _)>")]
     /// Mapping transaction id to the block height and block offset
     pub mine_info: BTreeMap<Txid, (u32, u16)>,
 }
 
-#[cfg_attr(
-    feature = "serde",
-    serde_as,
-    derive(Serialize, Deserialize),
-    serde(crate = "serde_crate")
+#[serde_as]
+#[derive(
+    Serialize, Deserialize, Clone, PartialEq, Debug, StrictEncode, StrictDecode,
 )]
-#[derive(Clone, PartialEq, Debug, StrictEncode, StrictDecode)]
 pub(super) struct ContractCache {
     pub updated_height: u32,
 
@@ -65,9 +56,6 @@ pub(super) struct ContractCache {
 
     pub used: BTreeMap<UnhardenedIndex, Address>,
 
-    #[cfg_attr(
-        feature = "serde",
-        serde(with = "As::<BTreeMap<DisplayFromStr, Vec<DisplayFromStr>>>")
-    )]
+    #[serde_as(as = "BTreeMap<DisplayFromStr, Vec<DisplayFromStr>>")]
     pub unspent: BTreeMap<rgb::ContractId, Vec<Unspent>>,
 }

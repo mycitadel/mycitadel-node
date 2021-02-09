@@ -12,8 +12,7 @@
 // If not, see <https://www.gnu.org/licenses/agpl-3.0-standalone.html>.
 
 use chrono::NaiveDateTime;
-#[cfg(feature = "serde")]
-use serde_with::{As, DisplayFromStr};
+use serde_with::DisplayFromStr;
 use std::str::FromStr;
 
 use bitcoin::Txid;
@@ -46,13 +45,10 @@ impl FromStr for PaymentConfirmation {
     }
 }
 
-#[cfg_attr(
-    feature = "serde",
-    serde_as,
-    derive(Serialize, Deserialize),
-    serde(crate = "serde_crate")
-)]
+#[serde_as]
 #[derive(
+    Serialize,
+    Deserialize,
     Getters,
     Clone,
     Ord,
@@ -67,10 +63,10 @@ impl FromStr for PaymentConfirmation {
 )]
 #[display("{confirmation}@{paid}")]
 pub struct PaymentSlip {
-    #[cfg_attr(feature = "serde", serde(with = "As::<DisplayFromStr>"))]
+    #[serde_as(as = "DisplayFromStr")]
     paid: TimeHeight,
 
-    #[cfg_attr(feature = "serde", serde(with = "As::<DisplayFromStr>"))]
+    #[serde_as(as = "DisplayFromStr")]
     confirmation: PaymentConfirmation,
 }
 
@@ -91,12 +87,9 @@ impl FromStr for PaymentSlip {
     }
 }
 
-#[cfg_attr(
-    feature = "serde",
-    derive(Serialize, Deserialize),
-    serde(crate = "serde_crate")
-)]
 #[derive(
+    Serialize,
+    Deserialize,
     Clone,
     Ord,
     PartialOrd,
@@ -116,13 +109,10 @@ pub enum PaymentDirecton {
     Outcoming,
 }
 
-#[cfg_attr(
-    feature = "serde",
-    serde_as,
-    derive(Serialize, Deserialize),
-    serde(crate = "serde_crate")
-)]
+#[serde_as]
 #[derive(
+    Serialize,
+    Deserialize,
     Clone,
     Ord,
     PartialOrd,
@@ -140,21 +130,18 @@ pub enum PaymentDirecton {
 pub struct Operation {
     pub direction: PaymentDirecton,
 
-    #[cfg_attr(
-        feature = "serde",
-        serde(with = "As::<chrono::DateTime<chrono::Utc>>")
-    )]
+    #[serde_as(as = "chrono::DateTime<chrono::Utc>>")]
     pub created_at: NaiveDateTime,
 
-    #[cfg_attr(feature = "serde", serde(with = "As::<DisplayFromStr>"))]
+    #[serde_as(as = "DisplayFromStr")]
     pub mined_at: TimeHeight,
 
-    #[cfg_attr(feature = "serde", serde(with = "As::<DisplayFromStr>"))]
+    #[serde_as(as = "DisplayFromStr")]
     pub txid: Txid,
 
     pub vout: u16,
 
-    #[cfg_attr(feature = "serde", serde(with = "As::<DisplayFromStr>"))]
+    #[serde_as(as = "DisplayFromStr")]
     pub value: bitcoin::Amount,
 
     pub invoice: String,
@@ -162,13 +149,9 @@ pub struct Operation {
     pub details: String,
 }
 
-#[cfg_attr(
-    feature = "serde",
-    serde_as,
-    derive(Serialize, Deserialize),
-    serde(crate = "serde_crate")
-)]
 #[derive(
+    Serialize,
+    Deserialize,
     Clone,
     Ord,
     PartialOrd,

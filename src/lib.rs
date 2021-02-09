@@ -35,9 +35,6 @@ extern crate internet2;
 #[macro_use]
 extern crate log;
 
-#[cfg(feature = "serde")]
-extern crate serde_crate as serde;
-#[cfg(feature = "serde")]
 #[macro_use]
 extern crate serde_with;
 

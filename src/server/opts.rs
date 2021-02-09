@@ -33,14 +33,8 @@ pub const MYCITADEL_DATA_DIR: &'static str = "~/Documents/{network}";
 pub const MYCITADEL_DATA_DIR: &'static str = "./{network}";
 
 pub const MYCITADEL_CONFIG: &'static str = "{data_dir}/mycitadeld.toml";
-#[cfg(feature = "serde_yaml")]
 pub const MYCITADEL_STORAGE_FORMAT: FileFormat = FileFormat::Yaml;
-#[cfg(not(feature = "serde_yaml"))]
-pub const MYCITADEL_STORAGE_FORMAT: FileFormat = FileFormat::StrictEncoded;
-#[cfg(feature = "serde_yaml")]
 pub const MYCITADEL_CACHE_FORMAT: FileFormat = FileFormat::Yaml;
-#[cfg(not(feature = "serde_yaml"))]
-pub const MYCITADEL_CACHE_FORMAT: FileFormat = FileFormat::StrictEncoded;
 pub const MYCITADEL_STORAGE_FILE: &'static str = "data";
 pub const MYCITADEL_CACHE_FILE: &'static str = "cache";
 pub const MYCITADEL_ELECTRUM_SERVER: &'static str = "pandora.network:60001";

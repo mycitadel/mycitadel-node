@@ -25,20 +25,29 @@ pub use state::*;
 
 // -----------------------------------------------------------------------------
 
+use serde_with::DisplayFromStr;
 use std::collections::BTreeMap;
 
 use crate::rpc::message::IdentityInfo;
 
-#[cfg_attr(
-    feature = "serde",
-    derive(Serialize, Deserialize),
-    serde(crate = "serde_crate")
+#[serde_as]
+#[derive(
+    Serialize,
+    Deserialize,
+    Clone,
+    PartialEq,
+    Debug,
+    Default,
+    StrictEncode,
+    StrictDecode,
 )]
-#[derive(Clone, PartialEq, Debug, Default, StrictEncode, StrictDecode)]
 pub struct Wallet {
+    #[serde_as(as = "BTreeMap<DisplayFromStr, _>")]
     pub contracts: BTreeMap<ContractId, Contract>,
 
+    #[serde_as(as = "BTreeMap<DisplayFromStr, _>")]
     pub identities: BTreeMap<rgb::ContractId, IdentityInfo>,
 
+    #[serde_as(as = "BTreeMap<DisplayFromStr, _>")]
     pub assets: BTreeMap<rgb::ContractId, rgb20::Asset>,
 }
