@@ -81,32 +81,30 @@ impl Exec for WalletCommand {
                 client
                     .create_single_sig(name, pubkey_chain, category)?
                     .report_error("during wallet creation")
-                    .and_then(|reply| {
-                        match reply {
-                            Reply::Contract(ref contract) => {
-                                eprint!(
-                                    "Wallet named '{}' was successfully created.\
-                                     Use the following string as the wallet id: ",
-                                    contract.name().green().bold()
-                                );
-                                println!("{}", contract.id().to_string().bright_green());
-                                Ok(())
-                            }
-                            _ => Err(Error::UnexpectedApi)
-                        }
+                    .and_then(|reply| match reply {
+                        Reply::Contract(contract) => Ok(contract),
+                        _ => Err(Error::UnexpectedApi),
+                    })
+                    .map(|contract| {
+                        eprintln!(
+                            "Wallet named '{}' was successfully created.\n
+                             Use the following string as the wallet id:",
+                            contract.name().green().bold()
+                        );
+                        println!(
+                            "{}",
+                            contract.id().to_string().bright_green()
+                        );
                     })
             }
-            WalletCommand::List => client
+            WalletCommand::List { format } => client
                 .contract_list()?
                 .report_error("listing wallets")
-                .map(|reply| {
-                    eprintln!("Known wallets:");
-                    println!(
-                        "{}",
-                        serde_yaml::to_string(&reply)
-                            .expect("Error presenting data as YAML")
-                    );
-                }),
+                .and_then(|reply| match reply {
+                    Reply::Contracts(contracts) => Ok(contracts),
+                    _ => Err(Error::UnexpectedApi),
+                })
+                .map(|contracts| contracts.output_print(format)),
             WalletCommand::Balance {
                 opts:
                     WalletOpts {
@@ -134,25 +132,26 @@ impl Exec for AssetCommand {
 
     fn exec(self, client: &mut Self::Client) -> Result<(), Self::Error> {
         match self {
-            AssetCommand::List => client
+            AssetCommand::List { format } => client
                 .asset_list()?
                 .report_error("listing assets")
-                .map(|reply| {
-                    eprintln!("Known assets:");
-                    println!(
-                        "{}",
-                        serde_yaml::to_string(&reply)
-                            .expect("Error presenting data as YAML")
-                    );
-                }),
+                .and_then(|reply| match reply {
+                    Reply::Assets(assets) => Ok(assets),
+                    _ => Err(Error::UnexpectedApi),
+                })
+                .map(|assets| assets.output_print(format)),
             AssetCommand::Import { genesis } => client
                 .asset_import(genesis)?
                 .report_error("importing asset")
-                .map(|reply| {
+                .and_then(|reply| match reply {
+                    Reply::Asset(asset) => Ok(asset),
+                    _ => Err(Error::UnexpectedApi),
+                })
+                .map(|asset| {
                     eprintln!("Asset successfully imported:");
                     println!(
                         "{}",
-                        serde_yaml::to_string(&reply)
+                        serde_yaml::to_string(&asset)
                             .expect("Error presenting data as YAML")
                     )
                 }),

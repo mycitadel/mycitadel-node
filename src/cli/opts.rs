@@ -128,7 +128,11 @@ pub enum Command {
 pub enum WalletCommand {
     /// Lists existing wallets
     #[display("list")]
-    List,
+    List {
+        /// How the wallet list should be formatted
+        #[clap(short, long, default_value = "yaml", global = true)]
+        format: Formatting,
+    },
 
     /// Creates wallet with a given name and descriptor parameters
     #[display("create {subcommand}")]
@@ -224,8 +228,12 @@ pub enum AddressCommand {
         scan_opts: WalletOpts,
 
         /// Limit the number of addresses printed
-        #[clap(short, long)]
+        #[clap(short, long, global = true)]
         limit: Option<usize>,
+
+        /// How the command output should be formatted
+        #[clap(short, long, default_value = "yaml", global = true)]
+        format: Formatting,
     },
 
     Create {
@@ -234,7 +242,7 @@ pub enum AddressCommand {
         index: Option<u32>,
 
         /// Whether to mark address as used
-        #[clap(short = 'u', long = "unmarked", parse(from_flag = std::ops::Not::not))]
+        #[clap(short = 'u', long = "unmarked", global = true, parse(from_flag = std::ops::Not::not))]
         mark_used: bool,
 
         /// Number of addresses to create
@@ -243,7 +251,7 @@ pub enum AddressCommand {
 
         /// Use SegWit legacy address format (applicable only to a SegWit
         /// wallets)
-        #[clap(long, takes_value = false)]
+        #[clap(long, takes_value = false, global = true)]
         legacy: bool,
     },
 
@@ -254,11 +262,11 @@ pub enum AddressCommand {
 
         /// Use SegWit legacy address format (applicable only to a SegWit
         /// wallets)
-        #[clap(long, takes_value = false)]
+        #[clap(long, takes_value = false, global = true)]
         legacy: bool,
 
         /// Remove use mark (inverses the command)
-        #[clap(short, long, takes_value = false)]
+        #[clap(short, long, takes_value = false, global = true)]
         unmark: bool,
     },
 }
@@ -268,7 +276,11 @@ pub enum AddressCommand {
 pub enum AssetCommand {
     /// Lists known assets
     #[display("list")]
-    List,
+    List {
+        /// How the asset list output should be formatted
+        #[clap(short, long, default_value = "yaml", global = true)]
+        format: Formatting,
+    },
 
     /// Import asset genesis data
     #[display("import")]
@@ -287,15 +299,15 @@ pub struct WalletOpts {
     pub wallet_id: model::ContractId,
 
     /// Whether to re-scan addresses space with Electrum server
-    #[clap(short, long)]
+    #[clap(short, long, takes_value = true, global = true)]
     pub rescan: bool,
 
     /// How many addresses should be scanned at least after the final address
     /// with no transactions is reached
-    #[clap(long, default_value = "20", requires = "rescan")]
+    #[clap(long, default_value = "20", requires = "rescan", global = true)]
     pub lookup_depth: u8,
 
     /// How the command output should be formatted
-    #[clap(short, long, default_value = "yaml")]
+    #[clap(short, long, default_value = "yaml", global = true)]
     pub format: Formatting,
 }

@@ -18,7 +18,7 @@ use std::collections::BTreeMap;
 use std::fmt::Display;
 
 use super::Formatting;
-use crate::model::Unspent;
+use crate::model::{Contract, Unspent};
 
 pub trait OutputCompact {
     fn output_compact(&self) -> String;
@@ -165,6 +165,35 @@ where
     }
 }
 
+// MARK: Contract --------------------------------------------------------------
+
+impl OutputCompact for Contract {
+    fn output_compact(&self) -> String {
+        format!("{}#{}", self.policy(), self.id())
+    }
+}
+
+impl OutputFormat for Contract {
+    fn output_headers() -> Vec<String> {
+        vec![s!("ID"), s!("Policy"), s!("Name"), s!("Created")]
+    }
+
+    fn output_id_string(&self) -> String {
+        self.id().to_string()
+    }
+
+    fn output_fields(&self) -> Vec<String> {
+        vec![
+            self.id().to_string(),
+            self.policy().to_string(),
+            self.name().to_owned(),
+            self.created_at().to_string(),
+        ]
+    }
+}
+
+// MARK: Unspent ---------------------------------------------------------------
+
 impl OutputCompact for Unspent {
     fn output_compact(&self) -> String {
         self.to_string()
@@ -193,6 +222,46 @@ impl OutputFormat for Unspent {
             self.offset.to_string(),
             self.vout.to_string(),
             self.index.to_string(),
+        ]
+    }
+}
+
+// MARK: Asset -----------------------------------------------------------------
+
+impl OutputCompact for rgb20::Asset {
+    fn output_compact(&self) -> String {
+        format!("{}#{}", self.ticker(), self.id())
+    }
+}
+
+impl OutputFormat for rgb20::Asset {
+    fn output_headers() -> Vec<String> {
+        vec![
+            s!("Ticker"),
+            s!("Name"),
+            s!("Id"),
+            s!("Precision"),
+            s!("Issue date"),
+            s!("In circulation"),
+            s!("Inflation cap."),
+        ]
+    }
+
+    fn output_id_string(&self) -> String {
+        self.id().to_string()
+    }
+
+    fn output_fields(&self) -> Vec<String> {
+        vec![
+            self.ticker().to_owned(),
+            self.name().to_owned(),
+            self.id().to_string(),
+            self.fractional_bits().to_string(),
+            self.date().to_string(),
+            self.accounting_supply(rgb20::SupplyMeasure::KnownCirculating)
+                .to_string(),
+            self.accounting_supply(rgb20::SupplyMeasure::IssueLimit)
+                .to_string(),
         ]
     }
 }

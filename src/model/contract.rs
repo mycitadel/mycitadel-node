@@ -34,7 +34,7 @@ use super::{ContractId, Operation, PaymentSlip, Policy, PolicyType, State};
 #[derive(
     Getters, Clone, PartialEq, Debug, Display, StrictEncode, StrictDecode,
 )]
-#[display("{id}:{policy}")]
+#[display("{policy}#{id}")]
 pub struct Contract {
     /// Unique contract id used to identify contract across different
     /// application instances. Created as a taproot-style bitcoin tagged

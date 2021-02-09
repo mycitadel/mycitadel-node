@@ -62,6 +62,8 @@ case $state in
         case $line[1] in
             (list)
 _arguments "${_arguments_options[@]}" \
+'-f+[How the wallet list should be formatted]' \
+'--format=[How the wallet list should be formatted]' \
 '*-v[Set verbosity level]' \
 '*--verbose[Set verbosity level]' \
 '-h[Prints help information]' \
@@ -136,11 +138,11 @@ _arguments "${_arguments_options[@]}" \
 ;;
 (balance)
 _arguments "${_arguments_options[@]}" \
+'-r+[Whether to re-scan addresses space with Electrum server]' \
+'--rescan=[Whether to re-scan addresses space with Electrum server]' \
 '--lookup-depth=[How many addresses should be scanned at least after the final address with no transactions is reached]' \
 '-f+[How the command output should be formatted]' \
 '--format=[How the command output should be formatted]' \
-'-r[Whether to re-scan addresses space with Electrum server]' \
-'--rescan[Whether to re-scan addresses space with Electrum server]' \
 '*-v[Set verbosity level]' \
 '*--verbose[Set verbosity level]' \
 '-h[Prints help information]' \
@@ -173,13 +175,15 @@ case $state in
         case $line[1] in
             (list-used)
 _arguments "${_arguments_options[@]}" \
+'-r+[Whether to re-scan addresses space with Electrum server]' \
+'--rescan=[Whether to re-scan addresses space with Electrum server]' \
 '--lookup-depth=[How many addresses should be scanned at least after the final address with no transactions is reached]' \
 '-f+[How the command output should be formatted]' \
 '--format=[How the command output should be formatted]' \
 '-l+[Limit the number of addresses printed]' \
 '--limit=[Limit the number of addresses printed]' \
-'-r[Whether to re-scan addresses space with Electrum server]' \
-'--rescan[Whether to re-scan addresses space with Electrum server]' \
+'-f+[How the command output should be formatted]' \
+'--format=[How the command output should be formatted]' \
 '*-v[Set verbosity level]' \
 '*--verbose[Set verbosity level]' \
 '-h[Prints help information]' \
@@ -243,6 +247,8 @@ case $state in
         case $line[1] in
             (list)
 _arguments "${_arguments_options[@]}" \
+'-f+[How the asset list output should be formatted]' \
+'--format=[How the asset list output should be formatted]' \
 '*-v[Set verbosity level]' \
 '*--verbose[Set verbosity level]' \
 '-h[Prints help information]' \
