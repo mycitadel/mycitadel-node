@@ -47,6 +47,7 @@ impl Driver for FileDriver {
             self.cache.known_height = height;
             cache.updated_height = height;
         }
+        self.store();
         Ok(())
     }
 }

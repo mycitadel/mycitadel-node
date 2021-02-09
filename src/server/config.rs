@@ -37,6 +37,9 @@ pub struct Config {
     /// RGB20 ZMQ RPC API endpoint
     pub rgb20_endpoint: ZmqSocketAddr,
 
+    /// Whether to run embedded RGB node
+    pub rgb_embedded: bool,
+
     /// Data location
     pub data_dir: PathBuf,
 
@@ -73,6 +76,7 @@ impl From<Opts> for Config {
             rgb20_endpoint: opts.rgb20_endpoint,
             verbose: opts.shared.verbose,
             electrum_server: opts.electrum_server,
+            rgb_embedded: opts.rgb_embedded,
         }
     }
 }
@@ -83,13 +87,14 @@ impl Config {
             shellexpand::tilde(&self.data_dir.to_string_lossy().to_string())
                 .to_string(),
         );
-        fs::create_dir_all(&self.data_dir)
-            .expect("Unable to access data directory");
 
         let me = self.clone();
         let mut data_dir = self.data_dir.to_string_lossy().into_owned();
         self.process_dir(&mut data_dir);
         self.data_dir = PathBuf::from(data_dir);
+
+        fs::create_dir_all(&self.data_dir)
+            .expect("Unable to access data directory");
 
         for dir in vec![&mut self.rpc_endpoint, &mut self.rgb20_endpoint] {
             match dir {

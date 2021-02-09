@@ -135,18 +135,20 @@ where
                 serde_json::to_string(&records()).unwrap_or_default()
             ),
 
-            _ => self.iter().for_each(|(id, details)| match format {
-                Formatting::Id => println!("{}", id),
-                Formatting::Compact => {
-                    println!("{}#{}", details.output_compact(), id)
-                }
-                Formatting::Tab => {
-                    println!("{}\t{}", id, details.output_fields().join("\t"))
-                }
-                Formatting::Csv => {
-                    println!("{},{}", id, details.output_fields().join(","))
-                }
-                _ => unreachable!(),
+            _ => self.iter().for_each(|(id, details)| {
+                details.iter().for_each(|rec| match format {
+                    Formatting::Id => println!("{}", id),
+                    Formatting::Compact => {
+                        println!("{}#{}", rec.output_compact(), id)
+                    }
+                    Formatting::Tab => {
+                        println!("{}\t{}", id, rec.output_fields().join("\t"))
+                    }
+                    Formatting::Csv => {
+                        println!("{},{}", id, rec.output_fields().join(","))
+                    }
+                    _ => unreachable!(),
+                })
             }),
         }
     }
@@ -255,6 +257,22 @@ impl OutputFormat for rgb20::Asset {
     }
 
     fn output_fields(&self) -> Vec<String> {
+        use amplify::Wrapper;
+        use bitcoin::hashes::{sha256t, Hash};
+
+        let bitcoin_id = rgb::ContractId::from_inner(
+            sha256t::Hash::from_inner(wallet::BITCOIN_GENESIS_BLOCKHASH.into()),
+        );
+        if *self.id() == default!() {
+            return vec![
+                s!("BTC"),
+                s!("Bitcoin"),
+                bitcoin_id.to_string(),
+                s!("2009-01-03 19:15:00"),
+                s!(">~18624337 BTC"),
+                s!("21000000 BTC"),
+            ];
+        }
         vec![
             self.ticker().to_owned(),
             self.name().to_owned(),

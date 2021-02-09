@@ -59,7 +59,7 @@ _mycitadel() {
 
     case "${cmd}" in
         mycitadel)
-            opts=" -v -T -x -n -d -c -h -V  --verbose --tor-proxy --rpc-endpoint --chain --init --data-dir --electrum-server --rgb20-endpoint --config --help --version  wallet address asset help"
+            opts=" -v -T -x -n -d -c -h -V  --verbose --tor-proxy --rpc-endpoint --chain --init --data-dir --electrum-server --rgb20-endpoint --rgb-embedded --config --help --version  wallet address asset help"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 1 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0

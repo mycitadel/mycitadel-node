@@ -35,6 +35,7 @@ pub extern "C" fn mycitadel_run_embedded(
             chain,
             rpc_endpoint: ZmqSocketAddr::Inproc(s!("mycitadel.rpc")),
             rgb20_endpoint: ZmqSocketAddr::Inproc(s!("rgb20.rpc")),
+            rgb_embedded: true,
             data_dir: PathBuf::from(ptr_to_string(data_dir)),
             electrum_server: ptr_to_string(electrum_server),
         })

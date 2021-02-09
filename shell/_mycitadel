@@ -24,12 +24,13 @@ _mycitadel() {
 '-d+[Data directory path]: :_files -/' \
 '--data-dir=[Data directory path]: :_files -/' \
 '--electrum-server=[Electrum server connection string]' \
-'--rgb20-endpoint=[Electrum server connection string]' \
+'--rgb20-endpoint=[RGB node connection string]' \
 '-c+[Path to the configuration file]: :_files' \
 '--config=[Path to the configuration file]: :_files' \
 '*-v[Set verbosity level]' \
 '*--verbose[Set verbosity level]' \
 '--init[Initializes config file with the default values]' \
+'--rgb-embedded[]' \
 '-h[Prints help information]' \
 '--help[Prints help information]' \
 '-V[Prints version information]' \

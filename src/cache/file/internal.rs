@@ -85,7 +85,7 @@ impl FileDriver {
         Ok(me)
     }
 
-    fn load(&mut self) -> Result<(), Error> {
+    pub(super) fn load(&mut self) -> Result<(), Error> {
         debug!("Loading cache from `{:?}`", self.config.filename());
         self.fd.seek(io::SeekFrom::Start(0))?;
         trace!("Parsing cache (expected format {})", self.config.format);
@@ -104,7 +104,7 @@ impl FileDriver {
         Ok(())
     }
 
-    fn store(&mut self) -> Result<(), Error> {
+    pub(super) fn store(&mut self) -> Result<(), Error> {
         debug!(
             "Storing cache to the file `{:?}` in {} format",
             self.config.filename(),

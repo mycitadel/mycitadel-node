@@ -86,9 +86,12 @@ pub struct Opts {
     #[clap(long, default_value = MYCITADEL_ELECTRUM_SERVER, env = "MYCITADEL_ELECTRUM_SERVER")]
     pub electrum_server: String,
 
-    /// Electrum server connection string
+    /// RGB node connection string
     #[clap(long, default_value = MYCITADEL_RGB20_ENDPOINT, env = "MYCITADEL_RGB20_ENDPOINT")]
     pub rgb20_endpoint: ZmqSocketAddr,
+
+    #[clap(long)]
+    pub rgb_embedded: bool,
 
     /// Path to the configuration file.
     ///

@@ -107,7 +107,7 @@ impl Runtime {
                 rgb_node::rgbd::ContractName::Fungible => config.rgb20_endpoint.clone()
             },
             network: config.chain.clone(),
-            run_embedded: false,
+            run_embedded: config.rgb_embedded,
         };
         debug!(
             "Connecting RGB node embedded runtime using config {}...",
@@ -221,9 +221,8 @@ impl Runtime {
                 let mut outpoints: Vec<OutPoint> = vec![];
                 let mut index_offset = 0;
                 loop {
-                    let from: u32 = index_offset.into();
-                    let scripts =
-                        policy.derive_scripts(from..index_offset.into());
+                    let to: u32 = index_offset + lookup_depth as u32;
+                    let scripts = policy.derive_scripts(index_offset..to);
                     let res = self
                         .electrum
                         .batch_script_list_unspent(&scripts)
@@ -282,9 +281,8 @@ impl Runtime {
                     self.known_height = info.height as u32;
                 }
 
-                let assets =
+                let mut assets =
                     bmap! { rgb::ContractId::default() => unspent.clone() };
-                /*
                 for (utxo, outpoint) in unspent.iter_mut().zip(outpoints) {
                     for (asset_id, amounts) in self
                         .rgb20_client
@@ -296,7 +294,6 @@ impl Runtime {
                         assets.entry(asset_id).or_insert(vec![]).push(u);
                     }
                 }
-                 */
 
                 self.cache
                     .update(
