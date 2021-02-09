@@ -67,6 +67,9 @@ pub struct Runtime {
 
     /// RGB20 (fungibled) daemon client
     rgb20_client: rgb_node::i9n::Runtime,
+
+    /// Known blockchain height by the last received block header
+    known_height: u32,
 }
 
 impl Runtime {
@@ -93,7 +96,7 @@ impl Runtime {
         let electrum =
             ElectrumClient::new(&config.electrum_server.to_string())?;
         debug!("Subscribing to new block notifications");
-        electrum.block_headers_subscribe()?;
+        let known_height = electrum.block_headers_subscribe()?.height as u32;
 
         let rgb_config = rgb_node::i9n::Config {
             verbose: config.verbose,
@@ -124,6 +127,7 @@ impl Runtime {
             cache,
             rgb20_client,
             unmarshaller: Request::create_unmarshaller(),
+            known_height,
         })
     }
 }
@@ -218,7 +222,6 @@ impl Runtime {
                 let mut index_offset = 0;
                 loop {
                     let from: u32 = index_offset.into();
-                    index_offset += lookup_depth as u32;
                     let scripts =
                         policy.derive_scripts(from..index_offset.into());
                     let res = self
@@ -238,6 +241,7 @@ impl Runtime {
                                 .ok()
                         })
                         .collect::<HashMap<_, _>>();
+                    trace!("Found txids: {:#?}", txids);
                     let batch = res
                         .iter()
                         .enumerate()
@@ -271,15 +275,16 @@ impl Runtime {
                     }
                     unspent.extend(batch.0);
                     outpoints.extend(batch.1);
+                    index_offset += lookup_depth as u32;
                 }
 
-                let mut height = None;
                 while let Ok(Some(info)) = self.electrum.block_headers_pop() {
-                    height = Some(info.height as u32);
+                    self.known_height = info.height as u32;
                 }
 
-                let mut assets =
+                let assets =
                     bmap! { rgb::ContractId::default() => unspent.clone() };
+                /*
                 for (utxo, outpoint) in unspent.iter_mut().zip(outpoints) {
                     for (asset_id, amounts) in self
                         .rgb20_client
@@ -291,9 +296,14 @@ impl Runtime {
                         assets.entry(asset_id).or_insert(vec![]).push(u);
                     }
                 }
+                 */
 
                 self.cache
-                    .update(contract_id, height, assets.clone())
+                    .update(
+                        contract_id,
+                        Some(self.known_height),
+                        assets.clone(),
+                    )
                     .map_err(Error::from)?;
                 Ok(Reply::ContractUnspent(assets))
             }

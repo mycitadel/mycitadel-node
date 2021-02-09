@@ -55,7 +55,7 @@ pub struct SingleSigInfo {
     StrictEncode,
     StrictDecode,
 )]
-#[display("sync_contract({contract_id}, depth: {lookup_depth}")]
+#[display("sync_contract({contract_id}, depth: {lookup_depth})")]
 pub struct SyncContractRequest {
     pub contract_id: model::ContractId,
     pub lookup_depth: u8,

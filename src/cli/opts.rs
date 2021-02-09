@@ -14,6 +14,7 @@
 use clap::{AppSettings, ArgGroup, Clap, ValueHint};
 use std::str::FromStr;
 use wallet::bip32::PubkeyChain;
+use wallet::descriptor;
 
 use crate::model;
 
@@ -140,27 +141,6 @@ pub enum WalletCommand {
     Create {
         #[clap(subcommand)]
         subcommand: WalletCreateCommand,
-
-        /// Creates old "bare" wallets, where public key is kept in the
-        /// explicit form within bitcoin transaction P2PK output
-        #[clap(long, takes_value = false, group = "descriptor", global = true)]
-        bare: bool,
-
-        /// Whether create a pre-SegWit wallet (P2PKH) rather than SegWit
-        /// (P2WPKH). If you'd like to use legacy SegWit-style addresses
-        /// (P2WPKH-in-P2SH), do not use this flag, create normal
-        /// SegWit wallet instead and specify `--legacy` option when
-        /// requesting new address
-        #[clap(long, takes_value = false, group = "descriptor", global = true)]
-        legacy: bool,
-
-        /// Recommended SegWit wallet with P2WKH and P2WPKH-in-P2SH outputs
-        #[clap(long, takes_value = false, group = "descriptor", global = true)]
-        segwit: bool,
-
-        /// Reserved for the future taproot P2TR outputs
-        #[clap(long, takes_value = false, group = "descriptor", global = true)]
-        taproot: bool,
     },
 
     /// Change a name of a wallet
@@ -186,7 +166,7 @@ pub enum WalletCommand {
     /// Returns detailed wallet balance information
     Balance {
         #[clap(flatten)]
-        opts: WalletOpts,
+        scan_opts: WalletOpts,
     },
 }
 
@@ -217,6 +197,9 @@ pub enum WalletCreateCommand {
         /// 0-1/*`
         #[clap()]
         pubkey_chain: PubkeyChain,
+
+        #[clap(flatten)]
+        opts: DescriptorOpts,
     },
 }
 
@@ -300,15 +283,53 @@ pub struct WalletOpts {
     pub wallet_id: model::ContractId,
 
     /// Whether to re-scan addresses space with Electrum server
-    #[clap(short, long, takes_value = true, global = true)]
+    #[clap(short, long)]
     pub rescan: bool,
 
     /// How many addresses should be scanned at least after the final address
-    /// with no transactions is reached
-    #[clap(long, default_value = "20", requires = "rescan", global = true)]
-    pub lookup_depth: u8,
+    /// with no transactions is reached. Defaults to 20
+    #[clap(long, requires = "rescan", global = true)]
+    pub lookup_depth: Option<u8>,
 
     /// How the command output should be formatted
     #[clap(short, long, default_value = "yaml", global = true)]
     pub format: Formatting,
+}
+
+#[derive(Clap, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Debug)]
+pub struct DescriptorOpts {
+    /// Creates old "bare" wallets, where public key is kept in the
+    /// explicit form within bitcoin transaction P2PK output
+    #[clap(long, takes_value = false, conflicts_with_all = &["legacy", "segwit", "taproot"], global = true)]
+    bare: bool,
+
+    /// Whether create a pre-SegWit wallet (P2PKH) rather than SegWit
+    /// (P2WPKH). If you'd like to use legacy SegWit-style addresses
+    /// (P2WPKH-in-P2SH), do not use this flag, create normal
+    /// SegWit wallet instead and specify `--legacy` option when
+    /// requesting new address
+    #[clap(long, takes_value = false, conflicts_with_all = &["bare", "segwit", "taproot"], global = true)]
+    legacy: bool,
+
+    /// Recommended SegWit wallet with P2WKH and P2WPKH-in-P2SH outputs
+    #[clap(long, takes_value = false, conflicts_with_all = &["legacy", "bare", "taproot"], global = true)]
+    segwit: bool,
+
+    /// Reserved for the future taproot P2TR outputs
+    #[clap(long, takes_value = false, conflicts_with_all = &["legacy", "segwit", "bare"], global = true)]
+    taproot: bool,
+}
+
+impl DescriptorOpts {
+    pub fn descriptor_category(self) -> descriptor::OuterCategory {
+        if self.bare {
+            descriptor::OuterCategory::Bare
+        } else if self.legacy {
+            descriptor::OuterCategory::Hashed
+        } else if self.taproot {
+            descriptor::OuterCategory::Taproot
+        } else {
+            descriptor::OuterCategory::SegWit
+        }
+    }
 }

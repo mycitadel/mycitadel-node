@@ -176,14 +176,6 @@ _mycitadel() {
             fi
             case "${prev}" in
                 
-                --rescan)
-                    COMPREPLY=($(compgen -f "${cur}"))
-                    return 0
-                    ;;
-                    -r)
-                    COMPREPLY=($(compgen -f "${cur}"))
-                    return 0
-                    ;;
                 --lookup-depth)
                     COMPREPLY=($(compgen -f "${cur}"))
                     return 0
@@ -325,14 +317,6 @@ _mycitadel() {
             fi
             case "${prev}" in
                 
-                --rescan)
-                    COMPREPLY=($(compgen -f "${cur}"))
-                    return 0
-                    ;;
-                    -r)
-                    COMPREPLY=($(compgen -f "${cur}"))
-                    return 0
-                    ;;
                 --lookup-depth)
                     COMPREPLY=($(compgen -f "${cur}"))
                     return 0
@@ -353,7 +337,7 @@ _mycitadel() {
             return 0
             ;;
         mycitadel__wallet__create)
-            opts=" -v -h -V  --bare --legacy --segwit --taproot --verbose --help --version  single-sig"
+            opts=" -v -h -V  --verbose --help --version  single-sig"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0

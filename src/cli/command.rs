@@ -13,7 +13,6 @@
 
 use colored::Colorize;
 use microservices::shell::Exec;
-use wallet::descriptor;
 
 use super::{
     AssetCommand, Command, OutputFormat, WalletCommand, WalletCreateCommand,
@@ -65,25 +64,17 @@ impl Exec for WalletCommand {
         match self {
             WalletCommand::Create {
                 subcommand:
-                    WalletCreateCommand::SingleSig { name, pubkey_chain },
-                bare,
-                legacy,
-                segwit: _,
-                taproot,
+                    WalletCreateCommand::SingleSig {
+                        name,
+                        pubkey_chain,
+                        opts,
+                    },
             } => {
-                let category = if bare {
-                    descriptor::OuterCategory::Bare
-                } else if legacy {
-                    descriptor::OuterCategory::Hashed
-                } else if taproot {
-                    descriptor::OuterCategory::Taproot
-                } else {
-                    descriptor::OuterCategory::SegWit
-                };
+                let category = opts.descriptor_category();
                 eprintln!(
                     "Creating single-sig {} wallet with public key generator {}",
-                    category.to_string().green(),
-                    pubkey_chain.to_string().green(),
+                    category.to_string().yellow(),
+                    pubkey_chain.to_string().yellow(),
 
                 );
                 client
@@ -97,7 +88,7 @@ impl Exec for WalletCommand {
                         eprintln!(
                             "Wallet named '{}' was successfully created.\n\
                             Use the following string as the wallet id:",
-                            contract.name().yellow()
+                            contract.name().green()
                         );
                         println!(
                             "{}",
@@ -137,7 +128,7 @@ impl Exec for WalletCommand {
                     );
                 }),
             WalletCommand::Balance {
-                opts:
+                scan_opts:
                     WalletOpts {
                         wallet_id,
                         rescan,
@@ -145,7 +136,11 @@ impl Exec for WalletCommand {
                         format,
                     },
             } => client
-                .contract_balance(wallet_id, rescan, lookup_depth)?
+                .contract_balance(
+                    wallet_id,
+                    rescan,
+                    lookup_depth.unwrap_or(20),
+                )?
                 .report_error("retrieving wallet balance")
                 .and_then(|reply| match reply {
                     Reply::ContractUnspent(unspent) => Ok(unspent),

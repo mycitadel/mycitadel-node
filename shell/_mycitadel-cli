@@ -67,10 +67,6 @@ _arguments "${_arguments_options[@]}" \
 ;;
 (create)
 _arguments "${_arguments_options[@]}" \
-'--bare[Creates old "bare" wallets, where public key is kept in the explicit form within bitcoin transaction P2PK output]' \
-'--legacy[Whether create a pre-SegWit wallet (P2PKH) rather than SegWit (P2WPKH). If you'\''d like to use legacy SegWit-style addresses (P2WPKH-in-P2SH), do not use this flag, create normal SegWit wallet instead and specify `--legacy` option when requesting new address]' \
-'--segwit[Recommended SegWit wallet with P2WKH and P2WPKH-in-P2SH outputs]' \
-'--taproot[Reserved for the future taproot P2TR outputs]' \
 '*-v[Set verbosity level]' \
 '*--verbose[Set verbosity level]' \
 '-h[Prints help information]' \
@@ -88,10 +84,10 @@ case $state in
         case $line[1] in
             (single-sig)
 _arguments "${_arguments_options[@]}" \
-'--bare[Creates old "bare" wallets, where public key is kept in the explicit form within bitcoin transaction P2PK output]' \
-'--legacy[Whether create a pre-SegWit wallet (P2PKH) rather than SegWit (P2WPKH). If you'\''d like to use legacy SegWit-style addresses (P2WPKH-in-P2SH), do not use this flag, create normal SegWit wallet instead and specify `--legacy` option when requesting new address]' \
-'--segwit[Recommended SegWit wallet with P2WKH and P2WPKH-in-P2SH outputs]' \
-'--taproot[Reserved for the future taproot P2TR outputs]' \
+'(--legacy --segwit --taproot)--bare[Creates old "bare" wallets, where public key is kept in the explicit form within bitcoin transaction P2PK output]' \
+'(--bare --segwit --taproot)--legacy[Whether create a pre-SegWit wallet (P2PKH) rather than SegWit (P2WPKH). If you'\''d like to use legacy SegWit-style addresses (P2WPKH-in-P2SH), do not use this flag, create normal SegWit wallet instead and specify `--legacy` option when requesting new address]' \
+'(--legacy --bare --taproot)--segwit[Recommended SegWit wallet with P2WKH and P2WPKH-in-P2SH outputs]' \
+'(--legacy --segwit --bare)--taproot[Reserved for the future taproot P2TR outputs]' \
 '*-v[Set verbosity level]' \
 '*--verbose[Set verbosity level]' \
 '-h[Prints help information]' \
@@ -131,11 +127,11 @@ _arguments "${_arguments_options[@]}" \
 ;;
 (balance)
 _arguments "${_arguments_options[@]}" \
-'-r+[Whether to re-scan addresses space with Electrum server]' \
-'--rescan=[Whether to re-scan addresses space with Electrum server]' \
-'--lookup-depth=[How many addresses should be scanned at least after the final address with no transactions is reached]' \
+'--lookup-depth=[How many addresses should be scanned at least after the final address with no transactions is reached. Defaults to 20]' \
 '-f+[How the command output should be formatted]' \
 '--format=[How the command output should be formatted]' \
+'-r[Whether to re-scan addresses space with Electrum server]' \
+'--rescan[Whether to re-scan addresses space with Electrum server]' \
 '*-v[Set verbosity level]' \
 '*--verbose[Set verbosity level]' \
 '-h[Prints help information]' \
@@ -168,15 +164,15 @@ case $state in
         case $line[1] in
             (list-used)
 _arguments "${_arguments_options[@]}" \
-'-r+[Whether to re-scan addresses space with Electrum server]' \
-'--rescan=[Whether to re-scan addresses space with Electrum server]' \
-'--lookup-depth=[How many addresses should be scanned at least after the final address with no transactions is reached]' \
+'--lookup-depth=[How many addresses should be scanned at least after the final address with no transactions is reached. Defaults to 20]' \
 '-f+[How the command output should be formatted]' \
 '--format=[How the command output should be formatted]' \
 '-l+[Limit the number of addresses printed]' \
 '--limit=[Limit the number of addresses printed]' \
 '-f+[How the command output should be formatted]' \
 '--format=[How the command output should be formatted]' \
+'-r[Whether to re-scan addresses space with Electrum server]' \
+'--rescan[Whether to re-scan addresses space with Electrum server]' \
 '*-v[Set verbosity level]' \
 '*--verbose[Set verbosity level]' \
 '-h[Prints help information]' \
