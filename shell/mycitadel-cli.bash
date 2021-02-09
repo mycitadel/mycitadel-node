@@ -397,7 +397,7 @@ _mycitadel-cli() {
             return 0
             ;;
         mycitadel__cli__wallet__rename)
-            opts=" -v -h -V  --verbose --help --version  <wallet-id> <name> "
+            opts=" -v -h -V  --verbose --help --version  <wallet-id> <new-name> "
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0

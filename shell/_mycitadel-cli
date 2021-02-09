@@ -115,7 +115,7 @@ _arguments "${_arguments_options[@]}" \
 '-V[Prints version information]' \
 '--version[Prints version information]' \
 ':wallet-id -- Wallet id to rename:' \
-':name -- New name of the wallet:' \
+':new-name -- New name of the wallet:' \
 && ret=0
 ;;
 (delete)

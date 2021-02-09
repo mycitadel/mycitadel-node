@@ -97,7 +97,7 @@ impl Exec for WalletCommand {
                         eprintln!(
                             "Wallet named '{}' was successfully created.\n\
                             Use the following string as the wallet id:",
-                            contract.name().green().bold()
+                            contract.name().yellow()
                         );
                         println!(
                             "{}",
@@ -113,6 +113,19 @@ impl Exec for WalletCommand {
                     _ => Err(Error::UnexpectedApi),
                 })
                 .map(|contracts| contracts.output_print(format)),
+            WalletCommand::Rename {
+                wallet_id,
+                new_name,
+            } => client
+                .contract_rename(wallet_id, new_name.clone())?
+                .report_error("renaming wallet")
+                .map(|_| {
+                    eprintln!(
+                        "Wallet with id {} was successfully renamed into '{}'",
+                        wallet_id.to_string().yellow(),
+                        new_name.bright_green()
+                    );
+                }),
             WalletCommand::Balance {
                 opts:
                     WalletOpts {

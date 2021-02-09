@@ -178,6 +178,15 @@ impl Runtime {
                 .map(Reply::Contracts)
                 .map_err(Error::from),
 
+            Request::RenameContract(message::ContractRenameRequest {
+                contract_id,
+                name,
+            }) => self
+                .storage
+                .rename_contract(contract_id, name)
+                .map(|_| Reply::Success)
+                .map_err(Error::from),
+
             Request::SyncContract(message::SyncContractRequest {
                 contract_id,
                 lookup_depth,

@@ -164,7 +164,7 @@ pub enum WalletCommand {
     },
 
     /// Change a name of a wallet
-    #[display("rename {wallet_id} \"{name}\"")]
+    #[display("rename {wallet_id} \"{new_name}\"")]
     Rename {
         /// Wallet id to rename
         #[clap()]
@@ -172,7 +172,7 @@ pub enum WalletCommand {
 
         /// New name of the wallet
         #[clap()]
-        name: String,
+        new_name: String,
     },
 
     /// Delete existing wallet contract

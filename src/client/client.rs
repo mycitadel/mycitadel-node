@@ -83,6 +83,17 @@ impl Client {
         }))
     }
 
+    pub fn contract_rename(
+        &mut self,
+        contract_id: ContractId,
+        name: String,
+    ) -> Result<Reply, Error> {
+        self.request(Request::RenameContract(message::ContractRenameRequest {
+            contract_id,
+            name,
+        }))
+    }
+
     pub fn contract_balance(
         &mut self,
         contract_id: ContractId,

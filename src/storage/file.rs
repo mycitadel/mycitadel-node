@@ -147,6 +147,20 @@ impl Driver for FileDriver {
         Ok(contract)
     }
 
+    fn rename_contract(
+        &mut self,
+        contract_id: ContractId,
+        new_name: String,
+    ) -> Result<(), Error> {
+        self.data
+            .contracts
+            .get_mut(&contract_id)
+            .ok_or(Error::ContractNotFound(contract_id))?
+            .name = new_name;
+        self.store()?;
+        Ok(())
+    }
+
     fn policy(&self, contract_id: ContractId) -> Result<&Policy, Error> {
         self.data
             .contracts

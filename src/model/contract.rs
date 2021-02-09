@@ -50,7 +50,7 @@ pub struct Contract {
     #[serde_as(as = "DisplayFromStr")]
     id: ContractId,
 
-    name: String,
+    pub name: String,
 
     policy: Policy,
 
