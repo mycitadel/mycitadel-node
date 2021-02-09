@@ -47,7 +47,14 @@ pub(super) struct Cache {
 
 #[serde_as]
 #[derive(
-    Serialize, Deserialize, Clone, PartialEq, Debug, StrictEncode, StrictDecode,
+    Serialize,
+    Deserialize,
+    Clone,
+    PartialEq,
+    Debug,
+    Default,
+    StrictEncode,
+    StrictDecode,
 )]
 pub(super) struct ContractCache {
     pub updated_height: u32,

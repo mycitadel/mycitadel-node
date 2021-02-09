@@ -80,6 +80,7 @@ shellexpand = "2"
 configure_me_codegen = "0.4"
 serde = { version = "1", features = ["derive"] }
 serde_with = { version = "1.5", features = ["hex", "chrono"] }
+colored = { version = "2", optional = true }
 
 # Recommended set of features:
 # 1. Standalone node: `server` (=`node`+`shell`)

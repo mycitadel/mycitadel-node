@@ -54,11 +54,11 @@ impl Client {
     pub fn request(&mut self, request: Request) -> Result<Reply, Error> {
         trace!("Sending request to the server: {:?}", request);
         let data = request.serialize();
-        trace!("Raw request data ({} bytes): {:?}", data.len(), data);
+        trace!("Raw request data ({} bytes): {:02X?}", data.len(), data);
         self.session_rpc.send_raw_message(&data)?;
         trace!("Awaiting reply");
         let raw = self.session_rpc.recv_raw_message()?;
-        trace!("Got reply ({} bytes), parsing", raw.len());
+        trace!("Got reply ({} bytes), parsing: {:02X?}", raw.len(), raw);
         let reply = self.unmarshaller.unmarshall(&raw)?;
         trace!("Reply: {:?}", reply);
         Ok((&*reply).clone())

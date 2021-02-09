@@ -27,11 +27,13 @@ impl rpc::Reply {
     pub fn report_error(self, msg: &str) -> Result<Self, Error> {
         match self {
             rpc::Reply::Failure(failure) => {
-                error!(
-                    "{} {} #{}: {}",
+                eprintln!(
+                    "{} {} {}{}:\n{} {}",
                     "Error".bright_red(),
                     msg.bright_red(),
+                    "#".bright_red().bold(),
                     failure.code.to_string().bright_red().bold(),
+                    "-".red(),
                     failure.info.red()
                 );
                 Err(failure)?

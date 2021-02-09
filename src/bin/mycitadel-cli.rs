@@ -29,10 +29,12 @@
 extern crate log;
 
 use clap::Clap;
+use colored::Colorize;
 
 use microservices::shell::{Exec, LogLevel};
 use mycitadel::cli::Opts;
 use mycitadel::client::{Client, Config};
+use mycitadel::Error;
 
 fn main() {
     let opts = Opts::parse();
@@ -47,5 +49,14 @@ fn main() {
     trace!("Executing command: {}", opts.command);
     opts.command
         .exec(&mut client)
-        .unwrap_or_else(|err| eprintln!("{}", err));
+        .unwrap_or_else(|err| match err {
+            Error::ServerFailure(_) => {}
+            err => {
+                eprintln!(
+                    "{} {}\n",
+                    "Error:".bright_red(),
+                    err.to_string().replace(": ", "\n  > ").red()
+                )
+            }
+        });
 }

@@ -105,6 +105,10 @@ where
     V: OutputFormat + Ord + Serialize,
 {
     fn output_print(&self, format: Formatting) {
+        if self.values().all(Vec::is_empty) {
+            eprintln!("{}", "No items".red());
+            return;
+        }
         let headers = Self::output_headers();
         if format == Formatting::Tab {
             println!("{}", headers.join("\t").bright_green())

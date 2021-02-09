@@ -11,8 +11,10 @@
 // along with this software.
 // If not, see <https://www.gnu.org/licenses/agpl-3.0-standalone.html>.
 
+use std::str::FromStr;
+
 use bitcoin::hashes::{sha256, sha256t};
-use lnpbp::bech32::ToBech32IdString;
+use lnpbp::bech32::{FromBech32IdStr, ToBech32IdString};
 use lnpbp::commit_verify::CommitVerify;
 use lnpbp::strict_encoding::{self, StrictDecode, StrictEncode};
 use lnpbp::{tagged_hash, TaggedHash};
@@ -46,9 +48,7 @@ impl sha256t::Tag for ContractIdTag {
     StrictEncode,
     StrictDecode,
 )]
-#[wrapper(
-    Debug, FromStr, LowerHex, Index, IndexRange, IndexFrom, IndexTo, IndexFull
-)]
+#[wrapper(Debug, LowerHex, Index, IndexRange, IndexFrom, IndexTo, IndexFull)]
 #[display(ContractId::to_bech32_id_string)]
 pub struct ContractId(sha256t::Hash<ContractIdTag>);
 
@@ -59,5 +59,13 @@ where
     #[inline]
     fn commit(msg: &MSG) -> ContractId {
         <ContractId as TaggedHash<_>>::hash(msg)
+    }
+}
+
+impl FromStr for ContractId {
+    type Err = lnpbp::bech32::Error;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        ContractId::from_bech32_id_str(s)
     }
 }

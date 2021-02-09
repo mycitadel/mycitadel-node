@@ -46,15 +46,15 @@ pub enum Reply {
     #[display("contract_unspent(...)")]
     ContractUnspent(BTreeMap<rgb::ContractId, Vec<Unspent>>),
 
-    #[api(type = 0x0202)]
+    #[api(type = 0x0203)]
     #[display("asset({0})")]
     Asset(rgb20::Asset),
 
-    #[api(type = 0x0203)]
+    #[api(type = 0x0204)]
     #[display("assets(...)")]
     Assets(Vec<rgb20::Asset>),
 
-    #[api(type = 0x0204)]
+    #[api(type = 0x0205)]
     #[display("identities(...)")]
     Identities(Vec<IdentityInfo>),
 }

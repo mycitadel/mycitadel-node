@@ -22,11 +22,12 @@ impl Driver for FileDriver {
         &self,
         contract_id: ContractId,
     ) -> Result<BTreeMap<rgb::ContractId, Vec<Unspent>>, Error> {
-        self.cache
+        Ok(self
+            .cache
             .descriptors
             .get(&contract_id)
             .map(|c| c.unspent.clone())
-            .ok_or(Error::NotFound(contract_id.to_string()))
+            .unwrap_or_default())
     }
 
     fn update(
@@ -36,15 +37,15 @@ impl Driver for FileDriver {
         unspent: BTreeMap<rgb::ContractId, Vec<Unspent>>,
     ) -> Result<(), Error> {
         // TODO: Update address & txid & used index cache
-        let ptr = self
+        let cache = self
             .cache
             .descriptors
-            .get_mut(&contract_id)
-            .ok_or(Error::NotFound(contract_id.to_string()))?;
-        ptr.unspent = unspent;
+            .entry(contract_id)
+            .or_insert(default!());
+        cache.unspent = unspent;
         if let Some(height) = updated_height {
             self.cache.known_height = height;
-            ptr.updated_height = height;
+            cache.updated_height = height;
         }
         Ok(())
     }
