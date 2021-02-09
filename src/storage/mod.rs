@@ -30,6 +30,9 @@ pub trait Driver {
         contract_id: ContractId,
         new_name: String,
     ) -> Result<(), Error>;
+    fn delete_contract(&mut self, contract_id: ContractId)
+        -> Result<(), Error>;
+
     fn policy(&self, contract_id: ContractId) -> Result<&Policy, Error>;
 
     fn signers(&self) -> Result<Vec<SignerAccountInfo>, Error>;

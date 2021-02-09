@@ -161,6 +161,18 @@ impl Driver for FileDriver {
         Ok(())
     }
 
+    fn delete_contract(
+        &mut self,
+        contract_id: ContractId,
+    ) -> Result<(), Error> {
+        self.data
+            .contracts
+            .remove(&contract_id)
+            .ok_or(Error::ContractNotFound(contract_id))?;
+        self.store()?;
+        Ok(())
+    }
+
     fn policy(&self, contract_id: ContractId) -> Result<&Policy, Error> {
         self.data
             .contracts

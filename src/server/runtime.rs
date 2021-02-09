@@ -172,6 +172,20 @@ impl Runtime {
             message
         );
         match message {
+            Request::CreateSingleSig(req) => {
+                let contract = Contract::with(
+                    Policy::Current(ContractDescriptor::SingleSig {
+                        category: req.category,
+                        pk: req.pubkey_chain,
+                    }),
+                    req.name,
+                );
+                self.storage
+                    .add_contract(contract)
+                    .map(Reply::Contract)
+                    .map_err(Error::from)
+            }
+
             Request::ListContracts => self
                 .storage
                 .contracts()
@@ -184,6 +198,12 @@ impl Runtime {
             }) => self
                 .storage
                 .rename_contract(contract_id, name)
+                .map(|_| Reply::Success)
+                .map_err(Error::from),
+
+            Request::DeleteContract(contract_id) => self
+                .storage
+                .delete_contract(contract_id)
                 .map(|_| Reply::Success)
                 .map_err(Error::from),
 
@@ -289,6 +309,25 @@ impl Runtime {
                 .identities()
                 .map(Reply::Identities)
                 .map_err(Error::from),
+
+            Request::AddSigner(account) => self
+                .storage
+                .add_signer(account)
+                .map(|_| Reply::Success)
+                .map_err(Error::from),
+
+            Request::AddIdentity(identity) => self
+                .storage
+                .add_identity(identity)
+                .map(|_| Reply::Success)
+                .map_err(Error::from),
+
+            Request::ImportAsset(genesis) => self
+                .rgb20_client
+                .import_asset(genesis)
+                .map(Reply::Asset)
+                .map_err(Error::from),
+
             Request::ListAssets => self
                 .rgb20_client
                 .list_assets(FileFormat::StrictEncode)
@@ -297,34 +336,7 @@ impl Runtime {
                     Vec::<Asset>::strict_deserialize(data).map_err(Error::from)
                 })
                 .map(Reply::Assets),
-            Request::CreateSingleSig(req) => {
-                let contract = Contract::with(
-                    Policy::Current(ContractDescriptor::SingleSig {
-                        category: req.category,
-                        pk: req.pubkey_chain,
-                    }),
-                    req.name,
-                );
-                self.storage
-                    .add_contract(contract)
-                    .map(Reply::Contract)
-                    .map_err(Error::from)
-            }
-            Request::AddSigner(account) => self
-                .storage
-                .add_signer(account)
-                .map(|_| Reply::Success)
-                .map_err(Error::from),
-            Request::AddIdentity(identity) => self
-                .storage
-                .add_identity(identity)
-                .map(|_| Reply::Success)
-                .map_err(Error::from),
-            Request::ImportAsset(genesis) => self
-                .rgb20_client
-                .import_asset(genesis)
-                .map(Reply::Asset)
-                .map_err(Error::from),
+
             _ => unimplemented!(),
         }
         .map_err(Error::into)

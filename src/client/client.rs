@@ -94,6 +94,13 @@ impl Client {
         }))
     }
 
+    pub fn contract_delete(
+        &mut self,
+        contract_id: ContractId,
+    ) -> Result<Reply, Error> {
+        self.request(Request::DeleteContract(contract_id))
+    }
+
     pub fn contract_balance(
         &mut self,
         contract_id: ContractId,

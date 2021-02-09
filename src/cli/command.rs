@@ -126,6 +126,16 @@ impl Exec for WalletCommand {
                         new_name.bright_green()
                     );
                 }),
+            WalletCommand::Delete { wallet_id } => client
+                .contract_delete(wallet_id)?
+                .report_error("deleting wallet")
+                .map(|_| {
+                    eprintln!(
+                        "Wallet with id {} was successfully {}",
+                        wallet_id.to_string().yellow(),
+                        "deleted".red()
+                    );
+                }),
             WalletCommand::Balance {
                 opts:
                     WalletOpts {
