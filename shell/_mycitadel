@@ -269,6 +269,100 @@ _arguments "${_arguments_options[@]}" \
     ;;
 esac
 ;;
+(invoice)
+_arguments "${_arguments_options[@]}" \
+'*-v[Set verbosity level]' \
+'*--verbose[Set verbosity level]' \
+'-h[Prints help information]' \
+'--help[Prints help information]' \
+'-V[Prints version information]' \
+'--version[Prints version information]' \
+":: :_mycitadel__invoice_commands" \
+"*::: :->invoice" \
+&& ret=0
+case $state in
+    (invoice)
+        words=($line[1] "${words[@]}")
+        (( CURRENT += 1 ))
+        curcontext="${curcontext%:*:*}:mycitadel-invoice-command-$line[1]:"
+        case $line[1] in
+            (create)
+_arguments "${_arguments_options[@]}" \
+'-a+[Asset in which the payment is requested; defaults to bitcoin]' \
+'--asset=[Asset in which the payment is requested; defaults to bitcoin]' \
+'-m+[Optional details about the merchant providing the invoice]' \
+'--merchant=[Optional details about the merchant providing the invoice]' \
+'-d+[Information about the invoice]' \
+'--details=[Information about the invoice]' \
+'-u[Do not mark the address used in the invoice as used]' \
+'--unmark[Do not mark the address used in the invoice as used]' \
+'--descriptor[Create descriptor-based invoice (not compatible with instant wallet accounts)]' \
+'--psbt[Create a PSBT-based invoice (not compatible with instant wallet accounts)]' \
+'*-v[Set verbosity level]' \
+'*--verbose[Set verbosity level]' \
+'-h[Prints help information]' \
+'--help[Prints help information]' \
+'-V[Prints version information]' \
+'--version[Prints version information]' \
+':amount -- Amount of the asset (in the smallest asset units, without floating point - i.e. for bitcoin use satoshis):' \
+':beneficiary -- Wallet id to which the payment should be received:' \
+&& ret=0
+;;
+(list)
+_arguments "${_arguments_options[@]}" \
+'-f+[How invoice list should be formatted]' \
+'--format=[How invoice list should be formatted]' \
+'*-v[Set verbosity level]' \
+'*--verbose[Set verbosity level]' \
+'-h[Prints help information]' \
+'--help[Prints help information]' \
+'-V[Prints version information]' \
+'--version[Prints version information]' \
+&& ret=0
+;;
+(info)
+_arguments "${_arguments_options[@]}" \
+'-f+[Format to use for the invoice representation]' \
+'--format=[Format to use for the invoice representation]' \
+'*-v[Set verbosity level]' \
+'*--verbose[Set verbosity level]' \
+'-h[Prints help information]' \
+'--help[Prints help information]' \
+'-V[Prints version information]' \
+'--version[Prints version information]' \
+':invoice -- Invoice Bech32 string representation:' \
+&& ret=0
+;;
+(pay)
+_arguments "${_arguments_options[@]}" \
+'*-v[Set verbosity level]' \
+'*--verbose[Set verbosity level]' \
+'-h[Prints help information]' \
+'--help[Prints help information]' \
+'-V[Prints version information]' \
+'--version[Prints version information]' \
+':invoice -- Invoice Bech32 string representation:' \
+':wallet-id -- Wallet to pay from:' \
+&& ret=0
+;;
+(accept)
+_arguments "${_arguments_options[@]}" \
+'-f[Whether parameter given by consignment is a file name or a Bech32 string]' \
+'--file[Whether parameter given by consignment is a file name or a Bech32 string]' \
+'*-v[Set verbosity level]' \
+'*--verbose[Set verbosity level]' \
+'-h[Prints help information]' \
+'--help[Prints help information]' \
+'-V[Prints version information]' \
+'--version[Prints version information]' \
+':invoice -- Your original invoice for acceptance:' \
+':consignment -- Consignment data to accept:' \
+&& ret=0
+;;
+        esac
+    ;;
+esac
+;;
 (help)
 _arguments "${_arguments_options[@]}" \
 '-h[Prints help information]' \
@@ -288,9 +382,17 @@ _mycitadel_commands() {
         "wallet:Wallet management commands" \
 "address:Address-related commands" \
 "asset:Asset management commands" \
+"invoice:Invoice-related commands" \
 "help:Prints this message or the help of the given subcommand(s)" \
     )
     _describe -t commands 'mycitadel commands' commands "$@"
+}
+(( $+functions[_mycitadel__invoice__accept_commands] )) ||
+_mycitadel__invoice__accept_commands() {
+    local commands; commands=(
+        
+    )
+    _describe -t commands 'mycitadel invoice accept commands' commands "$@"
 }
 (( $+functions[_mycitadel__address_commands] )) ||
 _mycitadel__address_commands() {
@@ -323,6 +425,13 @@ _mycitadel__address__create_commands() {
     )
     _describe -t commands 'mycitadel address create commands' commands "$@"
 }
+(( $+functions[_mycitadel__invoice__create_commands] )) ||
+_mycitadel__invoice__create_commands() {
+    local commands; commands=(
+        
+    )
+    _describe -t commands 'mycitadel invoice create commands' commands "$@"
+}
 (( $+functions[_mycitadel__wallet__create_commands] )) ||
 _mycitadel__wallet__create_commands() {
     local commands; commands=(
@@ -351,12 +460,37 @@ _mycitadel__asset__import_commands() {
     )
     _describe -t commands 'mycitadel asset import commands' commands "$@"
 }
+(( $+functions[_mycitadel__invoice__info_commands] )) ||
+_mycitadel__invoice__info_commands() {
+    local commands; commands=(
+        
+    )
+    _describe -t commands 'mycitadel invoice info commands' commands "$@"
+}
+(( $+functions[_mycitadel__invoice_commands] )) ||
+_mycitadel__invoice_commands() {
+    local commands; commands=(
+        "create:Create new invoice" \
+"list:List all known invoices" \
+"info:Parse invoice and print out its detailed information" \
+"pay:Pay an invoice" \
+"accept:Accept payment for the invoice. Required only for on-chain RGB payments; Bitcoin & Lightning-network payments (including RGB lightning) are accepted automatically and does not require calling this method" \
+    )
+    _describe -t commands 'mycitadel invoice commands' commands "$@"
+}
 (( $+functions[_mycitadel__asset__list_commands] )) ||
 _mycitadel__asset__list_commands() {
     local commands; commands=(
         
     )
     _describe -t commands 'mycitadel asset list commands' commands "$@"
+}
+(( $+functions[_mycitadel__invoice__list_commands] )) ||
+_mycitadel__invoice__list_commands() {
+    local commands; commands=(
+        
+    )
+    _describe -t commands 'mycitadel invoice list commands' commands "$@"
 }
 (( $+functions[_mycitadel__wallet__list_commands] )) ||
 _mycitadel__wallet__list_commands() {
@@ -378,6 +512,13 @@ _mycitadel__address__mark-used_commands() {
         
     )
     _describe -t commands 'mycitadel address mark-used commands' commands "$@"
+}
+(( $+functions[_mycitadel__invoice__pay_commands] )) ||
+_mycitadel__invoice__pay_commands() {
+    local commands; commands=(
+        
+    )
+    _describe -t commands 'mycitadel invoice pay commands' commands "$@"
 }
 (( $+functions[_mycitadel__wallet__rename_commands] )) ||
 _mycitadel__wallet__rename_commands() {

@@ -35,6 +35,7 @@ Register-ArgumentCompleter -Native -CommandName 'mycitadel-cli' -ScriptBlock {
             [CompletionResult]::new('wallet', 'wallet', [CompletionResultType]::ParameterValue, 'Wallet management commands')
             [CompletionResult]::new('address', 'address', [CompletionResultType]::ParameterValue, 'Address-related commands')
             [CompletionResult]::new('asset', 'asset', [CompletionResultType]::ParameterValue, 'Asset management commands')
+            [CompletionResult]::new('invoice', 'invoice', [CompletionResultType]::ParameterValue, 'Invoice-related commands')
             [CompletionResult]::new('help', 'help', [CompletionResultType]::ParameterValue, 'Prints this message or the help of the given subcommand(s)')
             break
         }
@@ -199,6 +200,81 @@ Register-ArgumentCompleter -Native -CommandName 'mycitadel-cli' -ScriptBlock {
             break
         }
         'mycitadel-cli;asset;import' {
+            [CompletionResult]::new('-v', 'v', [CompletionResultType]::ParameterName, 'Set verbosity level')
+            [CompletionResult]::new('--verbose', 'verbose', [CompletionResultType]::ParameterName, 'Set verbosity level')
+            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Prints help information')
+            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Prints help information')
+            [CompletionResult]::new('-V', 'V', [CompletionResultType]::ParameterName, 'Prints version information')
+            [CompletionResult]::new('--version', 'version', [CompletionResultType]::ParameterName, 'Prints version information')
+            break
+        }
+        'mycitadel-cli;invoice' {
+            [CompletionResult]::new('-v', 'v', [CompletionResultType]::ParameterName, 'Set verbosity level')
+            [CompletionResult]::new('--verbose', 'verbose', [CompletionResultType]::ParameterName, 'Set verbosity level')
+            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Prints help information')
+            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Prints help information')
+            [CompletionResult]::new('-V', 'V', [CompletionResultType]::ParameterName, 'Prints version information')
+            [CompletionResult]::new('--version', 'version', [CompletionResultType]::ParameterName, 'Prints version information')
+            [CompletionResult]::new('create', 'create', [CompletionResultType]::ParameterValue, 'Create new invoice')
+            [CompletionResult]::new('list', 'list', [CompletionResultType]::ParameterValue, 'List all known invoices')
+            [CompletionResult]::new('info', 'info', [CompletionResultType]::ParameterValue, 'Parse invoice and print out its detailed information')
+            [CompletionResult]::new('pay', 'pay', [CompletionResultType]::ParameterValue, 'Pay an invoice')
+            [CompletionResult]::new('accept', 'accept', [CompletionResultType]::ParameterValue, 'Accept payment for the invoice. Required only for on-chain RGB payments; Bitcoin & Lightning-network payments (including RGB lightning) are accepted automatically and does not require calling this method')
+            break
+        }
+        'mycitadel-cli;invoice;create' {
+            [CompletionResult]::new('-a', 'a', [CompletionResultType]::ParameterName, 'Asset in which the payment is requested; defaults to bitcoin')
+            [CompletionResult]::new('--asset', 'asset', [CompletionResultType]::ParameterName, 'Asset in which the payment is requested; defaults to bitcoin')
+            [CompletionResult]::new('-m', 'm', [CompletionResultType]::ParameterName, 'Optional details about the merchant providing the invoice')
+            [CompletionResult]::new('--merchant', 'merchant', [CompletionResultType]::ParameterName, 'Optional details about the merchant providing the invoice')
+            [CompletionResult]::new('-d', 'd', [CompletionResultType]::ParameterName, 'Information about the invoice')
+            [CompletionResult]::new('--details', 'details', [CompletionResultType]::ParameterName, 'Information about the invoice')
+            [CompletionResult]::new('-u', 'u', [CompletionResultType]::ParameterName, 'Do not mark the address used in the invoice as used')
+            [CompletionResult]::new('--unmark', 'unmark', [CompletionResultType]::ParameterName, 'Do not mark the address used in the invoice as used')
+            [CompletionResult]::new('--descriptor', 'descriptor', [CompletionResultType]::ParameterName, 'Create descriptor-based invoice (not compatible with instant wallet accounts)')
+            [CompletionResult]::new('--psbt', 'psbt', [CompletionResultType]::ParameterName, 'Create a PSBT-based invoice (not compatible with instant wallet accounts)')
+            [CompletionResult]::new('-v', 'v', [CompletionResultType]::ParameterName, 'Set verbosity level')
+            [CompletionResult]::new('--verbose', 'verbose', [CompletionResultType]::ParameterName, 'Set verbosity level')
+            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Prints help information')
+            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Prints help information')
+            [CompletionResult]::new('-V', 'V', [CompletionResultType]::ParameterName, 'Prints version information')
+            [CompletionResult]::new('--version', 'version', [CompletionResultType]::ParameterName, 'Prints version information')
+            break
+        }
+        'mycitadel-cli;invoice;list' {
+            [CompletionResult]::new('-f', 'f', [CompletionResultType]::ParameterName, 'How invoice list should be formatted')
+            [CompletionResult]::new('--format', 'format', [CompletionResultType]::ParameterName, 'How invoice list should be formatted')
+            [CompletionResult]::new('-v', 'v', [CompletionResultType]::ParameterName, 'Set verbosity level')
+            [CompletionResult]::new('--verbose', 'verbose', [CompletionResultType]::ParameterName, 'Set verbosity level')
+            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Prints help information')
+            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Prints help information')
+            [CompletionResult]::new('-V', 'V', [CompletionResultType]::ParameterName, 'Prints version information')
+            [CompletionResult]::new('--version', 'version', [CompletionResultType]::ParameterName, 'Prints version information')
+            break
+        }
+        'mycitadel-cli;invoice;info' {
+            [CompletionResult]::new('-f', 'f', [CompletionResultType]::ParameterName, 'Format to use for the invoice representation')
+            [CompletionResult]::new('--format', 'format', [CompletionResultType]::ParameterName, 'Format to use for the invoice representation')
+            [CompletionResult]::new('-v', 'v', [CompletionResultType]::ParameterName, 'Set verbosity level')
+            [CompletionResult]::new('--verbose', 'verbose', [CompletionResultType]::ParameterName, 'Set verbosity level')
+            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Prints help information')
+            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Prints help information')
+            [CompletionResult]::new('-V', 'V', [CompletionResultType]::ParameterName, 'Prints version information')
+            [CompletionResult]::new('--version', 'version', [CompletionResultType]::ParameterName, 'Prints version information')
+            break
+        }
+        'mycitadel-cli;invoice;pay' {
+            [CompletionResult]::new('-v', 'v', [CompletionResultType]::ParameterName, 'Set verbosity level')
+            [CompletionResult]::new('--verbose', 'verbose', [CompletionResultType]::ParameterName, 'Set verbosity level')
+            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Prints help information')
+            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Prints help information')
+            [CompletionResult]::new('-V', 'V', [CompletionResultType]::ParameterName, 'Prints version information')
+            [CompletionResult]::new('--version', 'version', [CompletionResultType]::ParameterName, 'Prints version information')
+            break
+        }
+        'mycitadel-cli;invoice;accept' {
+            [CompletionResult]::new('-f', 'f', [CompletionResultType]::ParameterName, 'Whether parameter given by consignment is a file name or a Bech32 string')
+            [CompletionResult]::new('--file', 'file', [CompletionResultType]::ParameterName, 'Whether parameter given by consignment is a file name or a Bech32 string')
             [CompletionResult]::new('-v', 'v', [CompletionResultType]::ParameterName, 'Set verbosity level')
             [CompletionResult]::new('--verbose', 'verbose', [CompletionResultType]::ParameterName, 'Set verbosity level')
             [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Prints help information')

@@ -12,6 +12,7 @@
 // If not, see <https://www.gnu.org/licenses/agpl-3.0-standalone.html>.
 
 use clap::{AppSettings, ArgGroup, Clap, ValueHint};
+use invoice::Invoice;
 use std::str::FromStr;
 use wallet::bip32::PubkeyChain;
 use wallet::descriptor;
@@ -123,6 +124,13 @@ pub enum Command {
         #[clap(subcommand)]
         subcommand: AssetCommand,
     },
+
+    /// Invoice-related commands
+    #[display("invoice {subcommand}")]
+    Invoice {
+        #[clap(subcommand)]
+        subcommand: InvoiceCommand,
+    },
 }
 
 #[derive(Clap, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Debug, Display)]
@@ -132,7 +140,7 @@ pub enum WalletCommand {
     #[display("list")]
     List {
         /// How the wallet list should be formatted
-        #[clap(short, long, default_value = "yaml", global = true)]
+        #[clap(short, long, default_value = "tab", global = true)]
         format: Formatting,
     },
 
@@ -216,7 +224,7 @@ pub enum AddressCommand {
         limit: Option<usize>,
 
         /// How the command output should be formatted
-        #[clap(short, long, default_value = "yaml", global = true)]
+        #[clap(short, long, default_value = "tab", global = true)]
         format: Formatting,
     },
 
@@ -262,7 +270,7 @@ pub enum AssetCommand {
     #[display("list")]
     List {
         /// How the asset list output should be formatted
-        #[clap(short, long, default_value = "yaml", global = true)]
+        #[clap(short, long, default_value = "tab", global = true)]
         format: Formatting,
     },
 
@@ -273,6 +281,97 @@ pub enum AssetCommand {
         /// `genesis1....`
         #[clap()]
         genesis: String,
+    },
+}
+
+#[derive(Clap, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Debug, Display)]
+#[clap(setting = AppSettings::ColoredHelp)]
+pub enum InvoiceCommand {
+    /// Create new invoice
+    #[display("create {amount} {beneficiary} ...")]
+    Create {
+        /// Asset in which the payment is requested; defaults to bitcoin
+        #[clap(short, long = "asset")]
+        asset_id: Option<rgb::ContractId>,
+
+        /// Amount of the asset (in the smallest asset units, without floating
+        /// point - i.e. for bitcoin use satoshis)
+        #[clap()]
+        amount: rgb::AtomicValue,
+
+        /// Wallet id to which the payment should be received
+        #[clap()]
+        beneficiary: model::ContractId,
+
+        /// Optional details about the merchant providing the invoice
+        #[clap(short, long)]
+        merchant: Option<String>,
+
+        /// Information about the invoice
+        #[clap(short, long)]
+        details: Option<String>,
+
+        /// Do not mark the address used in the invoice as used
+        #[clap(short, long)]
+        unmark: bool,
+
+        /// Create descriptor-based invoice (not compatible with instant wallet
+        /// accounts)
+        #[clap(long = "descriptor")]
+        descriptor_based: bool,
+
+        /// Create a PSBT-based invoice (not compatible with instant wallet
+        /// accounts)
+        #[clap(long = "psbt")]
+        psbt_based: bool,
+    },
+
+    /// List all known invoices
+    List {
+        /// How invoice list should be formatted
+        #[clap(short, long, default_value = "tab", global = true)]
+        format: Formatting,
+    },
+
+    /// Parse invoice and print out its detailed information
+    Info {
+        /// Invoice Bech32 string representation
+        #[clap()]
+        invoice: Invoice,
+
+        /// Format to use for the invoice representation
+        #[clap(short, long, default_value = "yaml", global = true)]
+        format: Formatting,
+    },
+
+    /// Pay an invoice
+    Pay {
+        /// Invoice Bech32 string representation
+        #[clap()]
+        invoice: Invoice,
+
+        /// Wallet to pay from
+        #[clap()]
+        wallet_id: model::ContractId,
+    },
+
+    /// Accept payment for the invoice. Required only for on-chain RGB
+    /// payments; Bitcoin & Lightning-network payments (including RGB
+    /// lightning) are accepted automatically and does not require calling
+    /// this method.
+    Accept {
+        /// Your original invoice for acceptance
+        #[clap()]
+        invoice: Invoice,
+
+        /// Consignment data to accept
+        #[clap()]
+        consignment: String,
+
+        /// Whether parameter given by consignment is a file name or a Bech32
+        /// string
+        #[clap(short, long)]
+        file: bool,
     },
 }
 
@@ -292,7 +391,7 @@ pub struct WalletOpts {
     pub lookup_depth: Option<u8>,
 
     /// How the command output should be formatted
-    #[clap(short, long, default_value = "yaml", global = true)]
+    #[clap(short, long, default_value = "tab", global = true)]
     pub format: Formatting,
 }
 

@@ -1149,7 +1149,7 @@ dependencies = [
 [[package]]
 name = "lnpbp"
 version = "0.4.0-beta"
-source = "git+https://github.com/LNP-BP/rust-lnpbp#1019250cf10f9af8210ec2855114e2c778745cbb"
+source = "git+https://github.com/LNP-BP/rust-lnpbp#99a8612298d63bf0e0dbc40ca071a0e41a7eee3f"
 dependencies = [
  "amplify",
  "amplify_derive",
@@ -1168,6 +1168,26 @@ dependencies = [
  "serde_with_macros",
  "strict_encoding",
  "strict_encoding_derive",
+]
+
+[[package]]
+name = "lnpbp_invoice"
+version = "0.4.0-alpha.1"
+source = "git+https://github.com/LNP-BP/rust-lnpbp#99a8612298d63bf0e0dbc40ca071a0e41a7eee3f"
+dependencies = [
+ "amplify",
+ "amplify_derive",
+ "bitcoin",
+ "chrono",
+ "descriptor-wallet",
+ "internet2",
+ "lightning_encoding",
+ "lnp-core",
+ "lnpbp",
+ "miniscript",
+ "strict_encoding",
+ "strict_encoding_derive",
+ "url",
 ]
 
 [[package]]
@@ -1275,6 +1295,7 @@ dependencies = [
  "lazy_static",
  "lnp-core",
  "lnpbp",
+ "lnpbp_invoice",
  "log",
  "microservices",
  "miniscript",

@@ -13,6 +13,9 @@ _mycitadel() {
                 cmd="mycitadel"
                 ;;
             
+            accept)
+                cmd+="__accept"
+                ;;
             address)
                 cmd+="__address"
                 ;;
@@ -34,6 +37,12 @@ _mycitadel() {
             import)
                 cmd+="__import"
                 ;;
+            info)
+                cmd+="__info"
+                ;;
+            invoice)
+                cmd+="__invoice"
+                ;;
             list)
                 cmd+="__list"
                 ;;
@@ -42,6 +51,9 @@ _mycitadel() {
                 ;;
             mark-used)
                 cmd+="__mark__used"
+                ;;
+            pay)
+                cmd+="__pay"
                 ;;
             rename)
                 cmd+="__rename"
@@ -59,7 +71,7 @@ _mycitadel() {
 
     case "${cmd}" in
         mycitadel)
-            opts=" -v -T -x -n -d -c -h -V  --verbose --tor-proxy --rpc-endpoint --chain --init --data-dir --electrum-server --rgb20-endpoint --rgb-embedded --config --help --version  wallet address asset help"
+            opts=" -v -T -x -n -d -c -h -V  --verbose --tor-proxy --rpc-endpoint --chain --init --data-dir --electrum-server --rgb20-endpoint --rgb-embedded --config --help --version  wallet address asset invoice help"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 1 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -282,6 +294,136 @@ _mycitadel() {
         mycitadel__help)
             opts=" -h -V  --help --version  "
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        mycitadel__invoice)
+            opts=" -v -h -V  --verbose --help --version  create list info pay accept"
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        mycitadel__invoice__accept)
+            opts=" -f -v -h -V  --file --verbose --help --version  <invoice> <consignment> "
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        mycitadel__invoice__create)
+            opts=" -a -m -d -u -v -h -V  --asset --merchant --details --unmark --descriptor --psbt --verbose --help --version  <amount> <beneficiary> "
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                
+                --asset)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                    -a)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                --merchant)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                    -m)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                --details)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                    -d)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        mycitadel__invoice__info)
+            opts=" -f -v -h -V  --format --verbose --help --version  <invoice> "
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                
+                --format)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                    -f)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        mycitadel__invoice__list)
+            opts=" -f -v -h -V  --format --verbose --help --version  "
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                
+                --format)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                    -f)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        mycitadel__invoice__pay)
+            opts=" -v -h -V  --verbose --help --version  <invoice> <wallet-id> "
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
             fi

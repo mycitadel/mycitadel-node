@@ -15,8 +15,8 @@ use colored::Colorize;
 use microservices::shell::Exec;
 
 use super::{
-    AssetCommand, Command, OutputFormat, WalletCommand, WalletCreateCommand,
-    WalletOpts,
+    AddressCommand, AssetCommand, Command, InvoiceCommand, OutputFormat,
+    WalletCommand, WalletCreateCommand, WalletOpts,
 };
 use crate::rpc;
 use crate::rpc::Reply;
@@ -51,7 +51,8 @@ impl Exec for Command {
         match self {
             Command::Wallet { subcommand } => subcommand.exec(client),
             Command::Asset { subcommand } => subcommand.exec(client),
-            _ => unimplemented!(),
+            Command::Address { subcommand } => subcommand.exec(client),
+            Command::Invoice { subcommand } => subcommand.exec(client),
         }
     }
 }
@@ -152,6 +153,15 @@ impl Exec for WalletCommand {
     }
 }
 
+impl Exec for AddressCommand {
+    type Client = Client;
+    type Error = Error;
+
+    fn exec(self, client: &mut Self::Client) -> Result<(), Self::Error> {
+        unimplemented!()
+    }
+}
+
 impl Exec for AssetCommand {
     type Client = Client;
     type Error = Error;
@@ -182,5 +192,14 @@ impl Exec for AssetCommand {
                     )
                 }),
         }
+    }
+}
+
+impl Exec for InvoiceCommand {
+    type Client = Client;
+    type Error = Error;
+
+    fn exec(self, client: &mut Self::Client) -> Result<(), Self::Error> {
+        unimplemented!()
     }
 }

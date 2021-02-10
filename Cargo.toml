@@ -30,6 +30,7 @@ slip132 = { version = "0.3.2", features = ["serde"] }
 strict_encoding = { version = "1.0.7", features = ["chrono", "crypto", "miniscript", "derive"] }
 descriptor-wallet = { git = "https://github.com/LNP-BP/descriptor-wallet", features = ["serde"] }
 lnpbp = { git = "https://github.com/LNP-BP/rust-lnpbp", features = ["serde"] }
+lnpbp_invoice = { git = "https://github.com/LNP-BP/rust-lnpbp" }
 lnp-core = { git = "https://github.com/LNP-BP/lnp-core", features = ["serde"] }
 rgb-core = { git = "https://github.com/rgb-org/rgb-core", features = ["serde"] }
 rgb20 = { git = "https://github.com/rgb-org/rgb-core", features = ["serde"] }
@@ -69,7 +70,9 @@ amplify = "3"
 amplify_derive = "2.4.2"
 descriptor-wallet = { git = "https://github.com/LNP-BP/descriptor-wallet" }
 lnpbp = { git = "https://github.com/LNP-BP/rust-lnpbp" }
+lnpbp_invoice = { git = "https://github.com/LNP-BP/rust-lnpbp" }
 bitcoin = "0.26"
+rgb-core = { git = "https://github.com/rgb-org/rgb-core", features = ["serde"] }
 internet2 = { git = "https://github.com/internet2-org/rust-internet2" }
 microservices = { git = "https://github.com/internet2-org/rust-internet2", default-features = false }
 lazy_static = "1.4"
