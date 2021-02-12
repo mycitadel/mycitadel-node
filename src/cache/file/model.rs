@@ -13,9 +13,9 @@
 
 use chrono::NaiveDateTime;
 use serde_with::DisplayFromStr;
-use std::collections::BTreeMap;
+use std::collections::{BTreeMap, HashSet};
 
-use bitcoin::{Address, BlockHash, Txid};
+use bitcoin::{Address, BlockHash, OutPoint, Txid};
 use wallet::bip32::UnhardenedIndex;
 
 use crate::model::{ContractId, Unspent};
@@ -59,9 +59,12 @@ pub(super) struct Cache {
 pub(super) struct ContractCache {
     pub updated_height: u32,
 
-    pub addresses: BTreeMap<Address, UnhardenedIndex>,
+    /// First index indicates `case` field (normal, change, descriptor invoice
+    /// fingerprint), second - sequence number within the case
+    pub used_address_derivations: BTreeMap<Address, UnhardenedIndex>,
 
-    pub used: BTreeMap<UnhardenedIndex, Address>,
+    #[serde_as(as = "HashSet<DisplayFromStr>")]
+    pub utxo: HashSet<OutPoint>,
 
     #[serde_as(as = "BTreeMap<DisplayFromStr, Vec<DisplayFromStr>>")]
     pub unspent: BTreeMap<rgb::ContractId, Vec<Unspent>>,

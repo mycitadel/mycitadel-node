@@ -12,6 +12,7 @@
 // If not, see <https://www.gnu.org/licenses/agpl-3.0-standalone.html>.
 
 use serde_with::DisplayFromStr;
+use std::convert::TryInto;
 use std::io;
 use std::ops::Range;
 
@@ -20,12 +21,14 @@ use bitcoin::Script;
 use internet2::RemoteNodeAddr;
 use lnp::ChannelId;
 use lnpbp::client_side_validation::{CommitEncode, ConsensusCommit};
+use lnpbp::Chain;
 use miniscript::{Descriptor, DescriptorTrait, TranslatePk2};
 use strict_encoding::{self, StrictDecode, StrictEncode};
-use wallet::bip32::{ChildIndex, PubkeyChain, TerminalStep};
+use wallet::bip32::{ChildIndex, PubkeyChain, TerminalStep, UnhardenedIndex};
 use wallet::descriptor::ContractDescriptor;
 
 use super::ContractId;
+use crate::model::AddressDerivation;
 
 /// Defines a type of a wallet contract basing on the banking use case,
 /// abstracting the underlying technology(ies) into specific contract details
@@ -144,35 +147,57 @@ impl Policy {
         }
     }
 
-    pub fn derive_scripts(&self, range: Range<u32>) -> Vec<Script> {
-        let d = self.to_descriptor();
+    fn translate(
+        d: &Descriptor<PubkeyChain>,
+        index: UnhardenedIndex,
+    ) -> Descriptor<bitcoin::PublicKey> {
+        d.translate_pk2_infallible(|chain| {
+            // TODO: Add convenience PubkeyChain methods
+            let mut path = chain.terminal_path.clone();
+            if path.last() == Some(&TerminalStep::Wildcard) {
+                path.remove(path.len() - 1);
+            }
+            path.push(TerminalStep::Index(index.into()));
+            chain
+                .branch_xpub
+                .derive_pub(
+                    &wallet::SECP256K1,
+                    &path
+                        .into_iter()
+                        .map(TerminalStep::index)
+                        .map(Option::unwrap_or_default)
+                        .map(|index| ChildNumber::Normal { index })
+                        .collect::<Vec<_>>(),
+                )
+                .expect("Unhardened derivation can't fail")
+                .public_key
+        })
+    }
+
+    pub fn derive_scripts(&self, range: Range<UnhardenedIndex>) -> Vec<Script> {
         let mut scripts = vec![];
-        for index in range {
-            scripts.push(
-                d.translate_pk2_infallible(|chain| {
-                    // TODO: Add convenience PubkeyChain methods
-                    let mut path = chain.terminal_path.clone();
-                    if path.last() == Some(&TerminalStep::Wildcard) {
-                        path.remove(path.len() - 1);
-                    }
-                    path.push(TerminalStep::Index(index.into()));
-                    chain
-                        .branch_xpub
-                        .derive_pub(
-                            &wallet::SECP256K1,
-                            &path
-                                .into_iter()
-                                .filter_map(TerminalStep::index)
-                                .map(|index| ChildNumber::Normal { index })
-                                .collect::<Vec<_>>(),
-                        )
-                        .expect("Unhardened derivation can't fail")
-                        .public_key
-                })
-                .script_pubkey(),
-            )
+        let d = self.to_descriptor();
+        let mut index = range.start;
+        while index < range.end {
+            scripts.push(Self::translate(&d, index).script_pubkey());
+            let _ = index.checked_inc_assign().unwrap_or_default();
         }
         scripts
+    }
+
+    pub fn derive_address(
+        &self,
+        index: UnhardenedIndex,
+        chain: &Chain,
+    ) -> Option<AddressDerivation> {
+        let d = self.to_descriptor();
+        chain
+            .try_into()
+            .ok()
+            .and_then(|network| {
+                Self::translate(&d, index.into()).address(network).ok()
+            })
+            .map(|address| AddressDerivation::with(address, vec![index]))
     }
 }
 

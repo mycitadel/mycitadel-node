@@ -18,8 +18,9 @@ use std::{fs, io};
 use lnpbp::strict_encoding::{StrictDecode, StrictEncode};
 use microservices::FileFormat;
 
-use super::Cache;
+use super::{Cache, ContractCache};
 use crate::cache::Error;
+use crate::model::ContractId;
 use crate::server::opts::MYCITADEL_CACHE_FILE;
 
 #[derive(
@@ -130,5 +131,41 @@ impl FileDriver {
         };
         trace!("Cache stored");
         Ok(())
+    }
+
+    pub(super) fn map_contract_or_default<R>(
+        &self,
+        contract_id: ContractId,
+        predicate: impl FnOnce(&ContractCache) -> R,
+    ) -> Result<R, Error>
+    where
+        R: Sized + Default,
+    {
+        Ok(self
+            .cache
+            .descriptors
+            .get(&contract_id)
+            .map(predicate)
+            .unwrap_or_default())
+    }
+
+    pub(super) fn with_contract<R>(
+        &mut self,
+        contract_id: ContractId,
+        predicate: impl FnOnce(&mut ContractCache) -> Result<R, Error>,
+    ) -> Result<R, Error>
+    where
+        R: Sized,
+    {
+        predicate(
+            self.cache
+                .descriptors
+                .entry(contract_id)
+                .or_insert(default!()),
+        )
+        .and_then(|r| {
+            self.store()?;
+            Ok(r)
+        })
     }
 }

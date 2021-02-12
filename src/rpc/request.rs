@@ -11,14 +11,14 @@
 // along with this software.
 // If not, see <https://www.gnu.org/licenses/agpl-3.0-standalone.html>.
 
-use bitcoin::Address;
+use invoice::Invoice;
 use rgb::Genesis;
 
 use super::message::{
-    ContractRenameRequest, IdentityInfo, SignerAccountInfo, SingleSigInfo,
+    ContractAddressTuple, ContractRenameRequest, IdentityInfo,
+    SignerAccountInfo, SingleSigInfo, SyncContractRequest,
 };
 use crate::model::ContractId;
-use crate::rpc::message::SyncContractRequest;
 
 #[derive(Clone, Debug, Display, Api)]
 #[api(encoding = "strict")]
@@ -48,21 +48,29 @@ pub enum Request {
     #[display("delete_contract({0})")]
     DeleteContract(ContractId),
 
-    #[api(type = 0x0300)]
-    #[display(inner)]
-    ListAddresses(u8),
-
     #[api(type = 0x0310)]
-    #[display(inner)]
-    CreateAddress(u8),
+    #[display("used_addresses({0})")]
+    UsedAddresses(ContractId),
+
+    #[api(type = 0x0312)]
+    #[display("next_address({0})")]
+    NextAddress(ContractId),
+
+    #[api(type = 0x0314)]
+    #[display("unuse_address(...)")]
+    UnuseAddress(ContractAddressTuple),
 
     #[api(type = 0x0320)]
-    #[display("mark_used({0})")]
-    MarkUsed(Address),
+    #[display("blind_utxo({0})")]
+    BlindUtxo(ContractId),
 
-    #[api(type = 0x0332)]
-    #[display("mark_unused({0})")]
-    MarkUnused(Address),
+    #[api(type = 0x0400)]
+    #[display("list_invoices()")]
+    ListInvoices,
+
+    #[api(type = 0x0410)]
+    #[display("add_invoice({0})")]
+    AddInvoice(Invoice),
 
     #[api(type = 0x0500)]
     #[display("list_identities()")]

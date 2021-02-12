@@ -22,8 +22,10 @@ use internet2::{
     session, CreateUnmarshaller, PlainTranscoder, Session, TypedEnum,
     Unmarshall, Unmarshaller,
 };
+use lnpbp::seals::OutpointReveal;
 use lnpbp::strict_encoding::StrictDecode;
 use microservices::node::TryService;
+use microservices::rpc::Failure;
 use microservices::FileFormat;
 use rgb20::Asset;
 use rgb_node::rpc::reply::SyncFormat;
@@ -183,6 +185,7 @@ impl Runtime {
                         pk: req.pubkey_chain,
                     }),
                     req.name,
+                    self.config.chain.clone(),
                 );
                 self.storage
                     .add_contract(contract)
@@ -217,11 +220,14 @@ impl Runtime {
             }) => {
                 let policy =
                     self.storage.policy(contract_id).map_err(Error::from)?;
+                let lookup_depth = UnhardenedIndex::from(lookup_depth);
                 let mut unspent: Vec<Unspent> = vec![];
                 let mut outpoints: Vec<OutPoint> = vec![];
-                let mut index_offset = 0;
+                let mut index_offset = UnhardenedIndex::zero();
                 loop {
-                    let to: u32 = index_offset + lookup_depth as u32;
+                    let to = index_offset
+                        .checked_add(lookup_depth)
+                        .unwrap_or(UnhardenedIndex::largest());
                     let scripts = policy.derive_scripts(index_offset..to);
                     let res = self
                         .electrum
@@ -245,10 +251,8 @@ impl Runtime {
                         .iter()
                         .enumerate()
                         .filter_map(|(idx, res)| {
-                            let index = UnhardenedIndex::from_index(
-                                idx as u32 + index_offset,
-                            )
-                            .ok()?;
+                            // If we overflow we simply ignore these iterations
+                            index_offset.checked_inc_assign()?;
                             let _txids = txids.clone();
                             let r = res.iter().filter_map(move |entry| {
                                 let ix_info = _txids.get(&entry.tx_hash)?;
@@ -257,7 +261,7 @@ impl Runtime {
                                     height: ix_info.0.try_into().ok()?,
                                     offset: ix_info.1.try_into().ok()?,
                                     vout: entry.tx_pos.try_into().ok()?,
-                                    index,
+                                    index: index_offset,
                                 };
                                 let outpoint = OutPoint::new(
                                     entry.tx_hash,
@@ -274,7 +278,6 @@ impl Runtime {
                     }
                     unspent.extend(batch.0);
                     outpoints.extend(batch.1);
-                    index_offset += lookup_depth as u32;
                 }
 
                 while let Ok(Some(info)) = self.electrum.block_headers_pop() {
@@ -283,10 +286,11 @@ impl Runtime {
 
                 let mut assets =
                     bmap! { rgb::ContractId::default() => unspent.clone() };
-                for (utxo, outpoint) in unspent.iter_mut().zip(outpoints) {
+                for (utxo, outpoint) in unspent.iter_mut().zip(outpoints.iter())
+                {
                     for (asset_id, amounts) in self
                         .rgb20_client
-                        .outpoint_assets(outpoint)
+                        .outpoint_assets(*outpoint)
                         .map_err(Error::from)?
                     {
                         let mut u = utxo.clone();
@@ -299,11 +303,56 @@ impl Runtime {
                     .update(
                         contract_id,
                         Some(self.known_height),
+                        outpoints,
                         assets.clone(),
                     )
                     .map_err(Error::from)?;
                 Ok(Reply::ContractUnspent(assets))
             }
+
+            Request::UsedAddresses(contract_id) => self
+                .cache
+                .used_addresses(contract_id)
+                .map(Reply::Addresses)
+                .map_err(Error::from),
+            Request::NextAddress(contract_id) => self
+                .storage
+                .contract_ref(contract_id)
+                .map_err(Error::from)?
+                .derive_address(
+                    self.cache
+                        .next_unused_derivation(contract_id)
+                        .map_err(Error::from)?,
+                )
+                .map(Reply::AddressDerivation)
+                .ok_or(Error::ServerFailure(Failure {
+                    code: 0,
+                    info: s!("Unable to derive address for the provided network/chain"),
+                })),
+            Request::UnuseAddress(message::ContractAddressTuple {
+                contract_id,
+                address,
+            }) => self
+                .cache
+                .forget_address(contract_id, &address)
+                .map(|_| Reply::Success)
+                .map_err(Error::from),
+            Request::BlindUtxo(contract_id) => self
+                .cache
+                .utxo(contract_id)
+                .map_err(Error::from)
+                .and_then(|utxo| {
+                    utxo.into_iter().next().ok_or(Error::ServerFailure(
+                        Failure {
+                            code: 0,
+                            info: s!("No UTXO available"),
+                        },
+                    ))
+                })
+                .map(|outpoint| OutpointReveal::from(outpoint))
+                .map(Reply::BlindUtxo),
+            Request::ListInvoices => unimplemented!(),
+            Request::AddInvoice(invoice) => unimplemented!(),
 
             Request::ContractUnspent(id) => self
                 .cache

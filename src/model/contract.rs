@@ -19,10 +19,13 @@ use std::time::{SystemTime, UNIX_EPOCH};
 
 use bitcoin::{OutPoint, Txid};
 use lnpbp::client_side_validation::{CommitEncode, ConsensusCommit};
+use lnpbp::Chain;
 use strict_encoding::StrictEncode;
+use wallet::bip32::UnhardenedIndex;
 use wallet::{Psbt, TimeHeight};
 
 use super::{ContractId, Operation, PaymentSlip, Policy, PolicyType, State};
+use crate::model::AddressDerivation;
 
 #[serde_as]
 #[derive(
@@ -51,6 +54,8 @@ pub struct Contract {
     id: ContractId,
 
     pub name: String,
+
+    chain: Chain,
 
     policy: Policy,
 
@@ -106,13 +111,14 @@ impl CommitEncode for Contract {
 }
 
 impl Contract {
-    pub fn with(policy: Policy, name: String) -> Self {
+    pub fn with(policy: Policy, name: String, chain: Chain) -> Self {
         let timestamp = SystemTime::now()
             .duration_since(UNIX_EPOCH)
             .expect("Failed time service");
         Contract {
             id: policy.id(),
             name,
+            chain,
             policy,
             created_at: NaiveDateTime::from_timestamp(
                 timestamp.as_secs() as i64,
@@ -124,5 +130,12 @@ impl Contract {
 
     pub fn policy_type(&self) -> PolicyType {
         self.policy.policy_type()
+    }
+
+    pub fn derive_address(
+        &self,
+        index: UnhardenedIndex,
+    ) -> Option<AddressDerivation> {
+        self.policy.derive_address(index, &self.chain)
     }
 }

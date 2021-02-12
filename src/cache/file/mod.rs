@@ -18,4 +18,4 @@ mod internal;
 mod model;
 
 pub use internal::{FileConfig, FileDriver};
-pub(self) use model::Cache;
+pub(self) use model::{Cache, ContractCache};

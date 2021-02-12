@@ -596,7 +596,7 @@ dependencies = [
 [[package]]
 name = "descriptor-wallet"
 version = "0.4.0-beta"
-source = "git+https://github.com/LNP-BP/descriptor-wallet#41c83875ed1f1dfa0184b37a2e694805c23e16c4"
+source = "git+https://github.com/LNP-BP/descriptor-wallet#101798fe83a3bde050569d9984d225ebd3b4c94d"
 dependencies = [
  "amplify",
  "amplify_derive",
@@ -1091,7 +1091,7 @@ dependencies = [
 [[package]]
 name = "lightning_encoding"
 version = "0.4.0-alpha.2+1"
-source = "git+https://github.com/LNP-BP/lnp-core#7ae83f49c3e310a147e5e4fc52fc73d10daf54d3"
+source = "git+https://github.com/LNP-BP/lnp-core#fccc440e414da819db6171e9726f90453339ec5b"
 dependencies = [
  "amplify",
  "amplify_derive",
@@ -1103,7 +1103,7 @@ dependencies = [
 [[package]]
 name = "lightning_encoding_derive"
 version = "0.4.0-alpha.1"
-source = "git+https://github.com/LNP-BP/lnp-core#7ae83f49c3e310a147e5e4fc52fc73d10daf54d3"
+source = "git+https://github.com/LNP-BP/lnp-core#fccc440e414da819db6171e9726f90453339ec5b"
 dependencies = [
  "amplify",
  "amplify_derive_helpers",
@@ -1131,7 +1131,7 @@ checksum = "7fb9b38af92608140b86b693604b9ffcc5824240a484d1ecd4795bacb2fe88f3"
 [[package]]
 name = "lnp-core"
 version = "0.4.0-alpha.1"
-source = "git+https://github.com/LNP-BP/lnp-core#7ae83f49c3e310a147e5e4fc52fc73d10daf54d3"
+source = "git+https://github.com/LNP-BP/lnp-core#fccc440e414da819db6171e9726f90453339ec5b"
 dependencies = [
  "amplify",
  "amplify_derive",
@@ -1149,7 +1149,7 @@ dependencies = [
 [[package]]
 name = "lnpbp"
 version = "0.4.0-beta"
-source = "git+https://github.com/LNP-BP/rust-lnpbp#99a8612298d63bf0e0dbc40ca071a0e41a7eee3f"
+source = "git+https://github.com/LNP-BP/rust-lnpbp#0a82fc451af5df02dfd2c76b1c15a6ccf496fdd0"
 dependencies = [
  "amplify",
  "amplify_derive",
@@ -1173,7 +1173,7 @@ dependencies = [
 [[package]]
 name = "lnpbp_invoice"
 version = "0.4.0-alpha.1"
-source = "git+https://github.com/LNP-BP/rust-lnpbp#99a8612298d63bf0e0dbc40ca071a0e41a7eee3f"
+source = "git+https://github.com/LNP-BP/rust-lnpbp#0a82fc451af5df02dfd2c76b1c15a6ccf496fdd0"
 dependencies = [
  "amplify",
  "amplify_derive",
@@ -1828,7 +1828,7 @@ dependencies = [
 [[package]]
 name = "rgb-core"
 version = "0.4.0-beta"
-source = "git+https://github.com/rgb-org/rgb-core#4cf7277518272d527f2ea8b0aacbc0413ebd41b3"
+source = "git+https://github.com/rgb-org/rgb-core#1a26a653130cfb394dd10052664573ba3b01f36b"
 dependencies = [
  "amplify",
  "amplify_derive",
@@ -1857,7 +1857,7 @@ dependencies = [
 [[package]]
 name = "rgb20"
 version = "0.4.0-alpha.1"
-source = "git+https://github.com/rgb-org/rgb-core#4cf7277518272d527f2ea8b0aacbc0413ebd41b3"
+source = "git+https://github.com/rgb-org/rgb-core#1a26a653130cfb394dd10052664573ba3b01f36b"
 dependencies = [
  "amplify",
  "amplify_derive",
@@ -1874,7 +1874,7 @@ dependencies = [
 [[package]]
 name = "rgb_node"
 version = "0.4.0-alpha"
-source = "git+https://github.com/rgb-org/rgb-node#b536b91ba22c41bddcf63ff289e774a18c89c28a"
+source = "git+https://github.com/rgb-org/rgb-node#89108e01b129c4abc60c33da3d647f63b78f03c7"
 dependencies = [
  "amplify",
  "amplify_derive",
@@ -2108,9 +2108,9 @@ dependencies = [
 
 [[package]]
 name = "serde_yaml"
-version = "0.8.16"
+version = "0.8.17"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "bdd2af560da3c1fdc02cb80965289254fc35dff869810061e2d8290ee48848ae"
+checksum = "15654ed4ab61726bf918a39cb8d98a2e2995b002387807fa6ba58fdf7f59bb23"
 dependencies = [
  "dtoa",
  "linked-hash-map 0.5.4",

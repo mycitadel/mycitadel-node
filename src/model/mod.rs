@@ -11,12 +11,14 @@
 // along with this software.
 // If not, see <https://www.gnu.org/licenses/agpl-3.0-standalone.html>.
 
+mod address;
 mod contract;
 mod ids;
 mod operation;
 mod policy;
 mod state;
 
+pub use address::AddressDerivation;
 pub use contract::*;
 pub use ids::*;
 pub use operation::*;

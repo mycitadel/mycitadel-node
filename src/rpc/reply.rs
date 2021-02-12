@@ -12,12 +12,14 @@
 // If not, see <https://www.gnu.org/licenses/agpl-3.0-standalone.html>.
 
 use serde_with::{As, DisplayFromStr};
-use std::collections::BTreeMap;
+use std::collections::{BTreeMap, HashSet};
 
+use bitcoin::Address;
 use internet2::presentation;
+use lnpbp::seals::OutpointReveal;
 use microservices::{rpc, rpc_connection};
 
-use crate::model::{Contract, Unspent};
+use crate::model::{AddressDerivation, Contract, Unspent};
 use crate::rpc::message::IdentityInfo;
 use crate::Error;
 
@@ -46,15 +48,27 @@ pub enum Reply {
     #[display("contract_unspent(...)")]
     ContractUnspent(BTreeMap<rgb::ContractId, Vec<Unspent>>),
 
-    #[api(type = 0x0203)]
+    #[api(type = 0x0310)]
+    #[display("addresses(...)")]
+    Addresses(HashSet<Address>),
+
+    #[api(type = 0x0311)]
+    #[display("address_derivation({0})")]
+    AddressDerivation(AddressDerivation),
+
+    #[api(type = 0x0320)]
+    #[display("blind_utxo({0})")]
+    BlindUtxo(OutpointReveal),
+
+    #[api(type = 0x0700)]
     #[display("asset({0})")]
     Asset(rgb20::Asset),
 
-    #[api(type = 0x0204)]
+    #[api(type = 0x0701)]
     #[display("assets(...)")]
     Assets(Vec<rgb20::Asset>),
 
-    #[api(type = 0x0205)]
+    #[api(type = 0x0500)]
     #[display("identities(...)")]
     Identities(Vec<IdentityInfo>),
 }

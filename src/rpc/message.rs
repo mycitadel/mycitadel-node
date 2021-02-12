@@ -15,6 +15,7 @@ use serde_with::DisplayFromStr;
 use std::io;
 use std::ops::RangeInclusive;
 
+use bitcoin::Address;
 use lnpbp::strict_encoding::{self, StrictDecode, StrictEncode};
 use wallet::bip32::PubkeyChain;
 use wallet::descriptor;
@@ -120,6 +121,38 @@ impl StrictDecode for SignerAccountInfo {
                 .map(|(start, end)| RangeInclusive::new(start, end))
                 .collect(),
         })
+    }
+}
+
+#[derive(
+    Serialize,
+    Deserialize,
+    Clone,
+    Eq,
+    PartialEq,
+    Ord,
+    PartialOrd,
+    Hash,
+    Debug,
+    Display,
+    StrictEncode,
+    StrictDecode,
+)]
+#[display("{contract_id}.{address}")]
+pub struct ContractAddressTuple {
+    pub contract_id: model::ContractId,
+    pub address: Address,
+}
+
+impl ContractAddressTuple {
+    pub fn new(
+        contract_id: model::ContractId,
+        address: Address,
+    ) -> ContractAddressTuple {
+        ContractAddressTuple {
+            contract_id,
+            address,
+        }
     }
 }
 

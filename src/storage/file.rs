@@ -141,6 +141,16 @@ impl Driver for FileDriver {
         Ok(self.data.contracts.values().cloned().collect())
     }
 
+    fn contract_ref(
+        &self,
+        contract_id: ContractId,
+    ) -> Result<&Contract, Error> {
+        self.data
+            .contracts
+            .get(&contract_id)
+            .ok_or(Error::ContractNotFound(contract_id))
+    }
+
     fn add_contract(&mut self, contract: Contract) -> Result<Contract, Error> {
         self.data.contracts.insert(*contract.id(), contract.clone());
         self.store()?;

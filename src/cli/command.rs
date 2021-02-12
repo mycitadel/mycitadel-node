@@ -200,6 +200,21 @@ impl Exec for InvoiceCommand {
     type Error = Error;
 
     fn exec(self, client: &mut Self::Client) -> Result<(), Self::Error> {
-        unimplemented!()
+        match self {
+            InvoiceCommand::Create {
+                asset_id,
+                amount,
+                beneficiary,
+                merchant,
+                details,
+                unmark,
+                descriptor_based,
+                psbt_based,
+            } => Ok(()),
+            InvoiceCommand::List { .. } => unimplemented!(),
+            InvoiceCommand::Info { .. } => unimplemented!(),
+            InvoiceCommand::Pay { .. } => unimplemented!(),
+            InvoiceCommand::Accept { .. } => unimplemented!(),
+        }
     }
 }

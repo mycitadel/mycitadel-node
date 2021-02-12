@@ -24,6 +24,8 @@ use crate::rpc::message::{IdentityInfo, SignerAccountInfo};
 
 pub trait Driver {
     fn contracts(&self) -> Result<Vec<Contract>, Error>;
+    fn contract_ref(&self, contract_id: ContractId)
+        -> Result<&Contract, Error>;
     fn add_contract(&mut self, contract: Contract) -> Result<Contract, Error>;
     fn rename_contract(
         &mut self,
