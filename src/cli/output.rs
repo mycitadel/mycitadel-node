@@ -19,7 +19,7 @@ use std::fmt::Display;
 use wallet::bip32::UnhardenedIndex;
 
 use super::Formatting;
-use crate::model::{Contract, Unspent};
+use crate::model::{AddressDerivation, Contract, Unspent};
 
 pub trait OutputCompact {
     fn output_compact(&self) -> String;
@@ -38,7 +38,6 @@ pub trait OutputFormat: OutputCompact + Serialize {
             Formatting::Json => {
                 println!("{}", serde_json::to_string(self).unwrap_or_default())
             }
-            _ => eprintln!("Unsupported formatting option"),
         }
     }
 
@@ -320,6 +319,34 @@ impl OutputFormat for Unspent {
             self.offset.to_string(),
             self.vout.to_string(),
             self.index.to_string(),
+        ]
+    }
+}
+
+// MARK: AddressDerivation -----------------------------------------------------
+
+impl OutputCompact for AddressDerivation {
+    fn output_compact(&self) -> String {
+        self.address.to_string()
+    }
+}
+
+impl OutputFormat for AddressDerivation {
+    fn output_headers() -> Vec<String> {
+        vec![s!("Address"), s!("Derivation index")]
+    }
+
+    fn output_id_string(&self) -> String {
+        self.address.to_string()
+    }
+
+    fn output_fields(&self) -> Vec<String> {
+        vec![
+            self.address.to_string(),
+            self.derivation
+                .last()
+                .expect("derivation path must has at least one element")
+                .to_string(),
         ]
     }
 }

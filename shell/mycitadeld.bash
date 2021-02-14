@@ -150,7 +150,7 @@ _mycitadel() {
             return 0
             ;;
         mycitadel__address__create)
-            opts=" -i -u -n -v -h -V  --index --unmarked --no --legacy --verbose --help --version  "
+            opts=" -i -u -f -v -h -V  --index --unmark --legacy --format --verbose --help --version  <wallet-id> "
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -165,11 +165,11 @@ _mycitadel() {
                     COMPREPLY=($(compgen -f "${cur}"))
                     return 0
                     ;;
-                --no)
+                --format)
                     COMPREPLY=($(compgen -f "${cur}"))
                     return 0
                     ;;
-                    -n)
+                    -f)
                     COMPREPLY=($(compgen -f "${cur}"))
                     return 0
                     ;;
@@ -181,7 +181,7 @@ _mycitadel() {
             return 0
             ;;
         mycitadel__address__list__used)
-            opts=" -r -f -l -v -h -V  --rescan --lookup-depth --format --limit --verbose --help --version  <wallet-id> "
+            opts=" -r -f -v -h -V  --rescan --lookup-depth --format --verbose --help --version  <wallet-id> "
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -200,14 +200,6 @@ _mycitadel() {
                     COMPREPLY=($(compgen -f "${cur}"))
                     return 0
                     ;;
-                --limit)
-                    COMPREPLY=($(compgen -f "${cur}"))
-                    return 0
-                    ;;
-                    -l)
-                    COMPREPLY=($(compgen -f "${cur}"))
-                    return 0
-                    ;;
                 *)
                     COMPREPLY=()
                     ;;
@@ -216,7 +208,7 @@ _mycitadel() {
             return 0
             ;;
         mycitadel__address__mark__used)
-            opts=" -u -v -h -V  --legacy --unmark --verbose --help --version  <index> "
+            opts=" -u -v -h -V  --legacy --unmark --verbose --help --version  <wallet-id> <index> "
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0

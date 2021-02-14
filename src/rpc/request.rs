@@ -15,8 +15,9 @@ use invoice::Invoice;
 use rgb::Genesis;
 
 use super::message::{
-    ContractAddressTuple, ContractRenameRequest, IdentityInfo,
-    SignerAccountInfo, SingleSigInfo, SyncContractRequest,
+    ContractAddressTuple, IdentityInfo, NextAddressRequest,
+    RenameContractRequest, SignerAccountInfo, SingleSigInfo,
+    SyncContractRequest,
 };
 use crate::model::ContractId;
 
@@ -42,7 +43,7 @@ pub enum Request {
 
     #[api(type = 0x0120)]
     #[display(inner)]
-    RenameContract(ContractRenameRequest),
+    RenameContract(RenameContractRequest),
 
     #[api(type = 0x0140)]
     #[display("delete_contract({0})")]
@@ -54,7 +55,7 @@ pub enum Request {
 
     #[api(type = 0x0312)]
     #[display("next_address({0})")]
-    NextAddress(ContractId),
+    NextAddress(NextAddressRequest),
 
     #[api(type = 0x0314)]
     #[display("unuse_address(...)")]

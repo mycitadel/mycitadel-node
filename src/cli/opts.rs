@@ -15,6 +15,7 @@ use clap::{AppSettings, ArgGroup, Clap, ValueHint};
 use invoice::Invoice;
 use std::str::FromStr;
 use wallet::bip32::PubkeyChain;
+use wallet::bip32::UnhardenedIndex;
 use wallet::descriptor;
 
 use crate::model;
@@ -218,35 +219,39 @@ pub enum AddressCommand {
     ListUsed {
         #[clap(flatten)]
         scan_opts: WalletOpts,
-
-        /// Limit the number of addresses printed
-        #[clap(short, long, global = true)]
-        limit: Option<usize>,
     },
 
     Create {
+        /// Wallet for address generation
+        #[clap()]
+        wallet_id: model::ContractId,
+
         /// Create address at custom index number
         #[clap(short, long)]
-        index: Option<u32>,
+        index: Option<UnhardenedIndex>,
 
         /// Whether to mark address as used
-        #[clap(short = 'u', long = "unmarked", global = true, parse(from_flag = std::ops::Not::not))]
+        #[clap(short = 'u', long = "unmark", global = true, parse(from_flag = std::ops::Not::not))]
         mark_used: bool,
-
-        /// Number of addresses to create
-        #[clap(short, long, default_value = "1")]
-        no: u8,
 
         /// Use SegWit legacy address format (applicable only to a SegWit
         /// wallets)
         #[clap(long, takes_value = false, global = true)]
         legacy: bool,
+
+        /// How the asset list output should be formatted
+        #[clap(short, long, default_value = "tab", global = true)]
+        format: Formatting,
     },
 
     MarkUsed {
+        /// Wallet for using the address
+        #[clap()]
+        wallet_id: model::ContractId,
+
         /// Index of address derivation path (use `address list` command to see
         /// address indexes
-        index: Option<u32>,
+        index: Option<UnhardenedIndex>,
 
         /// Use SegWit legacy address format (applicable only to a SegWit
         /// wallets)

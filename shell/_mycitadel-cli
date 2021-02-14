@@ -167,8 +167,6 @@ _arguments "${_arguments_options[@]}" \
 '--lookup-depth=[How many addresses should be scanned at least after the final address with no transactions is reached. Defaults to 20]' \
 '-f+[How the command output should be formatted]' \
 '--format=[How the command output should be formatted]' \
-'-l+[Limit the number of addresses printed]' \
-'--limit=[Limit the number of addresses printed]' \
 '-r[Whether to re-scan addresses space with Electrum server]' \
 '--rescan[Whether to re-scan addresses space with Electrum server]' \
 '*-v[Set verbosity level]' \
@@ -184,10 +182,10 @@ _arguments "${_arguments_options[@]}" \
 _arguments "${_arguments_options[@]}" \
 '-i+[Create address at custom index number]' \
 '--index=[Create address at custom index number]' \
-'-n+[Number of addresses to create]' \
-'--no=[Number of addresses to create]' \
+'-f+[How the asset list output should be formatted]' \
+'--format=[How the asset list output should be formatted]' \
 '-u[Whether to mark address as used]' \
-'--unmarked[Whether to mark address as used]' \
+'--unmark[Whether to mark address as used]' \
 '--legacy[Use SegWit legacy address format (applicable only to a SegWit wallets)]' \
 '*-v[Set verbosity level]' \
 '*--verbose[Set verbosity level]' \
@@ -195,6 +193,7 @@ _arguments "${_arguments_options[@]}" \
 '--help[Prints help information]' \
 '-V[Prints version information]' \
 '--version[Prints version information]' \
+':wallet-id -- Wallet for address generation:' \
 && ret=0
 ;;
 (mark-used)
@@ -208,6 +207,7 @@ _arguments "${_arguments_options[@]}" \
 '--help[Prints help information]' \
 '-V[Prints version information]' \
 '--version[Prints version information]' \
+':wallet-id -- Wallet for using the address:' \
 '::index -- Index of address derivation path (use `address list` command to see address indexes:' \
 && ret=0
 ;;

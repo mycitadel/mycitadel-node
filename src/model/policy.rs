@@ -22,7 +22,7 @@ use internet2::RemoteNodeAddr;
 use lnp::ChannelId;
 use lnpbp::client_side_validation::{CommitEncode, ConsensusCommit};
 use lnpbp::Chain;
-use miniscript::{Descriptor, DescriptorTrait, TranslatePk2};
+use miniscript::{descriptor, Descriptor, DescriptorTrait, TranslatePk2};
 use strict_encoding::{self, StrictDecode, StrictEncode};
 use wallet::bip32::{ChildIndex, PubkeyChain, TerminalStep, UnhardenedIndex};
 use wallet::descriptor::ContractDescriptor;
@@ -189,8 +189,26 @@ impl Policy {
         &self,
         index: UnhardenedIndex,
         chain: &Chain,
+        legacy: bool,
     ) -> Option<AddressDerivation> {
-        let d = self.to_descriptor();
+        let mut d = self.to_descriptor();
+        // TODO: Propose a PR to rust-miniscript with `to_nested()` method
+        if legacy {
+            d = match d {
+                Descriptor::Wpkh(wpkh) => Descriptor::Sh(
+                    descriptor::Sh::new_wpkh(wpkh.into_inner()).ok()?,
+                ),
+                Descriptor::Wsh(wsh) => match wsh.into_inner() {
+                    descriptor::WshInner::Ms(ms) => {
+                        Descriptor::Sh(descriptor::Sh::new_wsh(ms).ok()?)
+                    }
+                    descriptor::WshInner::SortedMulti(smv) => Descriptor::Sh(
+                        descriptor::Sh::new_sortedmulti(smv.k, smv.pks).ok()?,
+                    ),
+                },
+                _ => d,
+            };
+        }
         chain
             .try_into()
             .ok()

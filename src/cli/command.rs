@@ -82,7 +82,7 @@ impl Exec for WalletCommand {
 
                 );
                 client
-                    .create_single_sig(name, pubkey_chain, category)?
+                    .single_sig_create(name, pubkey_chain, category)?
                     .report_error("during wallet creation")
                     .and_then(|reply| match reply {
                         Reply::Contract(contract) => Ok(contract),
@@ -151,7 +151,6 @@ impl Exec for WalletCommand {
                     _ => Err(Error::UnexpectedApi),
                 })
                 .map(|unspent| unspent.output_print(format)),
-            _ => unimplemented!(),
         }
     }
 }
@@ -170,7 +169,6 @@ impl Exec for AddressCommand {
                         lookup_depth,
                         format,
                     },
-                limit,
             } => client
                 .address_list(
                     wallet_id,
@@ -188,7 +186,22 @@ impl Exec for AddressCommand {
                         .collect::<HashMap<_, _>>()
                         .output_print(format)
                 }),
-            AddressCommand::Create { .. } => unimplemented!(),
+            AddressCommand::Create {
+                wallet_id,
+                mark_used,
+                index,
+                legacy,
+                format,
+            } => client
+                .address_create(wallet_id, index, mark_used, legacy)?
+                .report_error("generating address")
+                .and_then(|reply| match reply {
+                    Reply::AddressDerivation(ad) => Ok(ad),
+                    _ => Err(Error::UnexpectedApi),
+                })
+                .map(|address_derivation| {
+                    address_derivation.output_print(format)
+                }),
             AddressCommand::MarkUsed { .. } => unimplemented!(),
         }
     }

@@ -17,7 +17,7 @@ use std::ops::RangeInclusive;
 
 use bitcoin::Address;
 use lnpbp::strict_encoding::{self, StrictDecode, StrictEncode};
-use wallet::bip32::PubkeyChain;
+use wallet::bip32::{PubkeyChain, UnhardenedIndex};
 use wallet::descriptor;
 
 use crate::model;
@@ -29,6 +29,8 @@ use crate::model;
     Clone,
     Eq,
     PartialEq,
+    PartialOrd,
+    Ord,
     Hash,
     Debug,
     Display,
@@ -50,6 +52,8 @@ pub struct SingleSigInfo {
     Clone,
     Eq,
     PartialEq,
+    PartialOrd,
+    Ord,
     Hash,
     Debug,
     Display,
@@ -69,6 +73,8 @@ pub struct SyncContractRequest {
     Clone,
     Eq,
     PartialEq,
+    PartialOrd,
+    Ord,
     Hash,
     Debug,
     Display,
@@ -76,10 +82,68 @@ pub struct SyncContractRequest {
     StrictDecode,
 )]
 #[display("rename_contract({contract_id}, \"{name}\")")]
-pub struct ContractRenameRequest {
+pub struct RenameContractRequest {
     #[serde_as(as = "DisplayFromStr")]
     pub contract_id: model::ContractId,
     pub name: String,
+}
+
+#[serde_as]
+#[derive(
+    Serialize,
+    Deserialize,
+    Clone,
+    Eq,
+    PartialEq,
+    Ord,
+    PartialOrd,
+    Hash,
+    Debug,
+    Display,
+    StrictEncode,
+    StrictDecode,
+)]
+#[display(
+    "next_address({contract_id}, legacy: {legacy}, mark_used: {mark_used})"
+)]
+pub struct NextAddressRequest {
+    #[serde_as(as = "DisplayFromStr")]
+    pub contract_id: model::ContractId,
+    pub index: Option<UnhardenedIndex>,
+    pub legacy: bool,
+    pub mark_used: bool,
+}
+
+#[derive(
+    Serialize,
+    Deserialize,
+    Clone,
+    Eq,
+    PartialEq,
+    Ord,
+    PartialOrd,
+    Hash,
+    Debug,
+    Display,
+    StrictEncode,
+    StrictDecode,
+)]
+#[display("{contract_id}.{address}")]
+pub struct ContractAddressTuple {
+    pub contract_id: model::ContractId,
+    pub address: Address,
+}
+
+impl ContractAddressTuple {
+    pub fn new(
+        contract_id: model::ContractId,
+        address: Address,
+    ) -> ContractAddressTuple {
+        ContractAddressTuple {
+            contract_id,
+            address,
+        }
+    }
 }
 
 #[serde_as]
@@ -121,38 +185,6 @@ impl StrictDecode for SignerAccountInfo {
                 .map(|(start, end)| RangeInclusive::new(start, end))
                 .collect(),
         })
-    }
-}
-
-#[derive(
-    Serialize,
-    Deserialize,
-    Clone,
-    Eq,
-    PartialEq,
-    Ord,
-    PartialOrd,
-    Hash,
-    Debug,
-    Display,
-    StrictEncode,
-    StrictDecode,
-)]
-#[display("{contract_id}.{address}")]
-pub struct ContractAddressTuple {
-    pub contract_id: model::ContractId,
-    pub address: Address,
-}
-
-impl ContractAddressTuple {
-    pub fn new(
-        contract_id: model::ContractId,
-        address: Address,
-    ) -> ContractAddressTuple {
-        ContractAddressTuple {
-            contract_id,
-            address,
-        }
     }
 }
 

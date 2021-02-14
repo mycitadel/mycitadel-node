@@ -199,7 +199,7 @@ impl Runtime {
                 .map(Reply::Contracts)
                 .map_err(Error::from),
 
-            Request::RenameContract(message::ContractRenameRequest {
+            Request::RenameContract(message::RenameContractRequest {
                 contract_id,
                 name,
             }) => self
@@ -315,15 +315,39 @@ impl Runtime {
                 .used_address_derivations(contract_id)
                 .map(Reply::Addresses)
                 .map_err(Error::from),
-            Request::NextAddress(contract_id) => self
+            Request::NextAddress(message::NextAddressRequest {
+                contract_id,
+                index,
+                legacy,
+                mark_used,
+            }) => self
                 .storage
                 .contract_ref(contract_id)
                 .map_err(Error::from)?
                 .derive_address(
-                    self.cache
-                        .next_unused_derivation(contract_id)
-                        .map_err(Error::from)?,
+                    index.unwrap_or(
+                        self.cache
+                            .next_unused_derivation(contract_id)
+                            .map_err(Error::from)?,
+                    ),
+                    legacy,
                 )
+                .and_then(|address_derivation| {
+                    let _ = self.cache.address_derivation(
+                        contract_id,
+                        &address_derivation.address,
+                    )?;
+                    if mark_used {
+                        self.cache.use_address_derivation(
+                            contract_id,
+                            address_derivation.address.clone(),
+                            *address_derivation.derivation.last().expect(
+                                "derivation path must always have at least one element"
+                            ),
+                        ).ok()?;
+                    }
+                    Some(address_derivation)
+                })
                 .map(Reply::AddressDerivation)
                 .ok_or(Error::ServerFailure(Failure {
                     code: 0,
@@ -393,7 +417,6 @@ impl Runtime {
                 })
                 .map(Reply::Assets),
 
-            _ => unimplemented!(),
         }
         .map_err(Error::into)
     }

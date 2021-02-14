@@ -22,6 +22,8 @@
     // dead_code
     // missing_docs,
 )]
+#![allow(dead_code)]
+#![allow(unused_variables)]
 
 #[macro_use]
 extern crate amplify;

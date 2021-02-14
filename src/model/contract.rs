@@ -135,7 +135,8 @@ impl Contract {
     pub fn derive_address(
         &self,
         index: UnhardenedIndex,
+        legacy: bool,
     ) -> Option<AddressDerivation> {
-        self.policy.derive_address(index, &self.chain)
+        self.policy.derive_address(index, &self.chain, legacy)
     }
 }

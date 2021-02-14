@@ -19,7 +19,7 @@ use internet2::{
     Unmarshall, Unmarshaller,
 };
 use rgb::Genesis;
-use wallet::bip32::PubkeyChain;
+use wallet::bip32::{PubkeyChain, UnhardenedIndex};
 use wallet::descriptor::OuterCategory;
 
 use super::Config;
@@ -70,7 +70,7 @@ impl Client {
         self.request(Request::ListContracts)
     }
 
-    pub fn create_single_sig(
+    pub fn single_sig_create(
         &mut self,
         name: String,
         pubkey_chain: PubkeyChain,
@@ -88,7 +88,7 @@ impl Client {
         contract_id: ContractId,
         name: String,
     ) -> Result<Reply, Error> {
-        self.request(Request::RenameContract(message::ContractRenameRequest {
+        self.request(Request::RenameContract(message::RenameContractRequest {
             contract_id,
             name,
         }))
@@ -124,12 +124,29 @@ impl Client {
         lookup_depth: u8,
     ) -> Result<Reply, Error> {
         if rescan {
-            self.request(Request::SyncContract(message::SyncContractRequest {
-                contract_id,
-                lookup_depth,
-            }));
+            self.request(Request::SyncContract(
+                message::SyncContractRequest {
+                    contract_id,
+                    lookup_depth,
+                },
+            ))?;
         }
         self.request(Request::UsedAddresses(contract_id))
+    }
+
+    pub fn address_create(
+        &mut self,
+        contract_id: ContractId,
+        index: Option<UnhardenedIndex>,
+        mark_used: bool,
+        legacy: bool,
+    ) -> Result<Reply, Error> {
+        self.request(Request::NextAddress(message::NextAddressRequest {
+            contract_id,
+            index,
+            legacy,
+            mark_used,
+        }))
     }
 
     pub fn asset_list(&mut self) -> Result<Reply, Error> {
