@@ -177,8 +177,6 @@ _arguments "${_arguments_options[@]}" \
 '--format=[How the command output should be formatted]' \
 '-l+[Limit the number of addresses printed]' \
 '--limit=[Limit the number of addresses printed]' \
-'-f+[How the command output should be formatted]' \
-'--format=[How the command output should be formatted]' \
 '-r[Whether to re-scan addresses space with Electrum server]' \
 '--rescan[Whether to re-scan addresses space with Electrum server]' \
 '*-v[Set verbosity level]' \

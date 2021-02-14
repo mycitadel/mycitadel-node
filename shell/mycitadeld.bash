@@ -181,7 +181,7 @@ _mycitadel() {
             return 0
             ;;
         mycitadel__address__list__used)
-            opts=" -r -f -l -f -v -h -V  --rescan --lookup-depth --format --limit --format --verbose --help --version  <wallet-id> "
+            opts=" -r -f -l -v -h -V  --rescan --lookup-depth --format --limit --verbose --help --version  <wallet-id> "
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -205,14 +205,6 @@ _mycitadel() {
                     return 0
                     ;;
                     -l)
-                    COMPREPLY=($(compgen -f "${cur}"))
-                    return 0
-                    ;;
-                --format)
-                    COMPREPLY=($(compgen -f "${cur}"))
-                    return 0
-                    ;;
-                    -f)
                     COMPREPLY=($(compgen -f "${cur}"))
                     return 0
                     ;;

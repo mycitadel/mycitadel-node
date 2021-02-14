@@ -117,6 +117,21 @@ impl Client {
         }
     }
 
+    pub fn address_list(
+        &mut self,
+        contract_id: ContractId,
+        rescan: bool,
+        lookup_depth: u8,
+    ) -> Result<Reply, Error> {
+        if rescan {
+            self.request(Request::SyncContract(message::SyncContractRequest {
+                contract_id,
+                lookup_depth,
+            }));
+        }
+        self.request(Request::UsedAddresses(contract_id))
+    }
+
     pub fn asset_list(&mut self) -> Result<Reply, Error> {
         self.request(Request::ListAssets)
     }

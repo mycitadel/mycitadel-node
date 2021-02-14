@@ -13,6 +13,7 @@
 
 use colored::Colorize;
 use microservices::shell::Exec;
+use std::collections::HashMap;
 
 use super::{
     AddressCommand, AssetCommand, Command, InvoiceCommand, OutputFormat,
@@ -21,6 +22,8 @@ use super::{
 use crate::rpc;
 use crate::rpc::Reply;
 use crate::{Client, Error};
+
+const LOOKUP_DEPTH_DEFAULT: u8 = 20;
 
 impl rpc::Reply {
     pub fn report_error(self, msg: &str) -> Result<Self, Error> {
@@ -140,7 +143,7 @@ impl Exec for WalletCommand {
                 .contract_balance(
                     wallet_id,
                     rescan,
-                    lookup_depth.unwrap_or(20),
+                    lookup_depth.unwrap_or(LOOKUP_DEPTH_DEFAULT),
                 )?
                 .report_error("retrieving wallet balance")
                 .and_then(|reply| match reply {
@@ -158,7 +161,36 @@ impl Exec for AddressCommand {
     type Error = Error;
 
     fn exec(self, client: &mut Self::Client) -> Result<(), Self::Error> {
-        unimplemented!()
+        match self {
+            AddressCommand::ListUsed {
+                scan_opts:
+                    WalletOpts {
+                        wallet_id,
+                        rescan,
+                        lookup_depth,
+                        format,
+                    },
+                limit,
+            } => client
+                .address_list(
+                    wallet_id,
+                    rescan,
+                    lookup_depth.unwrap_or(LOOKUP_DEPTH_DEFAULT),
+                )?
+                .report_error("retrieving used addresses")
+                .and_then(|reply| match reply {
+                    Reply::Addresses(addresses) => Ok(addresses),
+                    _ => Err(Error::UnexpectedApi),
+                })
+                .map(|addresses| {
+                    addresses
+                        .into_iter()
+                        .collect::<HashMap<_, _>>()
+                        .output_print(format)
+                }),
+            AddressCommand::Create { .. } => unimplemented!(),
+            AddressCommand::MarkUsed { .. } => unimplemented!(),
+        }
     }
 }
 

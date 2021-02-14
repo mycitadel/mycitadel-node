@@ -312,7 +312,7 @@ impl Runtime {
 
             Request::UsedAddresses(contract_id) => self
                 .cache
-                .used_addresses(contract_id)
+                .used_address_derivations(contract_id)
                 .map(Reply::Addresses)
                 .map_err(Error::from),
             Request::NextAddress(contract_id) => self

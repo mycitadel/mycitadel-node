@@ -222,10 +222,6 @@ pub enum AddressCommand {
         /// Limit the number of addresses printed
         #[clap(short, long, global = true)]
         limit: Option<usize>,
-
-        /// How the command output should be formatted
-        #[clap(short, long, default_value = "tab", global = true)]
-        format: Formatting,
     },
 
     Create {

@@ -13,8 +13,10 @@
 
 use colored::Colorize;
 use serde::Serialize;
-use std::collections::BTreeMap;
+use std::collections::{BTreeMap, HashMap};
 use std::fmt::Display;
+
+use wallet::bip32::UnhardenedIndex;
 
 use super::Formatting;
 use crate::model::{Contract, Unspent};
@@ -80,6 +82,75 @@ where
 
     #[doc(hidden)]
     fn output_headers() -> Vec<String> {
+        unreachable!()
+    }
+
+    #[doc(hidden)]
+    fn output_fields(&self) -> Vec<String> {
+        unreachable!()
+    }
+}
+
+impl<K, V> OutputCompact for HashMap<K, V>
+where
+    K: Display,
+    V: OutputCompact,
+{
+    fn output_compact(&self) -> String {
+        unimplemented!()
+    }
+}
+
+impl<K, V> OutputFormat for HashMap<K, V>
+where
+    K: Clone + Display + std::hash::Hash + Eq + Serialize,
+    V: OutputFormat + Serialize,
+{
+    fn output_print(&self, format: Formatting) {
+        if self.is_empty() {
+            eprintln!("{}", "No items".red());
+            return;
+        }
+        let headers = Self::output_headers();
+        if format == Formatting::Tab {
+            println!("{}", headers.join("\t").bright_green())
+        } else if format == Formatting::Csv {
+            println!("{}", headers.join(","))
+        }
+
+        match format {
+            Formatting::Yaml => {
+                println!("{}", serde_yaml::to_string(self).unwrap_or_default())
+            }
+
+            Formatting::Json => {
+                println!("{}", serde_json::to_string(self).unwrap_or_default())
+            }
+
+            _ => self.iter().for_each(|(id, rec)| match format {
+                Formatting::Id => println!("{}", id),
+                Formatting::Compact => {
+                    println!("{}#{}", rec.output_compact(), id)
+                }
+                Formatting::Tab => {
+                    println!("{}\t{}", id, rec.output_fields().join("\t"))
+                }
+                Formatting::Csv => {
+                    println!("{},{}", id, rec.output_fields().join(","))
+                }
+                _ => unreachable!(),
+            }),
+        }
+    }
+
+    fn output_headers() -> Vec<String> {
+        let mut vec = vec![s!("ID")];
+        vec.extend(V::output_headers());
+        vec
+    }
+
+    #[doc(hidden)]
+    fn output_id_string(&self) -> String {
         unreachable!()
     }
 
@@ -194,6 +265,28 @@ impl OutputFormat for Contract {
             self.name().to_owned(),
             self.created_at().to_string(),
         ]
+    }
+}
+
+// MARK: UnhardenedIndex -------------------------------------------------------
+
+impl OutputCompact for UnhardenedIndex {
+    fn output_compact(&self) -> String {
+        self.to_string()
+    }
+}
+
+impl OutputFormat for UnhardenedIndex {
+    fn output_headers() -> Vec<String> {
+        vec![s!("ID"), s!("Index")]
+    }
+
+    fn output_id_string(&self) -> String {
+        self.to_string()
+    }
+
+    fn output_fields(&self) -> Vec<String> {
+        vec![self.to_string()]
     }
 }
 

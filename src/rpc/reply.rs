@@ -12,7 +12,7 @@
 // If not, see <https://www.gnu.org/licenses/agpl-3.0-standalone.html>.
 
 use serde_with::{As, DisplayFromStr};
-use std::collections::{BTreeMap, HashSet};
+use std::collections::BTreeMap;
 
 use bitcoin::Address;
 use internet2::presentation;
@@ -22,6 +22,7 @@ use microservices::{rpc, rpc_connection};
 use crate::model::{AddressDerivation, Contract, Unspent};
 use crate::rpc::message::IdentityInfo;
 use crate::Error;
+use wallet::bip32::UnhardenedIndex;
 
 #[derive(Serialize, Deserialize, Clone, Debug, Display, Api)]
 #[api(encoding = "strict")]
@@ -50,7 +51,7 @@ pub enum Reply {
 
     #[api(type = 0x0310)]
     #[display("addresses(...)")]
-    Addresses(HashSet<Address>),
+    Addresses(BTreeMap<Address, UnhardenedIndex>),
 
     #[api(type = 0x0311)]
     #[display("address_derivation({0})")]
