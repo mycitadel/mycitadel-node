@@ -94,9 +94,12 @@ impl From<presentation::Error> for Reply {
 
 impl From<Error> for rpc::Failure {
     fn from(err: Error) -> Self {
-        rpc::Failure {
-            code: 1, // TODO: Create errno types
-            info: err.to_string(),
+        match err {
+            Error::ServerFailure(failure) => failure,
+            err => rpc::Failure {
+                code: 1,
+                info: err.to_string(),
+            },
         }
     }
 }

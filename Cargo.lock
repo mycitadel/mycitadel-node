@@ -596,7 +596,7 @@ dependencies = [
 [[package]]
 name = "descriptor-wallet"
 version = "0.4.0-beta"
-source = "git+https://github.com/LNP-BP/descriptor-wallet#101798fe83a3bde050569d9984d225ebd3b4c94d"
+source = "git+https://github.com/LNP-BP/descriptor-wallet#33cf56f0a9d9f485e71983232357560bc4596735"
 dependencies = [
  "amplify",
  "amplify_derive",
@@ -1149,7 +1149,7 @@ dependencies = [
 [[package]]
 name = "lnpbp"
 version = "0.4.0-beta"
-source = "git+https://github.com/LNP-BP/rust-lnpbp#7735a3b71da7c83db2f8683d7efe6bb09cab389d"
+source = "git+https://github.com/LNP-BP/rust-lnpbp#c6009dbd2eb2cd44cfecdf4d50b37f28edd01ba1"
 dependencies = [
  "amplify",
  "amplify_derive",
@@ -1173,7 +1173,7 @@ dependencies = [
 [[package]]
 name = "lnpbp_invoice"
 version = "0.4.0-alpha.1"
-source = "git+https://github.com/LNP-BP/rust-lnpbp#7735a3b71da7c83db2f8683d7efe6bb09cab389d"
+source = "git+https://github.com/LNP-BP/rust-lnpbp#c6009dbd2eb2cd44cfecdf4d50b37f28edd01ba1"
 dependencies = [
  "amplify",
  "amplify_derive",

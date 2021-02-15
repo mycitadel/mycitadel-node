@@ -230,16 +230,4 @@ impl Client {
         })?;
         self.request(Request::ImportAsset(genesis))
     }
-
-    /*
-    pub fn invoice_create(
-        &mut self,
-        amount: rgb::AtomicValue,
-        merchant: Option<String>,
-        details: Option<String>,
-        unmark: bool,
-    ) {
-
-    }
-     */
 }

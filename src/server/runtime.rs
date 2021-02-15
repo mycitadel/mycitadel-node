@@ -332,11 +332,7 @@ impl Runtime {
                     ),
                     legacy,
                 )
-                .and_then(|address_derivation| {
-                    let _ = self.cache.address_derivation(
-                        contract_id,
-                        &address_derivation.address,
-                    )?;
+                .map(|address_derivation| {
                     if mark_used {
                         self.cache.use_address_derivation(
                             contract_id,
@@ -346,7 +342,7 @@ impl Runtime {
                             ),
                         ).ok()?;
                     }
-                    Some(address_derivation)
+                    address_derivation
                 })
                 .map(Reply::AddressDerivation)
                 .ok_or(Error::ServerFailure(Failure {
