@@ -281,7 +281,9 @@ impl Exec for InvoiceCommand {
                     })
             }
             InvoiceCommand::List { .. } => unimplemented!(),
-            InvoiceCommand::Info { .. } => unimplemented!(),
+            InvoiceCommand::Info { invoice, format } => {
+                Ok(invoice.output_print(format))
+            }
             InvoiceCommand::Pay { .. } => unimplemented!(),
             InvoiceCommand::Accept { .. } => unimplemented!(),
         }

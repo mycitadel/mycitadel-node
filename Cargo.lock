@@ -1091,7 +1091,7 @@ dependencies = [
 [[package]]
 name = "lightning_encoding"
 version = "0.4.0-alpha.2+1"
-source = "git+https://github.com/LNP-BP/lnp-core#fccc440e414da819db6171e9726f90453339ec5b"
+source = "git+https://github.com/LNP-BP/lnp-core#8771e3fc0d31bce5193b3817b91efcba0e788139"
 dependencies = [
  "amplify",
  "amplify_derive",
@@ -1103,7 +1103,7 @@ dependencies = [
 [[package]]
 name = "lightning_encoding_derive"
 version = "0.4.0-alpha.1"
-source = "git+https://github.com/LNP-BP/lnp-core#fccc440e414da819db6171e9726f90453339ec5b"
+source = "git+https://github.com/LNP-BP/lnp-core#8771e3fc0d31bce5193b3817b91efcba0e788139"
 dependencies = [
  "amplify",
  "amplify_derive_helpers",
@@ -1131,7 +1131,7 @@ checksum = "7fb9b38af92608140b86b693604b9ffcc5824240a484d1ecd4795bacb2fe88f3"
 [[package]]
 name = "lnp-core"
 version = "0.4.0-alpha.1"
-source = "git+https://github.com/LNP-BP/lnp-core#fccc440e414da819db6171e9726f90453339ec5b"
+source = "git+https://github.com/LNP-BP/lnp-core#8771e3fc0d31bce5193b3817b91efcba0e788139"
 dependencies = [
  "amplify",
  "amplify_derive",
@@ -1149,7 +1149,7 @@ dependencies = [
 [[package]]
 name = "lnpbp"
 version = "0.4.0-beta"
-source = "git+https://github.com/LNP-BP/rust-lnpbp#82cf78a878c31ec91d6dd41179ee069520d9882c"
+source = "git+https://github.com/LNP-BP/rust-lnpbp#7735a3b71da7c83db2f8683d7efe6bb09cab389d"
 dependencies = [
  "amplify",
  "amplify_derive",
@@ -1173,7 +1173,7 @@ dependencies = [
 [[package]]
 name = "lnpbp_invoice"
 version = "0.4.0-alpha.1"
-source = "git+https://github.com/LNP-BP/rust-lnpbp#82cf78a878c31ec91d6dd41179ee069520d9882c"
+source = "git+https://github.com/LNP-BP/rust-lnpbp#7735a3b71da7c83db2f8683d7efe6bb09cab389d"
 dependencies = [
  "amplify",
  "amplify_derive",
@@ -1185,6 +1185,8 @@ dependencies = [
  "lnp-core",
  "lnpbp",
  "miniscript",
+ "serde 1.0.123",
+ "serde_with",
  "strict_encoding",
  "strict_encoding_derive",
  "url",
@@ -2537,6 +2539,7 @@ dependencies = [
  "idna",
  "matches",
  "percent-encoding",
+ "serde 1.0.123",
 ]
 
 [[package]]

@@ -30,7 +30,7 @@ slip132 = { version = "0.3.2", features = ["serde"] }
 strict_encoding = { version = "1.0.7", features = ["chrono", "crypto", "miniscript", "derive"] }
 descriptor-wallet = { git = "https://github.com/LNP-BP/descriptor-wallet", features = ["serde"] }
 lnpbp = { git = "https://github.com/LNP-BP/rust-lnpbp", features = ["serde"] }
-lnpbp_invoice = { git = "https://github.com/LNP-BP/rust-lnpbp" }
+lnpbp_invoice = { git = "https://github.com/LNP-BP/rust-lnpbp", features = ["serde"] }
 lnp-core = { git = "https://github.com/LNP-BP/lnp-core", features = ["serde"] }
 rgb-core = { git = "https://github.com/rgb-org/rgb-core", features = ["serde"] }
 rgb20 = { git = "https://github.com/rgb-org/rgb-core", features = ["serde"] }

@@ -11,11 +11,15 @@
 // along with this software.
 // If not, see <https://www.gnu.org/licenses/agpl-3.0-standalone.html>.
 
+use chrono::NaiveDateTime;
 use colored::Colorize;
 use serde::Serialize;
 use std::collections::{BTreeMap, HashMap};
 use std::fmt::Display;
 
+use amplify::Wrapper;
+use bitcoin::hashes::{sha256t, Hash};
+use invoice::Invoice;
 use wallet::bip32::UnhardenedIndex;
 
 use super::Formatting;
@@ -377,9 +381,6 @@ impl OutputFormat for rgb20::Asset {
     }
 
     fn output_fields(&self) -> Vec<String> {
-        use amplify::Wrapper;
-        use bitcoin::hashes::{sha256t, Hash};
-
         let bitcoin_id = rgb::ContractId::from_inner(
             sha256t::Hash::from_inner(wallet::BITCOIN_GENESIS_BLOCKHASH.into()),
         );
@@ -403,6 +404,59 @@ impl OutputFormat for rgb20::Asset {
                 .to_string(),
             self.accounting_supply(rgb20::SupplyMeasure::IssueLimit)
                 .to_string(),
+        ]
+    }
+}
+
+// MARK: Invoice ---------------------------------------------------------------
+
+impl OutputCompact for Invoice {
+    fn output_compact(&self) -> String {
+        self.beneficiaries
+            .first()
+            .map(|b| b.to_string())
+            .unwrap_or(s!("No beneficiaries").red().to_string())
+    }
+}
+
+impl OutputFormat for Invoice {
+    fn output_headers() -> Vec<String> {
+        vec![
+            s!("No beneficiaries"),
+            s!("First beneficiary"),
+            s!("Amount"),
+            s!("Asset"),
+            s!("Recurrent"),
+            s!("Expiry"),
+            s!("Merchant"),
+            s!("Purpose"),
+        ]
+    }
+
+    fn output_id_string(&self) -> String {
+        self.output_compact()
+    }
+
+    fn output_fields(&self) -> Vec<String> {
+        vec![
+            self.beneficiaries.len().to_string(),
+            self.output_compact(),
+            self.amount.to_string(),
+            self.asset
+                .map(|asset_id| {
+                    rgb::ContractId::from_inner(sha256t::Hash::from_inner(
+                        asset_id.into_inner(),
+                    ))
+                    .to_string()
+                })
+                .unwrap_or(s!("BTC")),
+            self.recurrent.to_string(),
+            self.expiry
+                .as_ref()
+                .map(NaiveDateTime::to_string)
+                .unwrap_or(s!("-")),
+            self.merchant.clone().unwrap_or(s!("-")),
+            self.purpose.clone().unwrap_or(s!("-")),
         ]
     }
 }
