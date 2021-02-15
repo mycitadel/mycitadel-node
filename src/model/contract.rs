@@ -17,8 +17,10 @@ use std::collections::BTreeMap;
 use std::io;
 use std::time::{SystemTime, UNIX_EPOCH};
 
-use bitcoin::{OutPoint, Txid};
-use lnpbp::client_side_validation::{CommitEncode, ConsensusCommit};
+use bitcoin::Txid;
+use invoice::Invoice;
+use lnpbp::client_side_validation::{CommitEncode, Conceal, ConsensusCommit};
+use lnpbp::seals::{OutpointHash, OutpointReveal};
 use lnpbp::Chain;
 use strict_encoding::StrictEncode;
 use wallet::bip32::UnhardenedIndex;
@@ -82,15 +84,14 @@ pub struct ContractData {
     state: State,
 
     // TODO: Must be moved into rgb-node
-    #[serde_as(as = "Vec<(DisplayFromStr, _)>")]
-    blinding_factors: BTreeMap<OutPoint, u64>,
+    #[serde_as(as = "BTreeMap<DisplayFromStr, _>")]
+    blinding_factors: BTreeMap<OutpointHash, OutpointReveal>,
 
-    sent_invoices: Vec<String>,
+    #[serde_as(as = "Vec<DisplayFromStr>")]
+    sent_invoices: Vec<Invoice>,
 
-    received_invoices: Vec<String>,
-
-    #[serde_as(as = "BTreeMap<_, DisplayFromStr>")]
-    paid_invoices: BTreeMap<String, PaymentSlip>,
+    #[serde_as(as = "BTreeMap<DisplayFromStr, DisplayFromStr>")]
+    paid_invoices: BTreeMap<Invoice, PaymentSlip>,
 
     transactions: BTreeMap<Txid, Psbt>,
 
@@ -138,5 +139,15 @@ impl Contract {
         legacy: bool,
     ) -> Option<AddressDerivation> {
         self.policy.derive_address(index, &self.chain, legacy)
+    }
+
+    pub(crate) fn add_invoice(&mut self, invoice: Invoice) {
+        self.data.sent_invoices.push(invoice)
+    }
+
+    pub(crate) fn add_blinding(&mut self, outpoint_reveal: OutpointReveal) {
+        self.data
+            .blinding_factors
+            .insert(outpoint_reveal.conceal(), outpoint_reveal);
     }
 }

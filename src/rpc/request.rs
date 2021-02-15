@@ -1,6 +1,6 @@
-// Keyring: private/public key managing service
+// MyCitadel: node, wallet library & command-line tool
 // Written in 2021 by
-//     Dr. Maxim Orlovsky <orlovsky@pandoracore.com>
+//     Dr. Maxim Orlovsky <orlovsky@mycitadel.io>
 //
 // To the extent possible under law, the author(s) have dedicated all
 // copyright and related and neighboring rights to this software to
@@ -11,11 +11,10 @@
 // along with this software.
 // If not, see <https://www.gnu.org/licenses/agpl-3.0-standalone.html>.
 
-use invoice::Invoice;
 use rgb::Genesis;
 
 use super::message::{
-    ContractAddressTuple, IdentityInfo, NextAddressRequest,
+    AddInvoiceRequest, ContractAddressTuple, IdentityInfo, NextAddressRequest,
     RenameContractRequest, SignerAccountInfo, SingleSigInfo,
     SyncContractRequest,
 };
@@ -70,8 +69,8 @@ pub enum Request {
     ListInvoices,
 
     #[api(type = 0x0410)]
-    #[display("add_invoice({0})")]
-    AddInvoice(Invoice),
+    #[display(inner)]
+    AddInvoice(AddInvoiceRequest),
 
     #[api(type = 0x0500)]
     #[display("list_identities()")]

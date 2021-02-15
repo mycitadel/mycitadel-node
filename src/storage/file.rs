@@ -17,6 +17,8 @@ use std::io::{Read, Seek, Write};
 use std::path::PathBuf;
 use std::{fs, io};
 
+use invoice::Invoice;
+use lnpbp::seals::OutpointReveal;
 use lnpbp::strict_encoding::{StrictDecode, StrictEncode};
 use microservices::FileFormat;
 
@@ -189,6 +191,25 @@ impl Driver for FileDriver {
             .get(&contract_id)
             .ok_or(Error::ContractNotFound(contract_id))
             .map(Contract::policy)
+    }
+
+    fn add_invoice(
+        &mut self,
+        contract_id: ContractId,
+        invoice: Invoice,
+        reveal_info: Vec<OutpointReveal>,
+    ) -> Result<(), Error> {
+        let contract = self
+            .data
+            .contracts
+            .get_mut(&contract_id)
+            .ok_or(Error::ContractNotFound(contract_id))?;
+        contract.add_invoice(invoice);
+        for reveal in reveal_info {
+            contract.add_blinding(reveal);
+        }
+        self.store()?;
+        Ok(())
     }
 
     fn signers(&self) -> Result<Vec<SignerAccountInfo>, Error> {

@@ -376,7 +376,16 @@ impl Runtime {
                 .map(|outpoint| OutpointReveal::from(outpoint))
                 .map(Reply::BlindUtxo),
             Request::ListInvoices => unimplemented!(),
-            Request::AddInvoice(invoice) => unimplemented!(),
+            Request::AddInvoice(message::AddInvoiceRequest { invoice, source_info }) => {
+                for (contract_id, outpoint_reveal) in source_info {
+                    self.storage.add_invoice(
+                        contract_id,
+                        invoice.clone(),
+                        outpoint_reveal.map(|r| vec![r]).unwrap_or_default()
+                    ).map_err(Error::from)?;
+                }
+                Ok(Reply::Success)
+            },
 
             Request::ContractUnspent(id) => self
                 .cache

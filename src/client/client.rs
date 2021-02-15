@@ -169,14 +169,14 @@ impl Client {
         unmark: bool,
         legacy: bool,
     ) -> Result<Invoice, Error> {
-        let (beneficiary, blinding_secret) = match (category, asset_id) {
+        let (beneficiary, reveal_data) = match (category, asset_id) {
             (InvoiceType::AddressUtxo, Some(asset_id)) => {
                 let seal =
                     match self.request(Request::BlindUtxo(contract_id))? {
                         Reply::BlindUtxo(seal) => seal,
                         _ => Err(Error::UnexpectedApi)?,
                     };
-                (Beneficiary::BlindUtxo(seal.conceal()), Some(seal.blinding))
+                (Beneficiary::BlindUtxo(seal.conceal()), Some(seal))
             }
             (InvoiceType::AddressUtxo, None) => {
                 let address = match self.request(Request::NextAddress(
@@ -202,7 +202,10 @@ impl Client {
             purpose,
             ..Invoice::default()
         };
-        self.request(Request::AddInvoice(inv.clone()))?;
+        self.request(Request::AddInvoice(message::AddInvoiceRequest {
+            invoice: inv.clone(),
+            source_info: bmap! { contract_id => reveal_data },
+        }))?;
         Ok(inv)
     }
 

@@ -1,6 +1,6 @@
-// Keyring: private/public key managing service
+// MyCitadel: node, wallet library & command-line tool
 // Written in 2021 by
-//     Dr. Maxim Orlovsky <orlovsky@pandoracore.com>
+//     Dr. Maxim Orlovsky <orlovsky@mycitadel.io>
 //
 // To the extent possible under law, the author(s) have dedicated all
 // copyright and related and neighboring rights to this software to
@@ -12,10 +12,13 @@
 // If not, see <https://www.gnu.org/licenses/agpl-3.0-standalone.html>.
 
 use serde_with::DisplayFromStr;
+use std::collections::BTreeMap;
 use std::io;
 use std::ops::RangeInclusive;
 
 use bitcoin::Address;
+use invoice::Invoice;
+use lnpbp::seals::OutpointReveal;
 use lnpbp::strict_encoding::{self, StrictDecode, StrictEncode};
 use wallet::bip32::{PubkeyChain, UnhardenedIndex};
 use wallet::descriptor;
@@ -144,6 +147,26 @@ impl ContractAddressTuple {
             address,
         }
     }
+}
+
+#[derive(
+    Serialize,
+    Deserialize,
+    Clone,
+    Eq,
+    PartialEq,
+    Ord,
+    PartialOrd,
+    Hash,
+    Debug,
+    Display,
+    StrictEncode,
+    StrictDecode,
+)]
+#[display("add_invoice({invoice}, ...)")]
+pub struct AddInvoiceRequest {
+    pub invoice: Invoice,
+    pub source_info: BTreeMap<model::ContractId, Option<OutpointReveal>>,
 }
 
 #[serde_as]

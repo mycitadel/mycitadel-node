@@ -1,6 +1,6 @@
-// Keyring: private/public key managing service
+// MyCitadel: node, wallet library & command-line tool
 // Written in 2021 by
-//     Dr. Maxim Orlovsky <orlovsky@pandoracore.com>
+//     Dr. Maxim Orlovsky <orlovsky@mycitadel.io>
 //
 // To the extent possible under law, the author(s) have dedicated all
 // copyright and related and neighboring rights to this software to
@@ -18,11 +18,11 @@ use bitcoin::Address;
 use internet2::presentation;
 use lnpbp::seals::OutpointReveal;
 use microservices::{rpc, rpc_connection};
+use wallet::bip32::UnhardenedIndex;
 
 use crate::model::{AddressDerivation, Contract, Unspent};
 use crate::rpc::message::IdentityInfo;
 use crate::Error;
-use wallet::bip32::UnhardenedIndex;
 
 #[derive(Serialize, Deserialize, Clone, Debug, Display, Api)]
 #[api(encoding = "strict")]

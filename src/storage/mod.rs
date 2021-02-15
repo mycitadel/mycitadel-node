@@ -19,6 +19,9 @@ pub use file::{FileConfig, FileDriver};
 
 // -----------------------------------------------------------------------------
 
+use invoice::Invoice;
+use lnpbp::seals::OutpointReveal;
+
 use crate::model::{self, Contract, ContractId, Policy};
 use crate::rpc::message::{IdentityInfo, SignerAccountInfo};
 
@@ -36,6 +39,13 @@ pub trait Driver {
         -> Result<(), Error>;
 
     fn policy(&self, contract_id: ContractId) -> Result<&Policy, Error>;
+
+    fn add_invoice(
+        &mut self,
+        contract_id: ContractId,
+        invoice: Invoice,
+        reveal_info: Vec<OutpointReveal>,
+    ) -> Result<(), Error>;
 
     fn signers(&self) -> Result<Vec<SignerAccountInfo>, Error>;
     fn add_signer(
