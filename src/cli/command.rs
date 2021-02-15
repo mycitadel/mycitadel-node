@@ -280,7 +280,14 @@ impl Exec for InvoiceCommand {
                         println!("{}", invoice)
                     })
             }
-            InvoiceCommand::List { .. } => unimplemented!(),
+            InvoiceCommand::List { wallet_id, format } => client
+                .invoice_list(wallet_id)?
+                .report_error("listing invoices")
+                .and_then(|reply| match reply {
+                    Reply::Invoices(list) => Ok(list),
+                    _ => Err(Error::UnexpectedApi),
+                })
+                .map(|list| list.output_print(format)),
             InvoiceCommand::Info { invoice, format } => {
                 Ok(invoice.output_print(format))
             }

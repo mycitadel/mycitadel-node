@@ -220,7 +220,7 @@ Register-ArgumentCompleter -Native -CommandName 'mycitadel' -ScriptBlock {
             [CompletionResult]::new('-V', 'V', [CompletionResultType]::ParameterName, 'Prints version information')
             [CompletionResult]::new('--version', 'version', [CompletionResultType]::ParameterName, 'Prints version information')
             [CompletionResult]::new('create', 'create', [CompletionResultType]::ParameterValue, 'Create new invoice')
-            [CompletionResult]::new('list', 'list', [CompletionResultType]::ParameterValue, 'List all known invoices')
+            [CompletionResult]::new('list', 'list', [CompletionResultType]::ParameterValue, 'List all issued invoices')
             [CompletionResult]::new('info', 'info', [CompletionResultType]::ParameterValue, 'Parse invoice and print out its detailed information')
             [CompletionResult]::new('pay', 'pay', [CompletionResultType]::ParameterValue, 'Pay an invoice')
             [CompletionResult]::new('accept', 'accept', [CompletionResultType]::ParameterValue, 'Accept payment for the invoice. Required only for on-chain RGB payments; Bitcoin & Lightning-network payments (including RGB lightning) are accepted automatically and does not require calling this method')

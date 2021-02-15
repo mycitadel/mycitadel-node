@@ -16,6 +16,7 @@ use std::collections::BTreeMap;
 
 use bitcoin::Address;
 use internet2::presentation;
+use invoice::Invoice;
 use lnpbp::seals::OutpointReveal;
 use microservices::{rpc, rpc_connection};
 use wallet::bip32::UnhardenedIndex;
@@ -60,6 +61,10 @@ pub enum Reply {
     #[api(type = 0x0320)]
     #[display("blind_utxo({0})")]
     BlindUtxo(OutpointReveal),
+
+    #[api(type = 0x0330)]
+    #[display("invoices(...)")]
+    Invoices(Vec<Invoice>),
 
     #[api(type = 0x0700)]
     #[display("asset({0})")]

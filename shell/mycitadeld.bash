@@ -383,7 +383,7 @@ _mycitadel() {
             return 0
             ;;
         mycitadel__invoice__list)
-            opts=" -f -v -h -V  --format --verbose --help --version  "
+            opts=" -f -v -h -V  --format --verbose --help --version  <wallet-id> "
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0

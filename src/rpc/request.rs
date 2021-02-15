@@ -65,8 +65,8 @@ pub enum Request {
     BlindUtxo(ContractId),
 
     #[api(type = 0x0400)]
-    #[display("list_invoices()")]
-    ListInvoices,
+    #[display("list_invoices({0})")]
+    ListInvoices(ContractId),
 
     #[api(type = 0x0410)]
     #[display(inner)]

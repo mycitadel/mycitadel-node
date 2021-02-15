@@ -333,8 +333,12 @@ pub enum InvoiceCommand {
         psbt: bool,
     },
 
-    /// List all known invoices
+    /// List all issued invoices
     List {
+        /// Wallet for invoice list
+        #[clap()]
+        wallet_id: model::ContractId,
+
         /// How invoice list should be formatted
         #[clap(short, long, default_value = "tab", global = true)]
         format: Formatting,

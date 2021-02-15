@@ -209,6 +209,13 @@ impl Client {
         Ok(inv)
     }
 
+    pub fn invoice_list(
+        &mut self,
+        contract_id: ContractId,
+    ) -> Result<Reply, Error> {
+        self.request(Request::ListInvoices(contract_id))
+    }
+
     pub fn asset_list(&mut self) -> Result<Reply, Error> {
         self.request(Request::ListAssets)
     }

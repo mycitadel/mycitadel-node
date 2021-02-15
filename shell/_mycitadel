@@ -317,6 +317,7 @@ _arguments "${_arguments_options[@]}" \
 '--help[Prints help information]' \
 '-V[Prints version information]' \
 '--version[Prints version information]' \
+':wallet-id -- Wallet for invoice list:' \
 && ret=0
 ;;
 (info)
@@ -470,7 +471,7 @@ _mycitadel__invoice__info_commands() {
 _mycitadel__invoice_commands() {
     local commands; commands=(
         "create:Create new invoice" \
-"list:List all known invoices" \
+"list:List all issued invoices" \
 "info:Parse invoice and print out its detailed information" \
 "pay:Pay an invoice" \
 "accept:Accept payment for the invoice. Required only for on-chain RGB payments; Bitcoin & Lightning-network payments (including RGB lightning) are accepted automatically and does not require calling this method" \
