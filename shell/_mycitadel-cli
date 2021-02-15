@@ -278,24 +278,25 @@ case $state in
         case $line[1] in
             (create)
 _arguments "${_arguments_options[@]}" \
-'-a+[Asset in which the payment is requested; defaults to bitcoin]' \
-'--asset=[Asset in which the payment is requested; defaults to bitcoin]' \
+'-a+[Asset in which the payment is requested; defaults to bitcoin on the currently used blockchain (mainnet, liqud, testnet etc)]' \
+'--asset=[Asset in which the payment is requested; defaults to bitcoin on the currently used blockchain (mainnet, liqud, testnet etc)]' \
 '-m+[Optional details about the merchant providing the invoice]' \
 '--merchant=[Optional details about the merchant providing the invoice]' \
-'-d+[Information about the invoice]' \
-'--details=[Information about the invoice]' \
+'-p+[Information about the invoice]' \
+'--purpose=[Information about the invoice]' \
 '-u[Do not mark the address used in the invoice as used]' \
 '--unmark[Do not mark the address used in the invoice as used]' \
-'--descriptor[Create descriptor-based invoice (not compatible with instant wallet accounts)]' \
-'--psbt[Create a PSBT-based invoice (not compatible with instant wallet accounts)]' \
+'--legacy[Use SegWit legacy address format (applicable only to a SegWit wallets)]' \
+'(--psbt)--descriptor[Create descriptor-based invoice (not compatible with instant wallet accounts)]' \
+'(--descriptor)--psbt[Create a PSBT-based invoice (not compatible with instant wallet accounts)]' \
 '*-v[Set verbosity level]' \
 '*--verbose[Set verbosity level]' \
 '-h[Prints help information]' \
 '--help[Prints help information]' \
 '-V[Prints version information]' \
 '--version[Prints version information]' \
+':wallet-id -- Wallet where the payment should go:' \
 ':amount -- Amount of the asset (in the smallest asset units, without floating point - i.e. for bitcoin use satoshis):' \
-':beneficiary -- Wallet id to which the payment should be received:' \
 && ret=0
 ;;
 (list)

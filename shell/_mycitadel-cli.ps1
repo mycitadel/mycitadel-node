@@ -219,14 +219,15 @@ Register-ArgumentCompleter -Native -CommandName 'mycitadel-cli' -ScriptBlock {
             break
         }
         'mycitadel-cli;invoice;create' {
-            [CompletionResult]::new('-a', 'a', [CompletionResultType]::ParameterName, 'Asset in which the payment is requested; defaults to bitcoin')
-            [CompletionResult]::new('--asset', 'asset', [CompletionResultType]::ParameterName, 'Asset in which the payment is requested; defaults to bitcoin')
+            [CompletionResult]::new('-a', 'a', [CompletionResultType]::ParameterName, 'Asset in which the payment is requested; defaults to bitcoin on the currently used blockchain (mainnet, liqud, testnet etc)')
+            [CompletionResult]::new('--asset', 'asset', [CompletionResultType]::ParameterName, 'Asset in which the payment is requested; defaults to bitcoin on the currently used blockchain (mainnet, liqud, testnet etc)')
             [CompletionResult]::new('-m', 'm', [CompletionResultType]::ParameterName, 'Optional details about the merchant providing the invoice')
             [CompletionResult]::new('--merchant', 'merchant', [CompletionResultType]::ParameterName, 'Optional details about the merchant providing the invoice')
-            [CompletionResult]::new('-d', 'd', [CompletionResultType]::ParameterName, 'Information about the invoice')
-            [CompletionResult]::new('--details', 'details', [CompletionResultType]::ParameterName, 'Information about the invoice')
+            [CompletionResult]::new('-p', 'p', [CompletionResultType]::ParameterName, 'Information about the invoice')
+            [CompletionResult]::new('--purpose', 'purpose', [CompletionResultType]::ParameterName, 'Information about the invoice')
             [CompletionResult]::new('-u', 'u', [CompletionResultType]::ParameterName, 'Do not mark the address used in the invoice as used')
             [CompletionResult]::new('--unmark', 'unmark', [CompletionResultType]::ParameterName, 'Do not mark the address used in the invoice as used')
+            [CompletionResult]::new('--legacy', 'legacy', [CompletionResultType]::ParameterName, 'Use SegWit legacy address format (applicable only to a SegWit wallets)')
             [CompletionResult]::new('--descriptor', 'descriptor', [CompletionResultType]::ParameterName, 'Create descriptor-based invoice (not compatible with instant wallet accounts)')
             [CompletionResult]::new('--psbt', 'psbt', [CompletionResultType]::ParameterName, 'Create a PSBT-based invoice (not compatible with instant wallet accounts)')
             [CompletionResult]::new('-v', 'v', [CompletionResultType]::ParameterName, 'Set verbosity level')

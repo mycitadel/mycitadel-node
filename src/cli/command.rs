@@ -19,16 +19,16 @@ use super::{
     AddressCommand, AssetCommand, Command, InvoiceCommand, OutputFormat,
     WalletCommand, WalletCreateCommand, WalletOpts,
 };
-use crate::rpc;
+use crate::client::InvoiceType;
 use crate::rpc::Reply;
 use crate::{Client, Error};
 
 const LOOKUP_DEPTH_DEFAULT: u8 = 20;
 
-impl rpc::Reply {
+impl Reply {
     pub fn report_error(self, msg: &str) -> Result<Self, Error> {
         match self {
-            rpc::Reply::Failure(failure) => {
+            Reply::Failure(failure) => {
                 eprintln!(
                     "{} {} {}{}:\n{} {}",
                     "Error".bright_red(),
@@ -247,15 +247,39 @@ impl Exec for InvoiceCommand {
     fn exec(self, client: &mut Self::Client) -> Result<(), Self::Error> {
         match self {
             InvoiceCommand::Create {
+                wallet_id,
                 asset_id,
                 amount,
-                beneficiary,
                 merchant,
-                details,
+                purpose,
                 unmark,
-                descriptor_based,
-                psbt_based,
-            } => Ok(()),
+                legacy,
+                descriptor,
+                psbt,
+            } => {
+                // TODO: Check that asset id is known
+                client
+                    .invoice_create(
+                        if descriptor {
+                            InvoiceType::Descriptor
+                        } else if psbt {
+                            InvoiceType::Psbt
+                        } else {
+                            InvoiceType::AddressUtxo
+                        },
+                        wallet_id,
+                        asset_id,
+                        amount,
+                        merchant,
+                        purpose,
+                        unmark,
+                        legacy,
+                    )
+                    .map(|invoice| {
+                        eprintln!("Invoice successfully created:");
+                        println!("{}", invoice)
+                    })
+            }
             InvoiceCommand::List { .. } => unimplemented!(),
             InvoiceCommand::Info { .. } => unimplemented!(),
             InvoiceCommand::Pay { .. } => unimplemented!(),

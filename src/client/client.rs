@@ -18,7 +18,10 @@ use internet2::{
     session, CreateUnmarshaller, PlainTranscoder, Session, TypedEnum,
     Unmarshall, Unmarshaller,
 };
-use rgb::Genesis;
+use invoice::{Beneficiary, Invoice};
+use lnpbp::chain::AssetId;
+use lnpbp::client_side_validation::Conceal;
+use rgb::{AtomicValue, Genesis};
 use wallet::bip32::{PubkeyChain, UnhardenedIndex};
 use wallet::descriptor::OuterCategory;
 
@@ -27,6 +30,12 @@ use crate::model::ContractId;
 use crate::rpc::{message, Reply, Request};
 use crate::Error;
 
+#[derive(Copy, Clone, Ord, PartialOrd, Eq, PartialEq, Hash, Debug)]
+pub enum InvoiceType {
+    AddressUtxo,
+    Descriptor,
+    Psbt,
+}
 #[repr(C)]
 pub struct Client {
     config: Config,
@@ -147,6 +156,54 @@ impl Client {
             legacy,
             mark_used,
         }))
+    }
+
+    pub fn invoice_create(
+        &mut self,
+        category: InvoiceType,
+        contract_id: ContractId,
+        asset_id: Option<rgb::ContractId>,
+        amount: AtomicValue,
+        merchant: Option<String>,
+        purpose: Option<String>,
+        unmark: bool,
+        legacy: bool,
+    ) -> Result<Invoice, Error> {
+        let (beneficiary, blinding_secret) = match (category, asset_id) {
+            (InvoiceType::AddressUtxo, Some(asset_id)) => {
+                let seal =
+                    match self.request(Request::BlindUtxo(contract_id))? {
+                        Reply::BlindUtxo(seal) => seal,
+                        _ => Err(Error::UnexpectedApi)?,
+                    };
+                (Beneficiary::BlindUtxo(seal.conceal()), Some(seal.blinding))
+            }
+            (InvoiceType::AddressUtxo, None) => {
+                let address = match self.request(Request::NextAddress(
+                    message::NextAddressRequest {
+                        contract_id,
+                        index: None,
+                        legacy,
+                        mark_used: !unmark,
+                    },
+                ))? {
+                    Reply::AddressDerivation(ad) => ad.address,
+                    _ => Err(Error::UnexpectedApi)?,
+                };
+                (Beneficiary::Address(address), None)
+            }
+            _ => unimplemented!(),
+        };
+        let inv = Invoice {
+            amount: invoice::AmountExt::Normal(amount),
+            beneficiaries: vec![beneficiary],
+            asset: asset_id.map(|id| AssetId::from(id)),
+            merchant,
+            purpose,
+            ..Invoice::default()
+        };
+        self.request(Request::AddInvoice(inv.clone()))?;
+        Ok(inv)
     }
 
     pub fn asset_list(&mut self) -> Result<Reply, Error> {

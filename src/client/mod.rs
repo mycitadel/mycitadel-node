@@ -14,5 +14,5 @@
 mod client;
 mod config;
 
-pub use client::Client;
+pub use client::{Client, InvoiceType};
 pub use config::Config;

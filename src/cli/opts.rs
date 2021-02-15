@@ -289,9 +289,14 @@ pub enum AssetCommand {
 #[clap(setting = AppSettings::ColoredHelp)]
 pub enum InvoiceCommand {
     /// Create new invoice
-    #[display("create {amount} {beneficiary} ...")]
+    #[display("create {wallet_id} {amount} ...")]
     Create {
-        /// Asset in which the payment is requested; defaults to bitcoin
+        /// Wallet where the payment should go
+        #[clap()]
+        wallet_id: model::ContractId,
+
+        /// Asset in which the payment is requested; defaults to bitcoin on the
+        /// currently used blockchain (mainnet, liqud, testnet etc)
         #[clap(short, long = "asset")]
         asset_id: Option<rgb::ContractId>,
 
@@ -300,31 +305,32 @@ pub enum InvoiceCommand {
         #[clap()]
         amount: rgb::AtomicValue,
 
-        /// Wallet id to which the payment should be received
-        #[clap()]
-        beneficiary: model::ContractId,
-
         /// Optional details about the merchant providing the invoice
         #[clap(short, long)]
         merchant: Option<String>,
 
         /// Information about the invoice
         #[clap(short, long)]
-        details: Option<String>,
+        purpose: Option<String>,
 
         /// Do not mark the address used in the invoice as used
         #[clap(short, long)]
         unmark: bool,
 
+        /// Use SegWit legacy address format (applicable only to a SegWit
+        /// wallets)
+        #[clap(long, takes_value = false)]
+        legacy: bool,
+
         /// Create descriptor-based invoice (not compatible with instant wallet
         /// accounts)
-        #[clap(long = "descriptor")]
-        descriptor_based: bool,
+        #[clap(long, conflicts_with = "psbt")]
+        descriptor: bool,
 
         /// Create a PSBT-based invoice (not compatible with instant wallet
         /// accounts)
-        #[clap(long = "psbt")]
-        psbt_based: bool,
+        #[clap(long, conflicts_with = "descriptor")]
+        psbt: bool,
     },
 
     /// List all known invoices
