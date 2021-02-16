@@ -21,7 +21,7 @@ use internet2::{
     Unmarshall, Unmarshaller,
 };
 use invoice::{AssetClass, Beneficiary, Invoice};
-use lnpbp::chain::AssetId;
+use lnpbp::chain::{AssetId, Chain};
 use lnpbp::client_side_validation::Conceal;
 use microservices::rpc::Failure;
 use rgb::{AtomicValue, Genesis};
@@ -174,6 +174,7 @@ impl Client {
         unmark: bool,
         legacy: bool,
     ) -> Result<Invoice, Error> {
+        let mut asset_id = asset_id.map(AssetId::from);
         let (beneficiary, reveal_data) = match (category, asset_id) {
             (InvoiceType::AddressUtxo, Some(asset_id)) => {
                 let seal =
@@ -195,15 +196,14 @@ impl Client {
                     Reply::AddressDerivation(ad) => ad.address,
                     _ => Err(Error::UnexpectedApi)?,
                 };
+                if address.network != bitcoin::Network::Bitcoin {
+                    asset_id = Some(Chain::from(address.network).native_asset())
+                }
                 (Beneficiary::Address(address), None)
             }
             _ => unimplemented!(),
         };
-        let inv = Invoice::new(
-            beneficiary,
-            Some(amount),
-            asset_id.map(AssetId::from),
-        );
+        let inv = Invoice::new(beneficiary, Some(amount), asset_id);
         self.request(Request::AddInvoice(message::AddInvoiceRequest {
             invoice: inv.clone(),
             source_info: bmap! { contract_id => reveal_data },
@@ -229,10 +229,7 @@ impl Client {
             "Doing transfer for invoice {} using wallet {} with fee {}",
             invoice, contract_id, fee
         );
-        trace!(
-            "Parsed invoice: {}",
-            serde_yaml::to_string(&invoice).expect("YAML formatting")
-        );
+        trace!("Parsed invoice: {:#?}", invoice);
         let address = match invoice.beneficiary() {
             Beneficiary::Address(address) => address.clone(),
             /* Beneficiary::Descriptor(descriptor) =>
