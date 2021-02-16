@@ -397,15 +397,15 @@ pub enum InvoiceCommand {
         #[clap()]
         wallet_id: model::ContractId,
 
-        /// Force payment on the specified amount. Required for invoices that
-        /// does not provide amount field. For other types of invoices, if
-        /// provided, overrides the amount found in the invoice.
-        #[clap()]
-        amount: Option<u64>,
-
         /// Fee to pay
         #[clap()]
         fee: bitcoin::Amount,
+
+        /// Force payment with the specified amount. Required for invoices that
+        /// does not provide amount field. For other types of invoices, if
+        /// provided, overrides the amount found in the invoice.
+        #[clap(short, long)]
+        amount: Option<u64>,
 
         /// File name to output PSBT. If no name is given PSBT data are output
         /// to STDOUT

@@ -48,6 +48,10 @@ Register-ArgumentCompleter -Native -CommandName 'mycitadel' -ScriptBlock {
             break
         }
         'mycitadel;wallet' {
+            [CompletionResult]::new('-n', 'n', [CompletionResultType]::ParameterName, 'Blockchain to use')
+            [CompletionResult]::new('--chain', 'chain', [CompletionResultType]::ParameterName, 'Blockchain to use')
+            [CompletionResult]::new('-d', 'd', [CompletionResultType]::ParameterName, 'Data directory path')
+            [CompletionResult]::new('--data-dir', 'data-dir', [CompletionResultType]::ParameterName, 'Data directory path')
             [CompletionResult]::new('-v', 'v', [CompletionResultType]::ParameterName, 'Set verbosity level')
             [CompletionResult]::new('--verbose', 'verbose', [CompletionResultType]::ParameterName, 'Set verbosity level')
             [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Prints help information')
@@ -64,6 +68,10 @@ Register-ArgumentCompleter -Native -CommandName 'mycitadel' -ScriptBlock {
         'mycitadel;wallet;list' {
             [CompletionResult]::new('-f', 'f', [CompletionResultType]::ParameterName, 'How the wallet list should be formatted')
             [CompletionResult]::new('--format', 'format', [CompletionResultType]::ParameterName, 'How the wallet list should be formatted')
+            [CompletionResult]::new('-n', 'n', [CompletionResultType]::ParameterName, 'Blockchain to use')
+            [CompletionResult]::new('--chain', 'chain', [CompletionResultType]::ParameterName, 'Blockchain to use')
+            [CompletionResult]::new('-d', 'd', [CompletionResultType]::ParameterName, 'Data directory path')
+            [CompletionResult]::new('--data-dir', 'data-dir', [CompletionResultType]::ParameterName, 'Data directory path')
             [CompletionResult]::new('-v', 'v', [CompletionResultType]::ParameterName, 'Set verbosity level')
             [CompletionResult]::new('--verbose', 'verbose', [CompletionResultType]::ParameterName, 'Set verbosity level')
             [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Prints help information')
@@ -73,6 +81,10 @@ Register-ArgumentCompleter -Native -CommandName 'mycitadel' -ScriptBlock {
             break
         }
         'mycitadel;wallet;create' {
+            [CompletionResult]::new('-n', 'n', [CompletionResultType]::ParameterName, 'Blockchain to use')
+            [CompletionResult]::new('--chain', 'chain', [CompletionResultType]::ParameterName, 'Blockchain to use')
+            [CompletionResult]::new('-d', 'd', [CompletionResultType]::ParameterName, 'Data directory path')
+            [CompletionResult]::new('--data-dir', 'data-dir', [CompletionResultType]::ParameterName, 'Data directory path')
             [CompletionResult]::new('-v', 'v', [CompletionResultType]::ParameterName, 'Set verbosity level')
             [CompletionResult]::new('--verbose', 'verbose', [CompletionResultType]::ParameterName, 'Set verbosity level')
             [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Prints help information')
@@ -83,6 +95,10 @@ Register-ArgumentCompleter -Native -CommandName 'mycitadel' -ScriptBlock {
             break
         }
         'mycitadel;wallet;create;single-sig' {
+            [CompletionResult]::new('-n', 'n', [CompletionResultType]::ParameterName, 'Blockchain to use')
+            [CompletionResult]::new('--chain', 'chain', [CompletionResultType]::ParameterName, 'Blockchain to use')
+            [CompletionResult]::new('-d', 'd', [CompletionResultType]::ParameterName, 'Data directory path')
+            [CompletionResult]::new('--data-dir', 'data-dir', [CompletionResultType]::ParameterName, 'Data directory path')
             [CompletionResult]::new('--bare', 'bare', [CompletionResultType]::ParameterName, 'Creates old "bare" wallets, where public key is kept in the explicit form within bitcoin transaction P2PK output')
             [CompletionResult]::new('--legacy', 'legacy', [CompletionResultType]::ParameterName, 'Whether create a pre-SegWit wallet (P2PKH) rather than SegWit (P2WPKH). If you''d like to use legacy SegWit-style addresses (P2WPKH-in-P2SH), do not use this flag, create normal SegWit wallet instead and specify `--legacy` option when requesting new address')
             [CompletionResult]::new('--segwit', 'segwit', [CompletionResultType]::ParameterName, 'Recommended SegWit wallet with P2WKH and P2WPKH-in-P2SH outputs')
@@ -96,6 +112,10 @@ Register-ArgumentCompleter -Native -CommandName 'mycitadel' -ScriptBlock {
             break
         }
         'mycitadel;wallet;rename' {
+            [CompletionResult]::new('-n', 'n', [CompletionResultType]::ParameterName, 'Blockchain to use')
+            [CompletionResult]::new('--chain', 'chain', [CompletionResultType]::ParameterName, 'Blockchain to use')
+            [CompletionResult]::new('-d', 'd', [CompletionResultType]::ParameterName, 'Data directory path')
+            [CompletionResult]::new('--data-dir', 'data-dir', [CompletionResultType]::ParameterName, 'Data directory path')
             [CompletionResult]::new('-v', 'v', [CompletionResultType]::ParameterName, 'Set verbosity level')
             [CompletionResult]::new('--verbose', 'verbose', [CompletionResultType]::ParameterName, 'Set verbosity level')
             [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Prints help information')
@@ -105,6 +125,10 @@ Register-ArgumentCompleter -Native -CommandName 'mycitadel' -ScriptBlock {
             break
         }
         'mycitadel;wallet;delete' {
+            [CompletionResult]::new('-n', 'n', [CompletionResultType]::ParameterName, 'Blockchain to use')
+            [CompletionResult]::new('--chain', 'chain', [CompletionResultType]::ParameterName, 'Blockchain to use')
+            [CompletionResult]::new('-d', 'd', [CompletionResultType]::ParameterName, 'Data directory path')
+            [CompletionResult]::new('--data-dir', 'data-dir', [CompletionResultType]::ParameterName, 'Data directory path')
             [CompletionResult]::new('-v', 'v', [CompletionResultType]::ParameterName, 'Set verbosity level')
             [CompletionResult]::new('--verbose', 'verbose', [CompletionResultType]::ParameterName, 'Set verbosity level')
             [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Prints help information')
@@ -117,6 +141,10 @@ Register-ArgumentCompleter -Native -CommandName 'mycitadel' -ScriptBlock {
             [CompletionResult]::new('--lookup-depth', 'lookup-depth', [CompletionResultType]::ParameterName, 'How many addresses should be scanned at least after the final address with no transactions is reached. Defaults to 20')
             [CompletionResult]::new('-f', 'f', [CompletionResultType]::ParameterName, 'How the command output should be formatted')
             [CompletionResult]::new('--format', 'format', [CompletionResultType]::ParameterName, 'How the command output should be formatted')
+            [CompletionResult]::new('-n', 'n', [CompletionResultType]::ParameterName, 'Blockchain to use')
+            [CompletionResult]::new('--chain', 'chain', [CompletionResultType]::ParameterName, 'Blockchain to use')
+            [CompletionResult]::new('-d', 'd', [CompletionResultType]::ParameterName, 'Data directory path')
+            [CompletionResult]::new('--data-dir', 'data-dir', [CompletionResultType]::ParameterName, 'Data directory path')
             [CompletionResult]::new('-r', 'r', [CompletionResultType]::ParameterName, 'Whether to re-scan addresses space with Electrum server')
             [CompletionResult]::new('--rescan', 'rescan', [CompletionResultType]::ParameterName, 'Whether to re-scan addresses space with Electrum server')
             [CompletionResult]::new('-v', 'v', [CompletionResultType]::ParameterName, 'Set verbosity level')
@@ -128,6 +156,10 @@ Register-ArgumentCompleter -Native -CommandName 'mycitadel' -ScriptBlock {
             break
         }
         'mycitadel;address' {
+            [CompletionResult]::new('-n', 'n', [CompletionResultType]::ParameterName, 'Blockchain to use')
+            [CompletionResult]::new('--chain', 'chain', [CompletionResultType]::ParameterName, 'Blockchain to use')
+            [CompletionResult]::new('-d', 'd', [CompletionResultType]::ParameterName, 'Data directory path')
+            [CompletionResult]::new('--data-dir', 'data-dir', [CompletionResultType]::ParameterName, 'Data directory path')
             [CompletionResult]::new('-v', 'v', [CompletionResultType]::ParameterName, 'Set verbosity level')
             [CompletionResult]::new('--verbose', 'verbose', [CompletionResultType]::ParameterName, 'Set verbosity level')
             [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Prints help information')
@@ -143,6 +175,10 @@ Register-ArgumentCompleter -Native -CommandName 'mycitadel' -ScriptBlock {
             [CompletionResult]::new('--lookup-depth', 'lookup-depth', [CompletionResultType]::ParameterName, 'How many addresses should be scanned at least after the final address with no transactions is reached. Defaults to 20')
             [CompletionResult]::new('-f', 'f', [CompletionResultType]::ParameterName, 'How the command output should be formatted')
             [CompletionResult]::new('--format', 'format', [CompletionResultType]::ParameterName, 'How the command output should be formatted')
+            [CompletionResult]::new('-n', 'n', [CompletionResultType]::ParameterName, 'Blockchain to use')
+            [CompletionResult]::new('--chain', 'chain', [CompletionResultType]::ParameterName, 'Blockchain to use')
+            [CompletionResult]::new('-d', 'd', [CompletionResultType]::ParameterName, 'Data directory path')
+            [CompletionResult]::new('--data-dir', 'data-dir', [CompletionResultType]::ParameterName, 'Data directory path')
             [CompletionResult]::new('-r', 'r', [CompletionResultType]::ParameterName, 'Whether to re-scan addresses space with Electrum server')
             [CompletionResult]::new('--rescan', 'rescan', [CompletionResultType]::ParameterName, 'Whether to re-scan addresses space with Electrum server')
             [CompletionResult]::new('-v', 'v', [CompletionResultType]::ParameterName, 'Set verbosity level')
@@ -158,6 +194,10 @@ Register-ArgumentCompleter -Native -CommandName 'mycitadel' -ScriptBlock {
             [CompletionResult]::new('--index', 'index', [CompletionResultType]::ParameterName, 'Create address at custom index number')
             [CompletionResult]::new('-f', 'f', [CompletionResultType]::ParameterName, 'How the asset list output should be formatted')
             [CompletionResult]::new('--format', 'format', [CompletionResultType]::ParameterName, 'How the asset list output should be formatted')
+            [CompletionResult]::new('-n', 'n', [CompletionResultType]::ParameterName, 'Blockchain to use')
+            [CompletionResult]::new('--chain', 'chain', [CompletionResultType]::ParameterName, 'Blockchain to use')
+            [CompletionResult]::new('-d', 'd', [CompletionResultType]::ParameterName, 'Data directory path')
+            [CompletionResult]::new('--data-dir', 'data-dir', [CompletionResultType]::ParameterName, 'Data directory path')
             [CompletionResult]::new('-u', 'u', [CompletionResultType]::ParameterName, 'Whether to mark address as used')
             [CompletionResult]::new('--unmark', 'unmark', [CompletionResultType]::ParameterName, 'Whether to mark address as used')
             [CompletionResult]::new('--legacy', 'legacy', [CompletionResultType]::ParameterName, 'Use SegWit legacy address format (applicable only to a SegWit wallets)')
@@ -170,6 +210,10 @@ Register-ArgumentCompleter -Native -CommandName 'mycitadel' -ScriptBlock {
             break
         }
         'mycitadel;address;mark-used' {
+            [CompletionResult]::new('-n', 'n', [CompletionResultType]::ParameterName, 'Blockchain to use')
+            [CompletionResult]::new('--chain', 'chain', [CompletionResultType]::ParameterName, 'Blockchain to use')
+            [CompletionResult]::new('-d', 'd', [CompletionResultType]::ParameterName, 'Data directory path')
+            [CompletionResult]::new('--data-dir', 'data-dir', [CompletionResultType]::ParameterName, 'Data directory path')
             [CompletionResult]::new('--legacy', 'legacy', [CompletionResultType]::ParameterName, 'Use SegWit legacy address format (applicable only to a SegWit wallets)')
             [CompletionResult]::new('-u', 'u', [CompletionResultType]::ParameterName, 'Remove use mark (inverses the command)')
             [CompletionResult]::new('--unmark', 'unmark', [CompletionResultType]::ParameterName, 'Remove use mark (inverses the command)')
@@ -182,6 +226,10 @@ Register-ArgumentCompleter -Native -CommandName 'mycitadel' -ScriptBlock {
             break
         }
         'mycitadel;asset' {
+            [CompletionResult]::new('-n', 'n', [CompletionResultType]::ParameterName, 'Blockchain to use')
+            [CompletionResult]::new('--chain', 'chain', [CompletionResultType]::ParameterName, 'Blockchain to use')
+            [CompletionResult]::new('-d', 'd', [CompletionResultType]::ParameterName, 'Data directory path')
+            [CompletionResult]::new('--data-dir', 'data-dir', [CompletionResultType]::ParameterName, 'Data directory path')
             [CompletionResult]::new('-v', 'v', [CompletionResultType]::ParameterName, 'Set verbosity level')
             [CompletionResult]::new('--verbose', 'verbose', [CompletionResultType]::ParameterName, 'Set verbosity level')
             [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Prints help information')
@@ -195,6 +243,10 @@ Register-ArgumentCompleter -Native -CommandName 'mycitadel' -ScriptBlock {
         'mycitadel;asset;list' {
             [CompletionResult]::new('-f', 'f', [CompletionResultType]::ParameterName, 'How the asset list output should be formatted')
             [CompletionResult]::new('--format', 'format', [CompletionResultType]::ParameterName, 'How the asset list output should be formatted')
+            [CompletionResult]::new('-n', 'n', [CompletionResultType]::ParameterName, 'Blockchain to use')
+            [CompletionResult]::new('--chain', 'chain', [CompletionResultType]::ParameterName, 'Blockchain to use')
+            [CompletionResult]::new('-d', 'd', [CompletionResultType]::ParameterName, 'Data directory path')
+            [CompletionResult]::new('--data-dir', 'data-dir', [CompletionResultType]::ParameterName, 'Data directory path')
             [CompletionResult]::new('-v', 'v', [CompletionResultType]::ParameterName, 'Set verbosity level')
             [CompletionResult]::new('--verbose', 'verbose', [CompletionResultType]::ParameterName, 'Set verbosity level')
             [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Prints help information')
@@ -204,6 +256,10 @@ Register-ArgumentCompleter -Native -CommandName 'mycitadel' -ScriptBlock {
             break
         }
         'mycitadel;asset;import' {
+            [CompletionResult]::new('-n', 'n', [CompletionResultType]::ParameterName, 'Blockchain to use')
+            [CompletionResult]::new('--chain', 'chain', [CompletionResultType]::ParameterName, 'Blockchain to use')
+            [CompletionResult]::new('-d', 'd', [CompletionResultType]::ParameterName, 'Data directory path')
+            [CompletionResult]::new('--data-dir', 'data-dir', [CompletionResultType]::ParameterName, 'Data directory path')
             [CompletionResult]::new('-v', 'v', [CompletionResultType]::ParameterName, 'Set verbosity level')
             [CompletionResult]::new('--verbose', 'verbose', [CompletionResultType]::ParameterName, 'Set verbosity level')
             [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Prints help information')
@@ -213,6 +269,10 @@ Register-ArgumentCompleter -Native -CommandName 'mycitadel' -ScriptBlock {
             break
         }
         'mycitadel;invoice' {
+            [CompletionResult]::new('-n', 'n', [CompletionResultType]::ParameterName, 'Blockchain to use')
+            [CompletionResult]::new('--chain', 'chain', [CompletionResultType]::ParameterName, 'Blockchain to use')
+            [CompletionResult]::new('-d', 'd', [CompletionResultType]::ParameterName, 'Data directory path')
+            [CompletionResult]::new('--data-dir', 'data-dir', [CompletionResultType]::ParameterName, 'Data directory path')
             [CompletionResult]::new('-v', 'v', [CompletionResultType]::ParameterName, 'Set verbosity level')
             [CompletionResult]::new('--verbose', 'verbose', [CompletionResultType]::ParameterName, 'Set verbosity level')
             [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Prints help information')
@@ -233,6 +293,10 @@ Register-ArgumentCompleter -Native -CommandName 'mycitadel' -ScriptBlock {
             [CompletionResult]::new('--merchant', 'merchant', [CompletionResultType]::ParameterName, 'Optional details about the merchant providing the invoice')
             [CompletionResult]::new('-p', 'p', [CompletionResultType]::ParameterName, 'Information about the invoice')
             [CompletionResult]::new('--purpose', 'purpose', [CompletionResultType]::ParameterName, 'Information about the invoice')
+            [CompletionResult]::new('-n', 'n', [CompletionResultType]::ParameterName, 'Blockchain to use')
+            [CompletionResult]::new('--chain', 'chain', [CompletionResultType]::ParameterName, 'Blockchain to use')
+            [CompletionResult]::new('-d', 'd', [CompletionResultType]::ParameterName, 'Data directory path')
+            [CompletionResult]::new('--data-dir', 'data-dir', [CompletionResultType]::ParameterName, 'Data directory path')
             [CompletionResult]::new('-u', 'u', [CompletionResultType]::ParameterName, 'Do not mark the address used in the invoice as used')
             [CompletionResult]::new('--unmark', 'unmark', [CompletionResultType]::ParameterName, 'Do not mark the address used in the invoice as used')
             [CompletionResult]::new('--legacy', 'legacy', [CompletionResultType]::ParameterName, 'Use SegWit legacy address format (applicable only to a SegWit wallets)')
@@ -249,6 +313,10 @@ Register-ArgumentCompleter -Native -CommandName 'mycitadel' -ScriptBlock {
         'mycitadel;invoice;list' {
             [CompletionResult]::new('-f', 'f', [CompletionResultType]::ParameterName, 'How invoice list should be formatted')
             [CompletionResult]::new('--format', 'format', [CompletionResultType]::ParameterName, 'How invoice list should be formatted')
+            [CompletionResult]::new('-n', 'n', [CompletionResultType]::ParameterName, 'Blockchain to use')
+            [CompletionResult]::new('--chain', 'chain', [CompletionResultType]::ParameterName, 'Blockchain to use')
+            [CompletionResult]::new('-d', 'd', [CompletionResultType]::ParameterName, 'Data directory path')
+            [CompletionResult]::new('--data-dir', 'data-dir', [CompletionResultType]::ParameterName, 'Data directory path')
             [CompletionResult]::new('-v', 'v', [CompletionResultType]::ParameterName, 'Set verbosity level')
             [CompletionResult]::new('--verbose', 'verbose', [CompletionResultType]::ParameterName, 'Set verbosity level')
             [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Prints help information')
@@ -260,6 +328,10 @@ Register-ArgumentCompleter -Native -CommandName 'mycitadel' -ScriptBlock {
         'mycitadel;invoice;info' {
             [CompletionResult]::new('-f', 'f', [CompletionResultType]::ParameterName, 'Format to use for the invoice representation')
             [CompletionResult]::new('--format', 'format', [CompletionResultType]::ParameterName, 'Format to use for the invoice representation')
+            [CompletionResult]::new('-n', 'n', [CompletionResultType]::ParameterName, 'Blockchain to use')
+            [CompletionResult]::new('--chain', 'chain', [CompletionResultType]::ParameterName, 'Blockchain to use')
+            [CompletionResult]::new('-d', 'd', [CompletionResultType]::ParameterName, 'Data directory path')
+            [CompletionResult]::new('--data-dir', 'data-dir', [CompletionResultType]::ParameterName, 'Data directory path')
             [CompletionResult]::new('-v', 'v', [CompletionResultType]::ParameterName, 'Set verbosity level')
             [CompletionResult]::new('--verbose', 'verbose', [CompletionResultType]::ParameterName, 'Set verbosity level')
             [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Prints help information')
@@ -269,10 +341,16 @@ Register-ArgumentCompleter -Native -CommandName 'mycitadel' -ScriptBlock {
             break
         }
         'mycitadel;invoice;pay' {
+            [CompletionResult]::new('-a', 'a', [CompletionResultType]::ParameterName, 'Force payment with the specified amount. Required for invoices that does not provide amount field. For other types of invoices, if provided, overrides the amount found in the invoice')
+            [CompletionResult]::new('--amount', 'amount', [CompletionResultType]::ParameterName, 'Force payment with the specified amount. Required for invoices that does not provide amount field. For other types of invoices, if provided, overrides the amount found in the invoice')
             [CompletionResult]::new('-o', 'o', [CompletionResultType]::ParameterName, 'File name to output PSBT. If no name is given PSBT data are output to STDOUT')
             [CompletionResult]::new('--output', 'output', [CompletionResultType]::ParameterName, 'File name to output PSBT. If no name is given PSBT data are output to STDOUT')
             [CompletionResult]::new('-f', 'f', [CompletionResultType]::ParameterName, 'PSBT format to use for the output; if no file is specified defaults to Base64 output; otherwise defaults to binary')
             [CompletionResult]::new('--format', 'format', [CompletionResultType]::ParameterName, 'PSBT format to use for the output; if no file is specified defaults to Base64 output; otherwise defaults to binary')
+            [CompletionResult]::new('-n', 'n', [CompletionResultType]::ParameterName, 'Blockchain to use')
+            [CompletionResult]::new('--chain', 'chain', [CompletionResultType]::ParameterName, 'Blockchain to use')
+            [CompletionResult]::new('-d', 'd', [CompletionResultType]::ParameterName, 'Data directory path')
+            [CompletionResult]::new('--data-dir', 'data-dir', [CompletionResultType]::ParameterName, 'Data directory path')
             [CompletionResult]::new('-v', 'v', [CompletionResultType]::ParameterName, 'Set verbosity level')
             [CompletionResult]::new('--verbose', 'verbose', [CompletionResultType]::ParameterName, 'Set verbosity level')
             [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Prints help information')
@@ -282,6 +360,10 @@ Register-ArgumentCompleter -Native -CommandName 'mycitadel' -ScriptBlock {
             break
         }
         'mycitadel;invoice;accept' {
+            [CompletionResult]::new('-n', 'n', [CompletionResultType]::ParameterName, 'Blockchain to use')
+            [CompletionResult]::new('--chain', 'chain', [CompletionResultType]::ParameterName, 'Blockchain to use')
+            [CompletionResult]::new('-d', 'd', [CompletionResultType]::ParameterName, 'Data directory path')
+            [CompletionResult]::new('--data-dir', 'data-dir', [CompletionResultType]::ParameterName, 'Data directory path')
             [CompletionResult]::new('-f', 'f', [CompletionResultType]::ParameterName, 'Whether parameter given by consignment is a file name or a Bech32 string')
             [CompletionResult]::new('--file', 'file', [CompletionResultType]::ParameterName, 'Whether parameter given by consignment is a file name or a Bech32 string')
             [CompletionResult]::new('-v', 'v', [CompletionResultType]::ParameterName, 'Set verbosity level')

@@ -282,7 +282,10 @@ impl Exec for InvoiceCommand {
                     )
                     .map(|invoice| {
                         eprintln!("Invoice successfully created:");
-                        println!("{}", invoice)
+                        println!(
+                            "{}",
+                            invoice.to_string().as_str().bright_green()
+                        )
                     })
             }
             InvoiceCommand::List { wallet_id, format } => client

@@ -598,7 +598,7 @@ dependencies = [
 [[package]]
 name = "descriptor-wallet"
 version = "0.4.0-beta"
-source = "git+https://github.com/LNP-BP/descriptor-wallet#b7aade2da373255aa203add00a0c7ff3ecbebe78"
+source = "git+https://github.com/LNP-BP/descriptor-wallet#ac043efd947e0fb754270fe00986d0f3e81d64f8"
 dependencies = [
  "amplify",
  "amplify_derive",

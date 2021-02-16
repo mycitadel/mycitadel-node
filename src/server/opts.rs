@@ -60,7 +60,8 @@ pub struct Opts {
         short = 'n',
         long,
         alias = "network",
-        default_value = "signet",
+        global = true,
+        default_value = "testnet",
         env = "MYCITADEL_NETWORK"
     )]
     pub chain: Chain,
@@ -76,6 +77,7 @@ pub struct Opts {
     #[clap(
         short,
         long,
+        global = true,
         default_value = MYCITADEL_DATA_DIR,
         env = "MYCITADEL_DATA_DIR",
         value_hint = ValueHint::DirPath

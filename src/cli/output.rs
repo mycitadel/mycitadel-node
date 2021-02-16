@@ -263,7 +263,7 @@ impl OutputFormat for Contract {
 
     fn output_fields(&self) -> Vec<String> {
         vec![
-            self.id().to_string(),
+            self.id().to_string().as_str().bright_white().to_string(),
             self.policy().to_string(),
             self.name().to_owned(),
             self.created_at().to_string(),
@@ -386,18 +386,22 @@ impl OutputFormat for rgb20::Asset {
         );
         if *self.id() == default!() {
             return vec![
-                s!("BTC"),
+                s!("BTC").as_str().bright_yellow().to_string(),
                 s!("Bitcoin"),
-                bitcoin_id.to_string(),
+                bitcoin_id.to_string().as_str().bright_white().to_string(),
                 s!("2009-01-03 19:15:00"),
                 s!(">~18624337 BTC"),
                 s!("21000000 BTC"),
             ];
         }
         vec![
-            self.ticker().to_owned(),
+            self.ticker()
+                .to_owned()
+                .as_str()
+                .bright_yellow()
+                .to_string(),
             self.name().to_owned(),
-            self.id().to_string(),
+            self.id().to_string().as_str().bright_white().to_string(),
             self.fractional_bits().to_string(),
             self.date().to_string(),
             self.accounting_supply(rgb20::SupplyMeasure::KnownCirculating)
@@ -419,6 +423,7 @@ impl OutputCompact for Invoice {
 impl OutputFormat for Invoice {
     fn output_headers() -> Vec<String> {
         vec![
+            s!("Invoice"),
             s!("No beneficiaries"),
             s!("First beneficiary"),
             s!("Amount"),
@@ -436,6 +441,7 @@ impl OutputFormat for Invoice {
 
     fn output_fields(&self) -> Vec<String> {
         vec![
+            self.to_string().as_str().bright_white().to_string(),
             self.beneficiaries().count().to_string(),
             self.output_compact(),
             self.amount().to_string(),

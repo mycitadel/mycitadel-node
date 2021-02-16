@@ -46,6 +46,10 @@ _mycitadel() {
         case $line[1] in
             (wallet)
 _arguments "${_arguments_options[@]}" \
+'-n+[Blockchain to use]' \
+'--chain=[Blockchain to use]' \
+'-d+[Data directory path]: :_files -/' \
+'--data-dir=[Data directory path]: :_files -/' \
 '*-v[Set verbosity level]' \
 '*--verbose[Set verbosity level]' \
 '-h[Prints help information]' \
@@ -65,6 +69,10 @@ case $state in
 _arguments "${_arguments_options[@]}" \
 '-f+[How the wallet list should be formatted]' \
 '--format=[How the wallet list should be formatted]' \
+'-n+[Blockchain to use]' \
+'--chain=[Blockchain to use]' \
+'-d+[Data directory path]: :_files -/' \
+'--data-dir=[Data directory path]: :_files -/' \
 '*-v[Set verbosity level]' \
 '*--verbose[Set verbosity level]' \
 '-h[Prints help information]' \
@@ -75,6 +83,10 @@ _arguments "${_arguments_options[@]}" \
 ;;
 (create)
 _arguments "${_arguments_options[@]}" \
+'-n+[Blockchain to use]' \
+'--chain=[Blockchain to use]' \
+'-d+[Data directory path]: :_files -/' \
+'--data-dir=[Data directory path]: :_files -/' \
 '*-v[Set verbosity level]' \
 '*--verbose[Set verbosity level]' \
 '-h[Prints help information]' \
@@ -92,6 +104,10 @@ case $state in
         case $line[1] in
             (single-sig)
 _arguments "${_arguments_options[@]}" \
+'-n+[Blockchain to use]' \
+'--chain=[Blockchain to use]' \
+'-d+[Data directory path]: :_files -/' \
+'--data-dir=[Data directory path]: :_files -/' \
 '(--legacy --segwit --taproot)--bare[Creates old "bare" wallets, where public key is kept in the explicit form within bitcoin transaction P2PK output]' \
 '(--bare --segwit --taproot)--legacy[Whether create a pre-SegWit wallet (P2PKH) rather than SegWit (P2WPKH). If you'\''d like to use legacy SegWit-style addresses (P2WPKH-in-P2SH), do not use this flag, create normal SegWit wallet instead and specify `--legacy` option when requesting new address]' \
 '(--legacy --bare --taproot)--segwit[Recommended SegWit wallet with P2WKH and P2WPKH-in-P2SH outputs]' \
@@ -112,6 +128,10 @@ esac
 ;;
 (rename)
 _arguments "${_arguments_options[@]}" \
+'-n+[Blockchain to use]' \
+'--chain=[Blockchain to use]' \
+'-d+[Data directory path]: :_files -/' \
+'--data-dir=[Data directory path]: :_files -/' \
 '*-v[Set verbosity level]' \
 '*--verbose[Set verbosity level]' \
 '-h[Prints help information]' \
@@ -124,6 +144,10 @@ _arguments "${_arguments_options[@]}" \
 ;;
 (delete)
 _arguments "${_arguments_options[@]}" \
+'-n+[Blockchain to use]' \
+'--chain=[Blockchain to use]' \
+'-d+[Data directory path]: :_files -/' \
+'--data-dir=[Data directory path]: :_files -/' \
 '*-v[Set verbosity level]' \
 '*--verbose[Set verbosity level]' \
 '-h[Prints help information]' \
@@ -138,6 +162,10 @@ _arguments "${_arguments_options[@]}" \
 '--lookup-depth=[How many addresses should be scanned at least after the final address with no transactions is reached. Defaults to 20]' \
 '-f+[How the command output should be formatted]' \
 '--format=[How the command output should be formatted]' \
+'-n+[Blockchain to use]' \
+'--chain=[Blockchain to use]' \
+'-d+[Data directory path]: :_files -/' \
+'--data-dir=[Data directory path]: :_files -/' \
 '-r[Whether to re-scan addresses space with Electrum server]' \
 '--rescan[Whether to re-scan addresses space with Electrum server]' \
 '*-v[Set verbosity level]' \
@@ -155,6 +183,10 @@ esac
 ;;
 (address)
 _arguments "${_arguments_options[@]}" \
+'-n+[Blockchain to use]' \
+'--chain=[Blockchain to use]' \
+'-d+[Data directory path]: :_files -/' \
+'--data-dir=[Data directory path]: :_files -/' \
 '*-v[Set verbosity level]' \
 '*--verbose[Set verbosity level]' \
 '-h[Prints help information]' \
@@ -175,6 +207,10 @@ _arguments "${_arguments_options[@]}" \
 '--lookup-depth=[How many addresses should be scanned at least after the final address with no transactions is reached. Defaults to 20]' \
 '-f+[How the command output should be formatted]' \
 '--format=[How the command output should be formatted]' \
+'-n+[Blockchain to use]' \
+'--chain=[Blockchain to use]' \
+'-d+[Data directory path]: :_files -/' \
+'--data-dir=[Data directory path]: :_files -/' \
 '-r[Whether to re-scan addresses space with Electrum server]' \
 '--rescan[Whether to re-scan addresses space with Electrum server]' \
 '*-v[Set verbosity level]' \
@@ -192,6 +228,10 @@ _arguments "${_arguments_options[@]}" \
 '--index=[Create address at custom index number]' \
 '-f+[How the asset list output should be formatted]' \
 '--format=[How the asset list output should be formatted]' \
+'-n+[Blockchain to use]' \
+'--chain=[Blockchain to use]' \
+'-d+[Data directory path]: :_files -/' \
+'--data-dir=[Data directory path]: :_files -/' \
 '-u[Whether to mark address as used]' \
 '--unmark[Whether to mark address as used]' \
 '--legacy[Use SegWit legacy address format (applicable only to a SegWit wallets)]' \
@@ -206,6 +246,10 @@ _arguments "${_arguments_options[@]}" \
 ;;
 (mark-used)
 _arguments "${_arguments_options[@]}" \
+'-n+[Blockchain to use]' \
+'--chain=[Blockchain to use]' \
+'-d+[Data directory path]: :_files -/' \
+'--data-dir=[Data directory path]: :_files -/' \
 '--legacy[Use SegWit legacy address format (applicable only to a SegWit wallets)]' \
 '-u[Remove use mark (inverses the command)]' \
 '--unmark[Remove use mark (inverses the command)]' \
@@ -225,6 +269,10 @@ esac
 ;;
 (asset)
 _arguments "${_arguments_options[@]}" \
+'-n+[Blockchain to use]' \
+'--chain=[Blockchain to use]' \
+'-d+[Data directory path]: :_files -/' \
+'--data-dir=[Data directory path]: :_files -/' \
 '*-v[Set verbosity level]' \
 '*--verbose[Set verbosity level]' \
 '-h[Prints help information]' \
@@ -244,6 +292,10 @@ case $state in
 _arguments "${_arguments_options[@]}" \
 '-f+[How the asset list output should be formatted]' \
 '--format=[How the asset list output should be formatted]' \
+'-n+[Blockchain to use]' \
+'--chain=[Blockchain to use]' \
+'-d+[Data directory path]: :_files -/' \
+'--data-dir=[Data directory path]: :_files -/' \
 '*-v[Set verbosity level]' \
 '*--verbose[Set verbosity level]' \
 '-h[Prints help information]' \
@@ -254,6 +306,10 @@ _arguments "${_arguments_options[@]}" \
 ;;
 (import)
 _arguments "${_arguments_options[@]}" \
+'-n+[Blockchain to use]' \
+'--chain=[Blockchain to use]' \
+'-d+[Data directory path]: :_files -/' \
+'--data-dir=[Data directory path]: :_files -/' \
 '*-v[Set verbosity level]' \
 '*--verbose[Set verbosity level]' \
 '-h[Prints help information]' \
@@ -269,6 +325,10 @@ esac
 ;;
 (invoice)
 _arguments "${_arguments_options[@]}" \
+'-n+[Blockchain to use]' \
+'--chain=[Blockchain to use]' \
+'-d+[Data directory path]: :_files -/' \
+'--data-dir=[Data directory path]: :_files -/' \
 '*-v[Set verbosity level]' \
 '*--verbose[Set verbosity level]' \
 '-h[Prints help information]' \
@@ -292,6 +352,10 @@ _arguments "${_arguments_options[@]}" \
 '--merchant=[Optional details about the merchant providing the invoice]' \
 '-p+[Information about the invoice]' \
 '--purpose=[Information about the invoice]' \
+'-n+[Blockchain to use]' \
+'--chain=[Blockchain to use]' \
+'-d+[Data directory path]: :_files -/' \
+'--data-dir=[Data directory path]: :_files -/' \
 '-u[Do not mark the address used in the invoice as used]' \
 '--unmark[Do not mark the address used in the invoice as used]' \
 '--legacy[Use SegWit legacy address format (applicable only to a SegWit wallets)]' \
@@ -311,6 +375,10 @@ _arguments "${_arguments_options[@]}" \
 _arguments "${_arguments_options[@]}" \
 '-f+[How invoice list should be formatted]' \
 '--format=[How invoice list should be formatted]' \
+'-n+[Blockchain to use]' \
+'--chain=[Blockchain to use]' \
+'-d+[Data directory path]: :_files -/' \
+'--data-dir=[Data directory path]: :_files -/' \
 '*-v[Set verbosity level]' \
 '*--verbose[Set verbosity level]' \
 '-h[Prints help information]' \
@@ -324,6 +392,10 @@ _arguments "${_arguments_options[@]}" \
 _arguments "${_arguments_options[@]}" \
 '-f+[Format to use for the invoice representation]' \
 '--format=[Format to use for the invoice representation]' \
+'-n+[Blockchain to use]' \
+'--chain=[Blockchain to use]' \
+'-d+[Data directory path]: :_files -/' \
+'--data-dir=[Data directory path]: :_files -/' \
 '*-v[Set verbosity level]' \
 '*--verbose[Set verbosity level]' \
 '-h[Prints help information]' \
@@ -335,10 +407,16 @@ _arguments "${_arguments_options[@]}" \
 ;;
 (pay)
 _arguments "${_arguments_options[@]}" \
+'-a+[Force payment with the specified amount. Required for invoices that does not provide amount field. For other types of invoices, if provided, overrides the amount found in the invoice]' \
+'--amount=[Force payment with the specified amount. Required for invoices that does not provide amount field. For other types of invoices, if provided, overrides the amount found in the invoice]' \
 '-o+[File name to output PSBT. If no name is given PSBT data are output to STDOUT]' \
 '--output=[File name to output PSBT. If no name is given PSBT data are output to STDOUT]' \
 '-f+[PSBT format to use for the output; if no file is specified defaults to Base64 output; otherwise defaults to binary]' \
 '--format=[PSBT format to use for the output; if no file is specified defaults to Base64 output; otherwise defaults to binary]' \
+'-n+[Blockchain to use]' \
+'--chain=[Blockchain to use]' \
+'-d+[Data directory path]: :_files -/' \
+'--data-dir=[Data directory path]: :_files -/' \
 '*-v[Set verbosity level]' \
 '*--verbose[Set verbosity level]' \
 '-h[Prints help information]' \
@@ -347,12 +425,15 @@ _arguments "${_arguments_options[@]}" \
 '--version[Prints version information]' \
 ':invoice -- Invoice Bech32 string representation:' \
 ':wallet-id -- Wallet to pay from:' \
-'::amount -- Force payment on the specified amount. Required for invoices that does not provide amount field. For other types of invoices, if provided, overrides the amount found in the invoice:' \
 ':fee -- Fee to pay:' \
 && ret=0
 ;;
 (accept)
 _arguments "${_arguments_options[@]}" \
+'-n+[Blockchain to use]' \
+'--chain=[Blockchain to use]' \
+'-d+[Data directory path]: :_files -/' \
+'--data-dir=[Data directory path]: :_files -/' \
 '-f[Whether parameter given by consignment is a file name or a Bech32 string]' \
 '--file[Whether parameter given by consignment is a file name or a Bech32 string]' \
 '*-v[Set verbosity level]' \
