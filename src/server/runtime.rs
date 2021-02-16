@@ -415,14 +415,14 @@ impl Runtime {
                         previous_output: outpoint,
                         script_sig: Default::default(),
                         sequence: 0,
-                        witness: vec![]
+                        witness: vec![],
                     }
                 }).collect();
                 let mut output = vec![];
                 if let Some(descriptor) = transfer_info.bitcoin_descriptor() {
                     output.push(TxOut {
                         value: amount,
-                        script_pubkey: PubkeyScript::from(descriptor).into()
+                        script_pubkey: PubkeyScript::from(descriptor).into(),
                     })
                 }
                 if input_amount > amount + bitcoin_fee {
@@ -432,8 +432,8 @@ impl Runtime {
                         value: input_amount - amount - bitcoin_fee,
                         script_pubkey: contract.derive_address(change_index, false).ok_or(Error::ServerFailure(Failure {
                             code: 0,
-                            info: s!("Unable to derive change address")
-                        }))?.address.script_pubkey()
+                            info: s!("Unable to derive change address"),
+                        }))?.address.script_pubkey(),
                     })
                 }
 
@@ -452,14 +452,14 @@ impl Runtime {
                     hash160_preimages: Default::default(),
                     hash256_preimages: Default::default(),
                     proprietary: Default::default(),
-                    unknown: Default::default()
+                    unknown: Default::default(),
                 }).collect();
                 let outputs = output.iter().map(|_| psbt::Output {
                     redeem_script: None,
                     witness_script: None,
                     bip32_derivation: Default::default(),
                     proprietary: Default::default(),
-                    unknown: Default::default()
+                    unknown: Default::default(),
                 }).collect();
 
                 let tx = Transaction {

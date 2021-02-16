@@ -35,6 +35,7 @@ use crate::model::{ContractId, Unspent};
 pub(super) struct Cache {
     pub known_height: u32,
 
+    #[serde_as(as = "BTreeMap<DisplayFromStr, _>")]
     pub descriptors: BTreeMap<ContractId, ContractCache>,
 
     #[serde_as(as = "Vec<(DisplayFromStr, _)>")]
