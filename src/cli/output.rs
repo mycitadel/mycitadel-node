@@ -190,26 +190,17 @@ where
             println!("{}", headers.join(","))
         }
 
-        let records = || {
-            self.iter()
-                .flat_map(|(id, vec)| {
-                    let id = id.clone();
-                    vec.iter().map(move |val| (id.clone(), val))
-                })
-                .collect::<BTreeMap<_, _>>()
-        };
         match format {
-            Formatting::Yaml => println!(
-                "{}",
-                serde_yaml::to_string(&records()).unwrap_or_default()
-            ),
+            Formatting::Yaml => {
+                println!("{}", serde_yaml::to_string(self).unwrap_or_default())
+            }
 
-            Formatting::Json => println!(
-                "{}",
-                serde_json::to_string(&records()).unwrap_or_default()
-            ),
+            Formatting::Json => {
+                println!("{}", serde_json::to_string(self).unwrap_or_default())
+            }
 
             _ => self.iter().for_each(|(id, details)| {
+                let id = id.to_string().as_str().bright_white();
                 details.iter().for_each(|rec| match format {
                     Formatting::Id => println!("{}", id),
                     Formatting::Compact => {

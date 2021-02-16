@@ -251,19 +251,19 @@ impl Runtime {
                     trace!("Found txids: {:#?}", txids);
                     let batch = res
                         .iter()
-                        .enumerate()
-                        .filter_map(|(idx, res)| {
+                        .filter_map(|res| {
+                            let index = index_offset;
                             // If we overflow we simply ignore these iterations
                             index_offset.checked_inc_assign()?;
                             let _txids = txids.clone();
                             let r = res.iter().filter_map(move |entry| {
-                                let ix_info = _txids.get(&entry.tx_hash)?;
+                                let tx_info = _txids.get(&entry.tx_hash)?;
                                 let unspent = Unspent {
                                     value: entry.value,
-                                    height: ix_info.0.try_into().ok()?,
-                                    offset: ix_info.1.try_into().ok()?,
+                                    height: tx_info.0.try_into().ok()?,
+                                    offset: tx_info.1.try_into().ok()?,
                                     vout: entry.tx_pos.try_into().ok()?,
-                                    index: index_offset,
+                                    index,
                                 };
                                 let outpoint = OutPoint::new(
                                     entry.tx_hash,
