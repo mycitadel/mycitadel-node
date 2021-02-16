@@ -398,17 +398,21 @@ impl Runtime {
 
             Request::ComposePsbt(message::ComposePsbtRequest { pay_from, amount, bitcoin_fee, transfer_info }) => {
                 let contract = self.storage.contract_ref(pay_from).map_err(Error::from)?;
-                let mut assets = self.cache.unspent(pay_from).map_err(Error::from)?.get(&transfer_info.contract_id()).cloned().unwrap_or_default();
+                let mut coins = self.cache.unspent(pay_from).map_err(Error::from)?.get(&transfer_info.contract_id()).cloned().unwrap_or_default();
+                trace!("Found coins: {:#?}", coins);
                 // TODO: Implement more coinselection strategies
-                assets.sort_by(|a, b| a.value.cmp(&b.value));
+                coins.sort_by(|a, b| a.value.cmp(&b.value));
+                trace!("Sorted coins: {:#?}", coins);
                 let mut input_amount = 0u64;
-                let input: Vec<TxIn> = assets.into_iter().filter_map(|unspent| {
+                let input: Vec<TxIn> = coins.into_iter().filter_map(|unspent| {
                     if input_amount >= amount + bitcoin_fee {
                         return None
                     }
                     self.cache.blockpos_to_txid(unspent.height, unspent.offset).map(|txid| {
                         input_amount += unspent.value;
-                        OutPoint::new(txid, unspent.vout as u32)
+                        let outpoint = OutPoint::new(txid, unspent.vout as u32);
+                        trace!("Adding {} to the inputs with {} sats; total input value is {}", outpoint, unspent.value, input_amount);
+                        outpoint
                     })
                 }).map(|outpoint| {
                     TxIn {
@@ -418,22 +422,32 @@ impl Runtime {
                         witness: vec![],
                     }
                 }).collect();
+                if input_amount < amount + bitcoin_fee {
+                    Err(Error::ServerFailure(Failure {
+                        code: 0,
+                        info: s!("Insufficient funds")
+                    }))?;
+                }
                 let mut output = vec![];
                 if let Some(descriptor) = transfer_info.bitcoin_descriptor() {
+                    trace!("Adding output paying {} to {}", amount, descriptor);
                     output.push(TxOut {
                         value: amount,
                         script_pubkey: PubkeyScript::from(descriptor).into(),
                     })
                 }
                 if input_amount > amount + bitcoin_fee {
+                    let change = input_amount - amount - bitcoin_fee;
                     let change_index = self.cache
                         .next_unused_derivation(pay_from).map_err(Error::from)?;
+                    let change_address = contract.derive_address(change_index, false).ok_or(Error::ServerFailure(Failure {
+                        code: 0,
+                        info: s!("Unable to derive change address"),
+                    }))?.address;
+                    trace!("Adding change output paying {} to our address {} at derivation index {}", change, change_address, change_index);
                     output.push(TxOut {
-                        value: input_amount - amount - bitcoin_fee,
-                        script_pubkey: contract.derive_address(change_index, false).ok_or(Error::ServerFailure(Failure {
-                            code: 0,
-                            info: s!("Unable to derive change address"),
-                        }))?.address.script_pubkey(),
+                        value: change,
+                        script_pubkey: change_address.script_pubkey(),
                     })
                 }
 
@@ -468,6 +482,7 @@ impl Runtime {
                     input,
                     output,
                 };
+                trace!("Resulting transaction: {:#?}", tx);
                 let psbt = Psbt {
                     global: psbt::Global {
                         unsigned_tx: tx,
@@ -479,6 +494,7 @@ impl Runtime {
                     inputs,
                     outputs,
                 };
+                trace!("Resulting PSBT: {:#?}", psbt);
                 Ok(Reply::Psbt(psbt))
             },
 

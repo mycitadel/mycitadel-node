@@ -397,13 +397,14 @@ pub enum InvoiceCommand {
         #[clap()]
         wallet_id: model::ContractId,
 
-        /// Fee to pay
+        /// Fee to pay, in satoshis
         #[clap()]
-        fee: bitcoin::Amount,
+        fee: u64,
 
-        /// Force payment with the specified amount. Required for invoices that
-        /// does not provide amount field. For other types of invoices, if
-        /// provided, overrides the amount found in the invoice.
+        /// Force payment with the specified amount (always in satoshis).
+        /// Required for invoices that does not provide amount field.
+        /// For other types of invoices, if provided, overrides the
+        /// amount found in the invoice.
         #[clap(short, long)]
         amount: Option<u64>,
 

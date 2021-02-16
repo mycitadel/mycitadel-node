@@ -327,8 +327,8 @@ _arguments "${_arguments_options[@]}" \
 ;;
 (pay)
 _arguments "${_arguments_options[@]}" \
-'-a+[Force payment with the specified amount. Required for invoices that does not provide amount field. For other types of invoices, if provided, overrides the amount found in the invoice]' \
-'--amount=[Force payment with the specified amount. Required for invoices that does not provide amount field. For other types of invoices, if provided, overrides the amount found in the invoice]' \
+'-a+[Force payment with the specified amount (always in satoshis). Required for invoices that does not provide amount field. For other types of invoices, if provided, overrides the amount found in the invoice]' \
+'--amount=[Force payment with the specified amount (always in satoshis). Required for invoices that does not provide amount field. For other types of invoices, if provided, overrides the amount found in the invoice]' \
 '-o+[File name to output PSBT. If no name is given PSBT data are output to STDOUT]' \
 '--output=[File name to output PSBT. If no name is given PSBT data are output to STDOUT]' \
 '-f+[PSBT format to use for the output; if no file is specified defaults to Base64 output; otherwise defaults to binary]' \
@@ -341,7 +341,7 @@ _arguments "${_arguments_options[@]}" \
 '--version[Prints version information]' \
 ':invoice -- Invoice Bech32 string representation:' \
 ':wallet-id -- Wallet to pay from:' \
-':fee -- Fee to pay:' \
+':fee -- Fee to pay, in satoshis:' \
 && ret=0
 ;;
 (accept)

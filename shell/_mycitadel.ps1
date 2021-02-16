@@ -341,8 +341,8 @@ Register-ArgumentCompleter -Native -CommandName 'mycitadel' -ScriptBlock {
             break
         }
         'mycitadel;invoice;pay' {
-            [CompletionResult]::new('-a', 'a', [CompletionResultType]::ParameterName, 'Force payment with the specified amount. Required for invoices that does not provide amount field. For other types of invoices, if provided, overrides the amount found in the invoice')
-            [CompletionResult]::new('--amount', 'amount', [CompletionResultType]::ParameterName, 'Force payment with the specified amount. Required for invoices that does not provide amount field. For other types of invoices, if provided, overrides the amount found in the invoice')
+            [CompletionResult]::new('-a', 'a', [CompletionResultType]::ParameterName, 'Force payment with the specified amount (always in satoshis). Required for invoices that does not provide amount field. For other types of invoices, if provided, overrides the amount found in the invoice')
+            [CompletionResult]::new('--amount', 'amount', [CompletionResultType]::ParameterName, 'Force payment with the specified amount (always in satoshis). Required for invoices that does not provide amount field. For other types of invoices, if provided, overrides the amount found in the invoice')
             [CompletionResult]::new('-o', 'o', [CompletionResultType]::ParameterName, 'File name to output PSBT. If no name is given PSBT data are output to STDOUT')
             [CompletionResult]::new('--output', 'output', [CompletionResultType]::ParameterName, 'File name to output PSBT. If no name is given PSBT data are output to STDOUT')
             [CompletionResult]::new('-f', 'f', [CompletionResultType]::ParameterName, 'PSBT format to use for the output; if no file is specified defaults to Base64 output; otherwise defaults to binary')

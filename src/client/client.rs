@@ -11,6 +11,7 @@
 // along with this software.
 // If not, see <https://www.gnu.org/licenses/agpl-3.0-standalone.html>.
 
+use colored::Colorize;
 use std::convert::TryFrom;
 use std::str::FromStr;
 
@@ -222,8 +223,16 @@ impl Client {
         contract_id: ContractId,
         invoice: Invoice,
         amount: Option<u64>,
-        fee: bitcoin::Amount,
+        fee: u64,
     ) -> Result<Psbt, Error> {
+        debug!(
+            "Doing transfer for invoice {} using wallet {} with fee {}",
+            invoice, contract_id, fee
+        );
+        trace!(
+            "Parsed invoice: {}",
+            serde_yaml::to_string(&invoice).expect("YAML formatting")
+        );
         let address = match invoice.beneficiary() {
             Beneficiary::Address(address) => address.clone(),
             /* Beneficiary::Descriptor(descriptor) =>
@@ -238,19 +247,34 @@ impl Client {
             address.script_pubkey(),
         ))
         .expect("Address is always parsable as a descriptor");
+        debug!(
+            "Paying to descriptor {}",
+            descriptor.to_string().as_str().yellow()
+        );
+        trace!("Descriptor address representation is {}", address);
 
         let transfer_info = match invoice
             .classify_asset(&address.network.into())
         {
-            AssetClass::Native => message::TransferInfo::Bitcoin(descriptor),
-            AssetClass::Rgb(contract_id) => message::TransferInfo::Rgb {
-                contract_id,
-                descriptor: None, // TODO: support "pay-to-descriptor" variant
-            },
+            AssetClass::Native => {
+                trace!("Performing native bitcoin transfer");
+                message::TransferInfo::Bitcoin(descriptor)
+            }
+            AssetClass::Rgb(asset_id) => {
+                trace!(
+                    "Performing transfer in {} assets",
+                    asset_id.to_string().as_str().yellow()
+                );
+                message::TransferInfo::Rgb {
+                    contract_id: asset_id,
+                    descriptor: None, /* TODO: support "pay-to-descriptor"
+                                       * variant */
+                }
+            }
             AssetClass::InvalidNativeChain => {
                 Err(Error::ServerFailure(Failure {
                     code: 0,
-                    info: s!("Insufficient funds"),
+                    info: s!("Current network does not match invoice network"),
                 }))?
             }
             _ => Err(Error::ServerFailure(Failure {
@@ -261,7 +285,7 @@ impl Client {
 
         match self.request(Request::ComposePsbt(message::ComposePsbtRequest {
             pay_from: contract_id,
-            bitcoin_fee: fee.as_sat(),
+            bitcoin_fee: fee,
             amount: invoice.amount().atomic_value().or(amount).ok_or(Error::ServerFailure(Failure {
                 code: 0,
                 info: s!("Amount must be specified for invoices which does not provide default amount value")
