@@ -13,7 +13,7 @@
 
 use std::collections::{BTreeMap, HashSet};
 
-use bitcoin::{Address, OutPoint};
+use bitcoin::{Address, OutPoint, Txid};
 use wallet::bip32::UnhardenedIndex;
 
 use super::FileDriver;
@@ -21,6 +21,10 @@ use crate::cache::{Driver, Error};
 use crate::model::{ContractId, Unspent};
 
 impl Driver for FileDriver {
+    fn blockpos_to_txid(&self, height: u32, offset: u16) -> Option<Txid> {
+        self.cache.mine_info.get(&(height, offset)).copied()
+    }
+
     fn unspent(
         &self,
         contract_id: ContractId,

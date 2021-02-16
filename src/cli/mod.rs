@@ -17,6 +17,7 @@ mod output;
 
 pub use opts::{
     AddressCommand, AssetCommand, Command, DescriptorOpts, Formatting,
-    InvoiceCommand, Opts, WalletCommand, WalletCreateCommand, WalletOpts,
+    InvoiceCommand, Opts, PsbtFormat, WalletCommand, WalletCreateCommand,
+    WalletOpts,
 };
 pub use output::OutputFormat;

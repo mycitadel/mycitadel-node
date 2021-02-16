@@ -412,10 +412,7 @@ impl OutputFormat for rgb20::Asset {
 
 impl OutputCompact for Invoice {
     fn output_compact(&self) -> String {
-        self.beneficiaries
-            .first()
-            .map(|b| b.to_string())
-            .unwrap_or(s!("No beneficiaries").red().to_string())
+        self.beneficiary().to_string()
     }
 }
 
@@ -439,10 +436,10 @@ impl OutputFormat for Invoice {
 
     fn output_fields(&self) -> Vec<String> {
         vec![
-            self.beneficiaries.len().to_string(),
+            self.beneficiaries().count().to_string(),
             self.output_compact(),
-            self.amount.to_string(),
-            self.asset
+            self.amount().to_string(),
+            self.asset()
                 .map(|asset_id| {
                     rgb::ContractId::from_inner(sha256t::Hash::from_inner(
                         asset_id.into_inner(),
@@ -450,13 +447,13 @@ impl OutputFormat for Invoice {
                     .to_string()
                 })
                 .unwrap_or(s!("BTC")),
-            self.recurrent.to_string(),
-            self.expiry
+            self.recurrent().to_string(),
+            self.expiry()
                 .as_ref()
                 .map(NaiveDateTime::to_string)
                 .unwrap_or(s!("-")),
-            self.merchant.clone().unwrap_or(s!("-")),
-            self.purpose.clone().unwrap_or(s!("-")),
+            self.merchant().clone().unwrap_or(s!("-")),
+            self.purpose().clone().unwrap_or(s!("-")),
         ]
     }
 }

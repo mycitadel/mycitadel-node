@@ -171,6 +171,69 @@ pub struct AddInvoiceRequest {
 
 #[serde_as]
 #[derive(
+    Serialize,
+    Deserialize,
+    Clone,
+    Eq,
+    PartialEq,
+    Ord,
+    PartialOrd,
+    Debug,
+    StrictEncode,
+    StrictDecode,
+)]
+#[serde(tag = "type")]
+pub enum TransferInfo {
+    Bitcoin(#[serde_as(as = "DisplayFromStr")] descriptor::Compact),
+
+    Rgb {
+        contract_id: rgb::ContractId,
+        #[serde_as(as = "Option<DisplayFromStr>")]
+        descriptor: Option<descriptor::Compact>,
+    },
+}
+
+impl TransferInfo {
+    pub fn contract_id(&self) -> rgb::ContractId {
+        match self {
+            TransferInfo::Bitcoin(_) => rgb::ContractId::default(),
+            TransferInfo::Rgb { contract_id, .. } => *contract_id,
+        }
+    }
+
+    pub fn bitcoin_descriptor(&self) -> Option<descriptor::Compact> {
+        match self {
+            TransferInfo::Bitcoin(descr) => Some(descr.clone()),
+            TransferInfo::Rgb { .. } => None,
+        }
+    }
+}
+
+#[derive(
+    Serialize,
+    Deserialize,
+    Clone,
+    Eq,
+    PartialEq,
+    Ord,
+    PartialOrd,
+    Debug,
+    Display,
+    StrictEncode,
+    StrictDecode,
+)]
+#[display(
+    "pay_invoice(from: {pay_from}, amount: {amount}, fee: {bitcoin_fee}, ...)"
+)]
+pub struct ComposePsbtRequest {
+    pub pay_from: model::ContractId,
+    pub bitcoin_fee: u64,
+    pub amount: u64,
+    pub transfer_info: TransferInfo,
+}
+
+#[serde_as]
+#[derive(
     Serialize, Deserialize, Clone, Eq, PartialEq, Hash, Debug, Display,
 )]
 #[display("{key}")]

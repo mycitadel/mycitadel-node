@@ -11,6 +11,7 @@
 // along with this software.
 // If not, see <https://www.gnu.org/licenses/agpl-3.0-standalone.html>.
 
+use std::convert::TryFrom;
 use std::str::FromStr;
 
 use internet2::zmqsocket::{self, ZmqType};
@@ -18,12 +19,15 @@ use internet2::{
     session, CreateUnmarshaller, PlainTranscoder, Session, TypedEnum,
     Unmarshall, Unmarshaller,
 };
-use invoice::{Beneficiary, Invoice};
+use invoice::{AssetClass, Beneficiary, Invoice};
 use lnpbp::chain::AssetId;
 use lnpbp::client_side_validation::Conceal;
+use microservices::rpc::Failure;
 use rgb::{AtomicValue, Genesis};
 use wallet::bip32::{PubkeyChain, UnhardenedIndex};
-use wallet::descriptor::OuterCategory;
+use wallet::descriptor::{self, OuterCategory};
+use wallet::script::PubkeyScript;
+use wallet::Psbt;
 
 use super::Config;
 use crate::model::ContractId;
@@ -194,14 +198,11 @@ impl Client {
             }
             _ => unimplemented!(),
         };
-        let inv = Invoice {
-            amount: invoice::AmountExt::Normal(amount),
-            beneficiaries: vec![beneficiary],
-            asset: asset_id.map(|id| AssetId::from(id)),
-            merchant,
-            purpose,
-            ..Invoice::default()
-        };
+        let inv = Invoice::new(
+            beneficiary,
+            Some(amount),
+            asset_id.map(AssetId::from),
+        );
         self.request(Request::AddInvoice(message::AddInvoiceRequest {
             invoice: inv.clone(),
             source_info: bmap! { contract_id => reveal_data },
@@ -214,6 +215,63 @@ impl Client {
         contract_id: ContractId,
     ) -> Result<Reply, Error> {
         self.request(Request::ListInvoices(contract_id))
+    }
+
+    pub fn invoice_pay(
+        &mut self,
+        contract_id: ContractId,
+        invoice: Invoice,
+        amount: Option<u64>,
+        fee: bitcoin::Amount,
+    ) -> Result<Psbt, Error> {
+        let address = match invoice.beneficiary() {
+            Beneficiary::Address(address) => address.clone(),
+            /* Beneficiary::Descriptor(descriptor) =>
+                Address::from_script(
+                &descriptor.script_pubkey(),
+                bitcoin::Network::Bitcoin,
+            ).expect("We do not support descriptors not representable by address yet"), */
+            _ => unimplemented!(),
+        };
+        // TODO: Add address parser to LNP/BP descriptor
+        let descriptor = descriptor::Compact::try_from(PubkeyScript::from(
+            address.script_pubkey(),
+        ))
+        .expect("Address is always parsable as a descriptor");
+
+        let transfer_info = match invoice
+            .classify_asset(&address.network.into())
+        {
+            AssetClass::Native => message::TransferInfo::Bitcoin(descriptor),
+            AssetClass::Rgb(contract_id) => message::TransferInfo::Rgb {
+                contract_id,
+                descriptor: None, // TODO: support "pay-to-descriptor" variant
+            },
+            AssetClass::InvalidNativeChain => {
+                Err(Error::ServerFailure(Failure {
+                    code: 0,
+                    info: s!("Insufficient funds"),
+                }))?
+            }
+            _ => Err(Error::ServerFailure(Failure {
+                code: 0,
+                info: s!("Unsupported asset type"),
+            }))?,
+        };
+
+        match self.request(Request::ComposePsbt(message::ComposePsbtRequest {
+            pay_from: contract_id,
+            bitcoin_fee: fee.as_sat(),
+            amount: invoice.amount().atomic_value().or(amount).ok_or(Error::ServerFailure(Failure {
+                code: 0,
+                info: s!("Amount must be specified for invoices which does not provide default amount value")
+            }))?,
+            transfer_info,
+        }))? {
+            Reply::Psbt(psbt) => Ok(psbt),
+            Reply::Failure(failure) => Err(failure.into()),
+            _ => Err(Error::UnexpectedApi),
+        }
     }
 
     pub fn asset_list(&mut self) -> Result<Reply, Error> {

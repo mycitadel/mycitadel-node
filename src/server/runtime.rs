@@ -14,7 +14,7 @@
 use std::collections::{HashMap, HashSet};
 use std::convert::TryInto;
 
-use bitcoin::OutPoint;
+use bitcoin::{OutPoint, Transaction, TxIn, TxOut};
 use electrum_client::{Client as ElectrumClient, ElectrumApi};
 use internet2::zmqsocket::{self, ZmqType};
 use internet2::ZmqSocketAddr;
@@ -32,6 +32,8 @@ use rgb_node::rpc::reply::SyncFormat;
 use rgb_node::util::ToBech32Data;
 use wallet::bip32::{ChildIndex, UnhardenedIndex};
 use wallet::descriptor::ContractDescriptor;
+use wallet::script::PubkeyScript;
+use wallet::{psbt, Psbt};
 
 use super::Config;
 use crate::cache::{self, Driver as CacheDriver};
@@ -315,6 +317,7 @@ impl Runtime {
                 .used_address_derivations(contract_id)
                 .map(Reply::Addresses)
                 .map_err(Error::from),
+
             Request::NextAddress(message::NextAddressRequest {
                 contract_id,
                 index,
@@ -332,7 +335,7 @@ impl Runtime {
                     ),
                     legacy,
                 )
-                .map(|address_derivation| {
+                .and_then(|address_derivation| {
                     if mark_used {
                         self.cache.use_address_derivation(
                             contract_id,
@@ -342,13 +345,14 @@ impl Runtime {
                             ),
                         ).ok()?;
                     }
-                    address_derivation
+                    Some(address_derivation)
                 })
                 .map(Reply::AddressDerivation)
                 .ok_or(Error::ServerFailure(Failure {
                     code: 0,
                     info: s!("Unable to derive address for the provided network/chain"),
                 })),
+
             Request::UnuseAddress(message::ContractAddressTuple {
                 contract_id,
                 address,
@@ -357,6 +361,7 @@ impl Runtime {
                 .forget_address(contract_id, &address)
                 .map(|_| Reply::Success)
                 .map_err(Error::from),
+
             Request::BlindUtxo(contract_id) => self
                 .cache
                 .utxo(contract_id)
@@ -371,6 +376,7 @@ impl Runtime {
                 })
                 .map(|outpoint| OutpointReveal::from(outpoint))
                 .map(Reply::BlindUtxo),
+
             Request::ListInvoices(contract_id) => {
                 self.storage
                     .contract_ref(contract_id)
@@ -378,6 +384,7 @@ impl Runtime {
                     .map(Reply::Invoices)
                     .map_err(Error::from)
             },
+
             Request::AddInvoice(message::AddInvoiceRequest { invoice, source_info }) => {
                 for (contract_id, outpoint_reveal) in source_info {
                     self.storage.add_invoice(
@@ -387,6 +394,92 @@ impl Runtime {
                     ).map_err(Error::from)?;
                 }
                 Ok(Reply::Success)
+            },
+
+            Request::ComposePsbt(message::ComposePsbtRequest { pay_from, amount, bitcoin_fee, transfer_info }) => {
+                let contract = self.storage.contract_ref(pay_from).map_err(Error::from)?;
+                let mut assets = self.cache.unspent(pay_from).map_err(Error::from)?.get(&transfer_info.contract_id()).cloned().unwrap_or_default();
+                // TODO: Implement more coinselection strategies
+                assets.sort_by(|a, b| a.value.cmp(&b.value));
+                let mut input_amount = 0u64;
+                let input: Vec<TxIn> = assets.into_iter().filter_map(|unspent| {
+                    if input_amount >= amount + bitcoin_fee {
+                        return None
+                    }
+                    self.cache.blockpos_to_txid(unspent.height, unspent.offset).map(|txid| {
+                        input_amount += unspent.value;
+                        OutPoint::new(txid, unspent.vout as u32)
+                    })
+                }).map(|outpoint| {
+                    TxIn {
+                        previous_output: outpoint,
+                        script_sig: Default::default(),
+                        sequence: 0,
+                        witness: vec![]
+                    }
+                }).collect();
+                let mut output = vec![];
+                if let Some(descriptor) = transfer_info.bitcoin_descriptor() {
+                    output.push(TxOut {
+                        value: amount,
+                        script_pubkey: PubkeyScript::from(descriptor).into()
+                    })
+                }
+                if input_amount > amount + bitcoin_fee {
+                    let change_index = self.cache
+                        .next_unused_derivation(pay_from).map_err(Error::from)?;
+                    output.push(TxOut {
+                        value: input_amount - amount - bitcoin_fee,
+                        script_pubkey: contract.derive_address(change_index, false).ok_or(Error::ServerFailure(Failure {
+                            code: 0,
+                            info: s!("Unable to derive change address")
+                        }))?.address.script_pubkey()
+                    })
+                }
+
+                let inputs = input.iter().map(|_| psbt::Input {
+                    non_witness_utxo: None,
+                    witness_utxo: None,
+                    partial_sigs: Default::default(),
+                    sighash_type: None,
+                    redeem_script: None,
+                    witness_script: None,
+                    bip32_derivation: Default::default(),
+                    final_script_sig: None,
+                    final_script_witness: None,
+                    ripemd160_preimages: Default::default(),
+                    sha256_preimages: Default::default(),
+                    hash160_preimages: Default::default(),
+                    hash256_preimages: Default::default(),
+                    proprietary: Default::default(),
+                    unknown: Default::default()
+                }).collect();
+                let outputs = output.iter().map(|_| psbt::Output {
+                    redeem_script: None,
+                    witness_script: None,
+                    bip32_derivation: Default::default(),
+                    proprietary: Default::default(),
+                    unknown: Default::default()
+                }).collect();
+
+                let tx = Transaction {
+                    version: 1,
+                    lock_time: 0,
+                    input,
+                    output,
+                };
+                let psbt = Psbt {
+                    global: psbt::Global {
+                        unsigned_tx: tx,
+                        version: 0,
+                        xpub: none!(),
+                        proprietary: none!(),
+                        unknown: none!()
+                    },
+                    inputs,
+                    outputs,
+                };
+                Ok(Reply::Psbt(psbt))
             },
 
             Request::ContractUnspent(id) => self

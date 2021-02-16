@@ -261,6 +261,10 @@ Register-ArgumentCompleter -Native -CommandName 'mycitadel-cli' -ScriptBlock {
             break
         }
         'mycitadel-cli;invoice;pay' {
+            [CompletionResult]::new('-o', 'o', [CompletionResultType]::ParameterName, 'File name to output PSBT. If no name is given PSBT data are output to STDOUT')
+            [CompletionResult]::new('--output', 'output', [CompletionResultType]::ParameterName, 'File name to output PSBT. If no name is given PSBT data are output to STDOUT')
+            [CompletionResult]::new('-f', 'f', [CompletionResultType]::ParameterName, 'PSBT format to use for the output; if no file is specified defaults to Base64 output; otherwise defaults to binary')
+            [CompletionResult]::new('--format', 'format', [CompletionResultType]::ParameterName, 'PSBT format to use for the output; if no file is specified defaults to Base64 output; otherwise defaults to binary')
             [CompletionResult]::new('-v', 'v', [CompletionResultType]::ParameterName, 'Set verbosity level')
             [CompletionResult]::new('--verbose', 'verbose', [CompletionResultType]::ParameterName, 'Set verbosity level')
             [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Prints help information')

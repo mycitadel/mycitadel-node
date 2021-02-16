@@ -335,6 +335,10 @@ _arguments "${_arguments_options[@]}" \
 ;;
 (pay)
 _arguments "${_arguments_options[@]}" \
+'-o+[File name to output PSBT. If no name is given PSBT data are output to STDOUT]' \
+'--output=[File name to output PSBT. If no name is given PSBT data are output to STDOUT]' \
+'-f+[PSBT format to use for the output; if no file is specified defaults to Base64 output; otherwise defaults to binary]' \
+'--format=[PSBT format to use for the output; if no file is specified defaults to Base64 output; otherwise defaults to binary]' \
 '*-v[Set verbosity level]' \
 '*--verbose[Set verbosity level]' \
 '-h[Prints help information]' \
@@ -343,6 +347,8 @@ _arguments "${_arguments_options[@]}" \
 '--version[Prints version information]' \
 ':invoice -- Invoice Bech32 string representation:' \
 ':wallet-id -- Wallet to pay from:' \
+'::amount -- Force payment on the specified amount. Required for invoices that does not provide amount field. For other types of invoices, if provided, overrides the amount found in the invoice:' \
+':fee -- Fee to pay:' \
 && ret=0
 ;;
 (accept)

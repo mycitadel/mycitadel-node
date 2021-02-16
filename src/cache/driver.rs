@@ -13,13 +13,15 @@
 
 use std::collections::{BTreeMap, HashSet};
 
-use bitcoin::{Address, OutPoint};
+use bitcoin::{Address, OutPoint, Txid};
 use wallet::bip32::UnhardenedIndex;
 
 use super::Error;
 use crate::model::{ContractId, Unspent};
 
 pub trait Driver {
+    fn blockpos_to_txid(&self, height: u32, offset: u16) -> Option<Txid>;
+
     fn unspent(
         &self,
         contract_id: ContractId,

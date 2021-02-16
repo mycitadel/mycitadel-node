@@ -12,12 +12,17 @@
 // If not, see <https://www.gnu.org/licenses/agpl-3.0-standalone.html>.
 
 use colored::Colorize;
-use microservices::shell::Exec;
 use std::collections::HashMap;
+use std::{fs, io};
+
+use base64::display::Base64Display;
+use bitcoin::consensus::encode::{serialize, Encodable};
+use bitcoin::hashes::hex::ToHex;
+use microservices::shell::Exec;
 
 use super::{
     AddressCommand, AssetCommand, Command, InvoiceCommand, OutputFormat,
-    WalletCommand, WalletCreateCommand, WalletOpts,
+    PsbtFormat, WalletCommand, WalletCreateCommand, WalletOpts,
 };
 use crate::client::InvoiceType;
 use crate::rpc::Reply;
@@ -291,7 +296,50 @@ impl Exec for InvoiceCommand {
             InvoiceCommand::Info { invoice, format } => {
                 Ok(invoice.output_print(format))
             }
-            InvoiceCommand::Pay { .. } => unimplemented!(),
+            InvoiceCommand::Pay {
+                invoice,
+                wallet_id,
+                amount,
+                fee,
+                output,
+                format,
+            } => {
+                let psbt =
+                    client.invoice_pay(wallet_id, invoice, amount, fee)?;
+                let (mut file, format) = if let Some(filename) = output {
+                    (
+                        Box::new(io::BufWriter::new(fs::File::create(
+                            filename,
+                        )?)) as Box<dyn io::Write>,
+                        format.unwrap_or(PsbtFormat::Binary),
+                    )
+                } else {
+                    (
+                        Box::new(io::BufWriter::new(io::stdout()))
+                            as Box<dyn io::Write>,
+                        format.unwrap_or(PsbtFormat::Base64),
+                    )
+                };
+                match format {
+                    PsbtFormat::Binary => {
+                        psbt.consensus_encode(file)?;
+                    }
+                    PsbtFormat::Hexadecimal => {
+                        file.write_all(serialize(&psbt).to_hex().as_bytes())?;
+                    }
+                    PsbtFormat::Base64 => {
+                        file.write_all(
+                            Base64Display::with_config(
+                                &serialize(&psbt),
+                                ::base64::STANDARD,
+                            )
+                            .to_string()
+                            .as_bytes(),
+                        )?;
+                    }
+                }
+                Ok(())
+            }
             InvoiceCommand::Accept { .. } => unimplemented!(),
         }
     }

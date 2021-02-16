@@ -406,13 +406,29 @@ _mycitadel() {
             return 0
             ;;
         mycitadel__invoice__pay)
-            opts=" -v -h -V  --verbose --help --version  <invoice> <wallet-id> "
+            opts=" -o -f -v -h -V  --output --format --verbose --help --version  <invoice> <wallet-id> <amount> <fee> "
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
             fi
             case "${prev}" in
                 
+                --output)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                    -o)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                --format)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                    -f)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
                 *)
                     COMPREPLY=()
                     ;;

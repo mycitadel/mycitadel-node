@@ -12,8 +12,10 @@
 // If not, see <https://www.gnu.org/licenses/agpl-3.0-standalone.html>.
 
 use clap::{AppSettings, ArgGroup, Clap, ValueHint};
-use invoice::Invoice;
+use std::path::PathBuf;
 use std::str::FromStr;
+
+use invoice::Invoice;
 use wallet::bip32::PubkeyChain;
 use wallet::bip32::UnhardenedIndex;
 use wallet::descriptor;
@@ -57,7 +59,7 @@ impl FromStr for Formatting {
     type Err = String;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        Ok(match s {
+        Ok(match s.trim().to_lowercase().as_str() {
             "id" => Formatting::Id,
             "compact" => Formatting::Compact,
             "tab" => Formatting::Tab,
@@ -65,6 +67,36 @@ impl FromStr for Formatting {
             "yaml" => Formatting::Yaml,
             "json" => Formatting::Json,
             _ => Err("Unknown format name")?,
+        })
+    }
+}
+
+#[derive(
+    Clap, Copy, Clone, Ord, PartialOrd, Eq, PartialEq, Hash, Debug, Display,
+)]
+pub enum PsbtFormat {
+    /// Raw binary data serialized according to BIP174
+    #[display("bin")]
+    Binary,
+
+    /// Hexadecimal representation of the binary data
+    #[display("hex")]
+    Hexadecimal,
+
+    /// Standard Base64 encoding according to BIP174
+    #[display("base64")]
+    Base64,
+}
+
+impl FromStr for PsbtFormat {
+    type Err = String;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        Ok(match s.trim().to_lowercase().as_str() {
+            "bin" => PsbtFormat::Binary,
+            "hex" => PsbtFormat::Hexadecimal,
+            "base64" => PsbtFormat::Base64,
+            _ => Err("Unknown PSBT format name")?,
         })
     }
 }
@@ -364,6 +396,26 @@ pub enum InvoiceCommand {
         /// Wallet to pay from
         #[clap()]
         wallet_id: model::ContractId,
+
+        /// Force payment on the specified amount. Required for invoices that
+        /// does not provide amount field. For other types of invoices, if
+        /// provided, overrides the amount found in the invoice.
+        #[clap()]
+        amount: Option<u64>,
+
+        /// Fee to pay
+        #[clap()]
+        fee: bitcoin::Amount,
+
+        /// File name to output PSBT. If no name is given PSBT data are output
+        /// to STDOUT
+        #[clap(short, long)]
+        output: Option<PathBuf>,
+
+        /// PSBT format to use for the output; if no file is specified defaults
+        /// to Base64 output; otherwise defaults to binary
+        #[clap(short, long)]
+        format: Option<PsbtFormat>,
     },
 
     /// Accept payment for the invoice. Required only for on-chain RGB
