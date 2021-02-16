@@ -33,6 +33,7 @@ pub trait Driver {
     fn update(
         &mut self,
         contract_id: ContractId,
+        mine_info: BTreeMap<(u32, u16), Txid>,
         updated_height: Option<u32>,
         utxo: Vec<OutPoint>,
         unspent: BTreeMap<rgb::ContractId, Vec<Unspent>>,

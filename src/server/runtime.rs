@@ -11,10 +11,10 @@
 // along with this software.
 // If not, see <https://www.gnu.org/licenses/agpl-3.0-standalone.html>.
 
-use std::collections::{HashMap, HashSet};
+use std::collections::{BTreeMap, HashMap, HashSet};
 use std::convert::TryInto;
 
-use bitcoin::{OutPoint, Transaction, TxIn, TxOut};
+use bitcoin::{OutPoint, Transaction, TxIn, TxOut, Txid};
 use electrum_client::{Client as ElectrumClient, ElectrumApi};
 use internet2::zmqsocket::{self, ZmqType};
 use internet2::ZmqSocketAddr;
@@ -225,6 +225,7 @@ impl Runtime {
                 let lookup_depth = UnhardenedIndex::from(lookup_depth);
                 let mut unspent: Vec<Unspent> = vec![];
                 let mut outpoints: Vec<OutPoint> = vec![];
+                let mut mine_info: BTreeMap<(u32, u16), Txid> = bmap!{};
                 let mut index_offset = UnhardenedIndex::zero();
                 loop {
                     let to = index_offset
@@ -244,7 +245,11 @@ impl Runtime {
                         .filter_map(|(txid, height)| {
                             self.electrum
                                 .transaction_get_merkle(txid, *height)
-                                .map(|res| (*txid, (res.block_height, res.pos)))
+                                .map(|res| {
+                                    let block_pos = (res.block_height as u32, res.pos as u16);
+                                    mine_info.insert(block_pos, *txid);
+                                    (*txid, block_pos)
+                                })
                                 .ok()
                         })
                         .collect::<HashMap<_, _>>();
@@ -304,6 +309,7 @@ impl Runtime {
                 self.cache
                     .update(
                         contract_id,
+                        mine_info,
                         Some(self.known_height),
                         outpoints,
                         assets.clone(),
