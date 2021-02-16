@@ -306,6 +306,7 @@ impl Runtime {
                     }
                 }
 
+                trace!("Mine info: {:#?}", mine_info);
                 self.cache
                     .update(
                         contract_id,

@@ -41,8 +41,8 @@ pub(super) struct Cache {
     #[serde_as(as = "Vec<(DisplayFromStr, _)>")]
     pub block_info: Vec<(BlockHash, NaiveDateTime)>,
 
-    #[serde_as(as = "BTreeMap<(_, _), DisplayFromStr>")]
     /// Mapping transaction id to the block height and block offset
+    #[serde_as(as = "BTreeMap<(_, _), DisplayFromStr>")]
     pub mine_info: BTreeMap<(u32, u16), Txid>,
 }
 

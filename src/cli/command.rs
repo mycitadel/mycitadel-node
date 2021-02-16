@@ -341,6 +341,9 @@ impl Exec for InvoiceCommand {
                         )?;
                     }
                 }
+                if output.is_none() {
+                    prtintln!("");
+                }
                 Ok(())
             }
             InvoiceCommand::Accept { .. } => unimplemented!(),
