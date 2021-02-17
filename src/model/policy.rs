@@ -22,7 +22,9 @@ use internet2::RemoteNodeAddr;
 use lnp::ChannelId;
 use lnpbp::client_side_validation::{CommitEncode, ConsensusCommit};
 use lnpbp::Chain;
-use miniscript::{descriptor, Descriptor, DescriptorTrait, TranslatePk2};
+use miniscript::{
+    descriptor, Descriptor, DescriptorTrait, ForEach, ForEachKey, TranslatePk2,
+};
 use strict_encoding::{self, StrictDecode, StrictEncode};
 use wallet::bip32::{ChildIndex, PubkeyChain, TerminalStep, UnhardenedIndex};
 use wallet::descriptor::ContractDescriptor;
@@ -172,6 +174,42 @@ impl Policy {
                 .expect("Unhardened derivation can't fail")
                 .public_key
         })
+    }
+
+    pub fn first_public_key(
+        &self,
+        index: UnhardenedIndex,
+    ) -> bitcoin::PublicKey {
+        let mut found = None;
+        self.to_descriptor().for_each_key(|key| match key {
+            ForEach::Key(key) => {
+                if found.is_none() {
+                    found = Some(key.clone())
+                }
+                false
+            }
+            ForEach::Hash(_) => true,
+        });
+        let chain = found
+            .expect("Descriptor mut always contain at least one singning key");
+        let mut path = chain.terminal_path.clone();
+        if path.last() == Some(&TerminalStep::Wildcard) {
+            path.remove(path.len() - 1);
+        }
+        path.push(TerminalStep::Index(index.into()));
+        chain
+            .branch_xpub
+            .derive_pub(
+                &wallet::SECP256K1,
+                &path
+                    .into_iter()
+                    .map(TerminalStep::index)
+                    .map(Option::unwrap_or_default)
+                    .map(|index| ChildNumber::Normal { index })
+                    .collect::<Vec<_>>(),
+            )
+            .expect("Unhardened derivation can't fail")
+            .public_key
     }
 
     pub fn derive_scripts(&self, range: Range<UnhardenedIndex>) -> Vec<Script> {

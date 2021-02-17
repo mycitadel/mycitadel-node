@@ -15,7 +15,7 @@ use chrono::NaiveDateTime;
 use serde_with::DisplayFromStr;
 use std::collections::{BTreeMap, HashSet};
 
-use bitcoin::{Address, BlockHash, OutPoint, Txid};
+use bitcoin::{Address, BlockHash, OutPoint, Transaction, Txid};
 use wallet::bip32::UnhardenedIndex;
 
 use crate::model::{ContractId, Unspent};
@@ -44,6 +44,9 @@ pub(super) struct Cache {
     /// Mapping transaction id to the block height and block offset
     #[serde_as(as = "BTreeMap<(_, _), DisplayFromStr>")]
     pub mine_info: BTreeMap<(u32, u16), Txid>,
+
+    #[serde_as(as = "BTreeMap<DisplayFromStr, _>")]
+    pub tx_cache: BTreeMap<Txid, Transaction>,
 }
 
 #[serde_as]

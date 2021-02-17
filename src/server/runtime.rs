@@ -28,7 +28,7 @@ use lnpbp::strict_encoding::StrictDecode;
 use microservices::node::TryService;
 use microservices::rpc::Failure;
 use microservices::FileFormat;
-use rgb::{SealDefinition, SealEndpoint};
+use rgb::{SealDefinition, SealEndpoint, PSBT_OUT_PUBKEY};
 use rgb20::Asset;
 use rgb_node::rpc::reply::SyncFormat;
 use rgb_node::rpc::reply::Transfer;
@@ -44,6 +44,7 @@ use crate::model::{Contract, Policy, Unspent};
 use crate::rpc::{message, Reply, Request};
 use crate::storage::{self, Driver as StorageDriver};
 use crate::Error;
+use wallet::psbt::raw::ProprietaryKey;
 
 pub fn run(config: Config) -> Result<(), Error> {
     let runtime = Runtime::init(config)?;
@@ -415,6 +416,7 @@ impl Runtime {
 
             Request::ComposePayment(message::ComposePaymentRequest { pay_from, amount, bitcoin_fee, transfer_info }) => {
                 let contract = self.storage.contract_ref(pay_from).map_err(Error::from)?;
+                let policy = contract.policy().clone();
                 let mut coins = self.cache.unspent(pay_from).map_err(Error::from)?.get(&transfer_info.contract_id()).cloned().unwrap_or_default();
                 // TODO: Implement more coinselection strategies
                 coins.sort_by(|a, b| a.value.cmp(&b.value));
@@ -459,10 +461,10 @@ impl Runtime {
                     // We need this output only for bitcoin payments
                     trace!("Adding output paying {} to {}", amount, descriptor);
                     bitcoin_amount = amount;
-                    output.push(TxOut {
+                    output.push((TxOut {
                         value: amount,
                         script_pubkey: PubkeyScript::from(descriptor).into(),
-                    });
+                    }, None));
                     SealEndpoint::TxOutpoint(default!())
                 } else if let message::TransferInfo::Rgb {
                     contract_id,
@@ -471,10 +473,10 @@ impl Runtime {
                     // We need this output only for descriptor-based RGB payments
                     trace!("Adding output paying {} bitcoin giveaway to {}", giveaway, descriptor);
                     bitcoin_amount = giveaway;
-                    output.push(TxOut {
+                    output.push((TxOut {
                         value: giveaway,
                         script_pubkey: PubkeyScript::from(descriptor.clone()).into(),
-                    });
+                    }, None));
                     SealEndpoint::with_vout(output.len() as u32 - 1, &mut self.rng)
                 } else if let message::TransferInfo::Rgb {
                     contract_id: _, receiver: message::RgbReceiver::BlindUtxo(hash)
@@ -508,10 +510,10 @@ impl Runtime {
                         info: s!("Unable to derive change address"),
                     }))?.address;
                     trace!("Adding change output paying {} to our address {} at derivation index {}", change, change_address, change_index);
-                    output.push(TxOut {
+                    output.push((TxOut {
                         value: change,
                         script_pubkey: change_address.script_pubkey(),
-                    });
+                    }, Some(change_index)));
                     Some(output.len() as u32 - 1)
                 } else {
                     None
@@ -548,15 +550,33 @@ impl Runtime {
                 // Constructing bitcoin payment PSBT (for bitcoin payments) or
                 // RGB witness PSBT prototype for the commitment (for RGB
                 // payments)
-                let inputs = input.iter().map(|_| psbt::Input::default()).collect();
-                let outputs = output.iter().map(|_| psbt::Output::default()).collect();
+                let inputs = input.iter().map(|txin| {
+                    let mut input = psbt::Input::default();
+                    // TODO: cache transactions
+                    input.non_witness_utxo = self.electrum.transaction_get(&txin.previous_output.txid).ok();
+                    input
+                }).collect();
+                let outputs = output.iter().map(|(txout, index)| {
+                    let mut output = psbt::Output::default();
+                    if let Some(index) = index {
+                        output.proprietary.insert(
+                            ProprietaryKey {
+                                prefix: b"RGB".to_vec(),
+                                subtype: PSBT_OUT_PUBKEY,
+                                key: vec![],
+                            },
+                            policy.first_public_key(*index).to_bytes(),
+                        );
+                    }
+                    output
+                }).collect();
                 let psbt = Psbt {
                     global: psbt::Global {
                         unsigned_tx: Transaction {
                             version: 1,
                             lock_time: 0,
                             input,
-                            output,
+                            output: output.into_iter().map(|x| x.0).collect(),
                         },
                         version: 0,
                         xpub: none!(),

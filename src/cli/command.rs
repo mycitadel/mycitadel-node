@@ -327,9 +327,15 @@ impl Exec for InvoiceCommand {
                         format.unwrap_or(PsbtFormat::Base64),
                     )
                 };
+
+                if output.is_none() {
+                    eprint!("{} ", "PSBT:".bright_yellow());
+                }
                 match format {
                     PsbtFormat::Binary => {
-                        prepared_payment.psbt.consensus_encode(psbt_file)?;
+                        prepared_payment
+                            .psbt
+                            .consensus_encode(&mut psbt_file)?;
                     }
                     PsbtFormat::Hexadecimal => {
                         psbt_file.write_all(
@@ -349,6 +355,13 @@ impl Exec for InvoiceCommand {
                         )?;
                     }
                 }
+                psbt_file.flush()?;
+                if output.is_none() {
+                    eprintln!("\n");
+                }
+                if consignment.is_none() {
+                    eprint!("{} ", "Consignment:".bright_yellow());
+                }
                 if let Some(data) = prepared_payment.consignment {
                     match consignment {
                         None => println!("{}", data),
@@ -357,9 +370,6 @@ impl Exec for InvoiceCommand {
                             data.strict_encode(file)?;
                         }
                     }
-                }
-                if output.is_none() {
-                    println!();
                 }
                 Ok(())
             }
