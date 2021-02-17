@@ -28,13 +28,14 @@ use lnpbp::strict_encoding::StrictDecode;
 use microservices::node::TryService;
 use microservices::rpc::Failure;
 use microservices::FileFormat;
-use rgb::{SealDefinition, SealEndpoint, PSBT_OUT_PUBKEY};
+use rgb::{SealDefinition, SealEndpoint, Validity, PSBT_OUT_PUBKEY};
 use rgb20::Asset;
 use rgb_node::rpc::reply::SyncFormat;
 use rgb_node::rpc::reply::Transfer;
 use rgb_node::util::ToBech32Data;
 use wallet::bip32::{ChildIndex, UnhardenedIndex};
 use wallet::descriptor::ContractDescriptor;
+use wallet::psbt::raw::ProprietaryKey;
 use wallet::script::PubkeyScript;
 use wallet::{psbt, Psbt};
 
@@ -44,7 +45,6 @@ use crate::model::{Contract, Policy, Unspent};
 use crate::rpc::{message, Reply, Request};
 use crate::storage::{self, Driver as StorageDriver};
 use crate::Error;
-use wallet::psbt::raw::ProprietaryKey;
 
 pub fn run(config: Config) -> Result<(), Error> {
     let runtime = Runtime::init(config)?;
@@ -605,6 +605,29 @@ impl Runtime {
 
                 Ok(Reply::PreparedPayment(payment_data))
             },
+
+            Request::AcceptPayment(consignment) => {
+                let status = self.rgb20_client.validate(consignment.clone()).map_err(Error::from)?;
+                if status.validity() == Validity::Valid {
+                    let hashes = consignment.endpoints.iter().filter_map(|(_, seal_endpoint)| match seal_endpoint {
+                        SealEndpoint::TxOutpoint(hash) => Some(*hash),
+                        SealEndpoint::WitnessVout { .. } => None,
+                    }).collect::<Vec<_>>();
+                    let revel_outpoints = self.storage
+                        .contracts().map_err(Error::from)?
+                        .iter()
+                        .flat_map(|contract| contract.data().blinding_factors())
+                        .filter_map(|(hash, reveal)| {
+                            if hashes.contains(hash) {
+                                Some(*reveal)
+                            } else {
+                                None
+                            }
+                        }).collect();
+                    self.rgb20_client.accept(consignment, revel_outpoints).map_err(Error::from)?;
+                }
+                Ok(Reply::Validation(status))
+            }
 
             Request::ContractUnspent(id) => self
                 .cache

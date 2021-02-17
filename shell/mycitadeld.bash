@@ -434,7 +434,7 @@ _mycitadel() {
             return 0
             ;;
         mycitadel__invoice__accept)
-            opts=" -f -v -n -d -h -V  --file --verbose --chain --data-dir --help --version  <invoice> <consignment> "
+            opts=" -f -v -n -d -h -V  --file --verbose --chain --data-dir --help --version  <consignment> "
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0

@@ -72,6 +72,11 @@ pub enum Reply {
     #[serde(skip)]
     PreparedPayment(PreparedPayment),
 
+    #[api(type = 0x0341)]
+    #[display("validation({0})")]
+    #[serde(skip)]
+    Validation(rgb::validation::Status),
+
     #[api(type = 0x0700)]
     #[display("asset({0})")]
     Asset(rgb20::Asset),

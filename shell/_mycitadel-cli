@@ -358,7 +358,6 @@ _arguments "${_arguments_options[@]}" \
 '--help[Prints help information]' \
 '-V[Prints version information]' \
 '--version[Prints version information]' \
-':invoice -- Your original invoice for acceptance:' \
 ':consignment -- Consignment data to accept:' \
 && ret=0
 ;;

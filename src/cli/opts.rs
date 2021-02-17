@@ -434,10 +434,6 @@ pub enum InvoiceCommand {
     /// lightning) are accepted automatically and does not require calling
     /// this method.
     Accept {
-        /// Your original invoice for acceptance
-        #[clap()]
-        invoice: Invoice,
-
         /// Consignment data to accept
         #[clap()]
         consignment: String,

@@ -13,12 +13,14 @@
 
 use colored::Colorize;
 use std::collections::HashMap;
+use std::str::FromStr;
 use std::{fs, io};
 
 use base64::display::Base64Display;
 use bitcoin::consensus::encode::{serialize, Encodable};
 use bitcoin::hashes::hex::ToHex;
 use microservices::shell::Exec;
+use rgb::{Consignment, Validity};
 use strict_encoding::StrictEncode;
 
 use super::{
@@ -373,7 +375,38 @@ impl Exec for InvoiceCommand {
                 }
                 Ok(())
             }
-            InvoiceCommand::Accept { .. } => unimplemented!(),
+            InvoiceCommand::Accept { consignment, file } => {
+                let consignment = if file {
+                    unimplemented!()
+                } else {
+                    Consignment::from_str(&consignment)
+                        .expect("bad consignment")
+                };
+
+                client.invoice_accept(consignment).map(|validation| {
+                    match validation.validity() {
+                        Validity::Valid => eprintln!(
+                            "Transfer successfully validated & accepted. Please refresh wallet balance"
+                        ),
+                        Validity::UnresolvedTransactions => {
+                            eprintln!(
+                                "Transfer successfully validated, but not all of the transactions are mined.\n\
+                             Please wait for the transaction to be mined and call the method once again.\n\
+                             List of yet unmined transactions:"
+                            );
+                            for failure in validation.unresolved_txids {
+                                eprintln!("- {}", failure)
+                            }
+                        },
+                        Validity::Invalid => {
+                            eprintln!("The provided consignment is invalid:");
+                            for failure in validation.failures {
+                                eprintln!("- {}", failure)
+                            }
+                        }
+                    }
+                })
+            }
         }
     }
 }

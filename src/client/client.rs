@@ -24,7 +24,7 @@ use invoice::{AssetClass, Beneficiary, Invoice};
 use lnpbp::chain::{AssetId, Chain};
 use lnpbp::client_side_validation::Conceal;
 use microservices::rpc::Failure;
-use rgb::{AtomicValue, Genesis};
+use rgb::{AtomicValue, Consignment, Genesis};
 use wallet::bip32::{PubkeyChain, UnhardenedIndex};
 use wallet::descriptor::{self, OuterCategory};
 use wallet::script::PubkeyScript;
@@ -326,6 +326,17 @@ impl Client {
             transfer_info,
         }))? {
             Reply::PreparedPayment(payment_info) => Ok(payment_info),
+            Reply::Failure(failure) => Err(failure.into()),
+            _ => Err(Error::UnexpectedApi),
+        }
+    }
+
+    pub fn invoice_accept(
+        &mut self,
+        consignment: Consignment,
+    ) -> Result<rgb::validation::Status, Error> {
+        match self.request(Request::AcceptPayment(consignment))? {
+            Reply::Validation(status) => Ok(status),
             Reply::Failure(failure) => Err(failure.into()),
             _ => Err(Error::UnexpectedApi),
         }

@@ -11,7 +11,7 @@
 // along with this software.
 // If not, see <https://www.gnu.org/licenses/agpl-3.0-standalone.html>.
 
-use rgb::Genesis;
+use rgb::{Consignment, Genesis};
 
 use super::message::{
     AddInvoiceRequest, ComposePaymentRequest, ContractAddressTuple,
@@ -75,6 +75,10 @@ pub enum Request {
     #[api(type = 0x0420)]
     #[display(inner)]
     ComposePayment(ComposePaymentRequest),
+
+    #[api(type = 0x0421)]
+    #[display(inner)]
+    AcceptPayment(Consignment),
 
     #[api(type = 0x0500)]
     #[display("list_identities()")]
