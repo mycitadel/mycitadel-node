@@ -427,7 +427,7 @@ impl OutputFormat for Invoice {
     }
 
     fn output_id_string(&self) -> String {
-        self.output_compact()
+        self.to_string()
     }
 
     fn output_fields(&self) -> Vec<String> {

@@ -1151,7 +1151,7 @@ dependencies = [
 [[package]]
 name = "lnpbp"
 version = "0.4.0-beta"
-source = "git+https://github.com/LNP-BP/rust-lnpbp#8b3bcf2ca43703113f3cc28aa8a781f7153a2987"
+source = "git+https://github.com/LNP-BP/rust-lnpbp#8e5e1a715efba0704b38fe7d2a24ce71e7b2b23f"
 dependencies = [
  "amplify",
  "amplify_derive",
@@ -1175,7 +1175,7 @@ dependencies = [
 [[package]]
 name = "lnpbp_invoice"
 version = "0.4.0-alpha.1"
-source = "git+https://github.com/LNP-BP/rust-lnpbp#8b3bcf2ca43703113f3cc28aa8a781f7153a2987"
+source = "git+https://github.com/LNP-BP/rust-lnpbp#8e5e1a715efba0704b38fe7d2a24ce71e7b2b23f"
 dependencies = [
  "amplify",
  "amplify_derive",

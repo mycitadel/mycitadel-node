@@ -230,67 +230,90 @@ impl Client {
             invoice, contract_id, fee
         );
         trace!("Parsed invoice: {:#?}", invoice);
-        let address = match invoice.beneficiary() {
-            Beneficiary::Address(address) => address.clone(),
-            /* Beneficiary::Descriptor(descriptor) =>
-                Address::from_script(
-                &descriptor.script_pubkey(),
-                bitcoin::Network::Bitcoin,
-            ).expect("We do not support descriptors not representable by address yet"), */
-            _ => unimplemented!(),
-        };
-        // TODO: Add address parser to LNP/BP descriptor
-        let descriptor = descriptor::Compact::try_from(PubkeyScript::from(
-            address.script_pubkey(),
-        ))
-        .expect("Address is always parsable as a descriptor");
-        debug!(
-            "Paying to descriptor {}",
-            descriptor.to_string().as_str().yellow()
-        );
-        trace!("Descriptor address representation is {}", address);
 
-        let transfer_info = match invoice
-            .classify_asset(&address.network.into())
-        {
-            AssetClass::Native => {
-                trace!("Performing native bitcoin transfer");
-                message::TransferInfo::Bitcoin(descriptor)
-            }
-            AssetClass::Rgb(asset_id) => {
-                trace!(
-                    "Performing transfer in {} assets",
-                    asset_id.to_string().as_str().yellow()
-                );
-                message::TransferInfo::Rgb {
-                    contract_id: asset_id,
-                    receiver: match invoice.beneficiary() {
-                        Beneficiary::Address(_) => Err(Error::ServerFailure(Failure {
+        let transfer_info = if let Some(asset_id) = invoice.rgb_asset() {
+            trace!(
+                "Performing transfer in {} assets",
+                asset_id.to_string().as_str().yellow()
+            );
+            message::TransferInfo::Rgb {
+                contract_id: asset_id,
+                receiver: match invoice.beneficiary() {
+                    Beneficiary::Address(_) => Err(Error::ServerFailure(Failure {
+                        code: 0,
+                        info: s!("Malformed invoice: RGB assets can't be paid to an address")
+                    }))?,
+                    Beneficiary::BlindUtxo(hash) => message::RgbReceiver::BlindUtxo(*hash),
+                    /* TODO: Need a derivation function to support descriptor-based invoices
+                    Beneficiary::Descriptor(..) => message::RgbReceiver::Descriptor {
+                        descriptor,
+                        giveaway: giveaway.ok_or(Error::ServerFailure(Failure {
                             code: 0,
-                            info: s!("Malformed invoice: RGB assets can't be paid to an address")
-                        }))?,
-                        Beneficiary::BlindUtxo(hash) => message::RgbReceiver::BlindUtxo(*hash),
-                        Beneficiary::Descriptor(..) => message::RgbReceiver::Descriptor {
-                            descriptor,
-                            giveaway: giveaway.ok_or(Error::ServerFailure(Failure {
-                                code: 0,
-                                info: s!("Giveaway amount is required for descriptor-based RGB payments")
-                            }))?
-                        },
-                        _ => unimplemented!()
-                    }
+                            info: s!("Giveaway amount is required for descriptor-based RGB payments")
+                        }))?
+                    },
+                     */
+                    _ => unimplemented!()
                 }
             }
-            AssetClass::InvalidNativeChain => {
-                Err(Error::ServerFailure(Failure {
+        } else {
+            let (descriptor, chain) = match invoice.beneficiary() {
+                Beneficiary::Address(address) => {
+                    trace!("Paying to bitcoin address {}", address);
+                    (
+                        descriptor::Compact::try_from(PubkeyScript::from(
+                            address.script_pubkey(),
+                        ))
+                            .expect("Address is always parsable as a descriptor"),
+                        Some(Chain::from(address.network)),
+                    )
+                },
+                Beneficiary::BlindUtxo(hash) => Err(Error::ServerFailure(Failure {
                     code: 0,
-                    info: s!("Current network does not match invoice network"),
-                }))?
+                    info: s!("Malformed invoice: bitcoins can't be paid to an existing UTXO")
+                }))?,
+                Beneficiary::Descriptor(d) => {
+                    unimplemented!();
+                    /*
+                    Address::from_script(
+                        &descriptor.script_pubkey(),
+                        bitcoin::Network::Bitcoin,
+                    ).expect("We do not support descriptors not representable by address yet")
+                     */
+                }
+                _ => unimplemented!(),
+            };
+
+            debug!(
+                "Paying to descriptor {} using {} chain",
+                descriptor.to_string().as_str().yellow(),
+                chain
+                    .as_ref()
+                    .map(Chain::to_string)
+                    .unwrap_or(s!("default"))
+                    .as_str()
+                    .yellow()
+            );
+
+            match invoice.classify_asset(chain) {
+                AssetClass::Native => {
+                    trace!("Performing native bitcoin transfer");
+                    message::TransferInfo::Bitcoin(descriptor)
+                }
+                AssetClass::Rgb(asset_id) => unreachable!(),
+                AssetClass::InvalidNativeChain => {
+                    Err(Error::ServerFailure(Failure {
+                        code: 0,
+                        info: s!(
+                            "Current network does not match invoice network"
+                        ),
+                    }))?
+                }
+                _ => Err(Error::ServerFailure(Failure {
+                    code: 0,
+                    info: s!("Unsupported asset type"),
+                }))?,
             }
-            _ => Err(Error::ServerFailure(Failure {
-                code: 0,
-                info: s!("Unsupported asset type"),
-            }))?,
         };
 
         match self.request(Request::ComposePayment(message::ComposePaymentRequest {
