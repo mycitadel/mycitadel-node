@@ -18,10 +18,11 @@ use std::ops::RangeInclusive;
 
 use bitcoin::Address;
 use invoice::Invoice;
-use lnpbp::seals::OutpointReveal;
+use lnpbp::seals::{OutpointHash, OutpointReveal};
 use lnpbp::strict_encoding::{self, StrictDecode, StrictEncode};
+use rgb::Consignment;
 use wallet::bip32::{PubkeyChain, UnhardenedIndex};
-use wallet::descriptor;
+use wallet::{descriptor, Psbt};
 
 use crate::model;
 
@@ -171,16 +172,22 @@ pub struct AddInvoiceRequest {
 
 #[serde_as]
 #[derive(
-    Serialize,
-    Deserialize,
-    Clone,
-    Eq,
-    PartialEq,
-    Ord,
-    PartialOrd,
-    Debug,
-    StrictEncode,
-    StrictDecode,
+    Serialize, Deserialize, Clone, PartialEq, Debug, StrictEncode, StrictDecode,
+)]
+pub enum RgbReceiver {
+    BlindUtxo(OutpointHash),
+    Descriptor {
+        #[serde_as(as = "DisplayFromStr")]
+        descriptor: descriptor::Compact,
+        /// Amount of statoshis to give away with the descriptor-based payment
+        giveaway: u64,
+    },
+    Psbt(Psbt),
+}
+
+#[serde_as]
+#[derive(
+    Serialize, Deserialize, Clone, PartialEq, Debug, StrictEncode, StrictDecode,
 )]
 #[serde(tag = "type")]
 pub enum TransferInfo {
@@ -188,8 +195,7 @@ pub enum TransferInfo {
 
     Rgb {
         contract_id: rgb::ContractId,
-        #[serde_as(as = "Option<DisplayFromStr>")]
-        descriptor: Option<descriptor::Compact>,
+        receiver: RgbReceiver,
     },
 }
 
@@ -207,29 +213,51 @@ impl TransferInfo {
             TransferInfo::Rgb { .. } => None,
         }
     }
+
+    pub fn rgb_descriptor(&self) -> Option<descriptor::Compact> {
+        match self {
+            TransferInfo::Bitcoin(_) => None,
+            TransferInfo::Rgb {
+                receiver: RgbReceiver::Descriptor { descriptor, .. },
+                ..
+            } => Some(descriptor.clone()),
+            _ => None,
+        }
+    }
+
+    pub fn is_rgb(&self) -> bool {
+        match self {
+            TransferInfo::Bitcoin(_) => false,
+            TransferInfo::Rgb { .. } => true,
+        }
+    }
 }
 
 #[derive(
     Serialize,
     Deserialize,
     Clone,
-    Eq,
     PartialEq,
-    Ord,
-    PartialOrd,
     Debug,
     Display,
     StrictEncode,
     StrictDecode,
 )]
 #[display(
-    "pay_invoice(from: {pay_from}, amount: {amount}, fee: {bitcoin_fee}, ...)"
+    "compose_payment(from: {pay_from}, amount: {amount}, fee: {bitcoin_fee}, ...)"
 )]
-pub struct ComposePsbtRequest {
+pub struct ComposePaymentRequest {
     pub pay_from: model::ContractId,
     pub bitcoin_fee: u64,
     pub amount: u64,
     pub transfer_info: TransferInfo,
+}
+
+#[derive(Clone, PartialEq, Debug, Display, StrictEncode, StrictDecode)]
+#[display("prepared_payment(...)")]
+pub struct PreparedPayment {
+    pub psbt: Psbt,
+    pub consignment: Option<Consignment>,
 }
 
 #[serde_as]

@@ -411,8 +411,12 @@ _arguments "${_arguments_options[@]}" \
 '--amount=[Force payment with the specified amount (always in satoshis). Required for invoices that does not provide amount field. For other types of invoices, if provided, overrides the amount found in the invoice]' \
 '-o+[File name to output PSBT. If no name is given PSBT data are output to STDOUT]' \
 '--output=[File name to output PSBT. If no name is given PSBT data are output to STDOUT]' \
+'-c+[File name to output consignment. If no name is given, consignment data are output to STDOUT in Bech32 format]' \
+'--consignment=[File name to output consignment. If no name is given, consignment data are output to STDOUT in Bech32 format]' \
 '-f+[PSBT format to use for the output; if no file is specified defaults to Base64 output; otherwise defaults to binary]' \
 '--format=[PSBT format to use for the output; if no file is specified defaults to Base64 output; otherwise defaults to binary]' \
+'-g+[How much satoshis to give away with RGB payment; required and allowed only when paying descriptor-based RGB invoices]' \
+'--giveaway=[How much satoshis to give away with RGB payment; required and allowed only when paying descriptor-based RGB invoices]' \
 '-n+[Blockchain to use]' \
 '--chain=[Blockchain to use]' \
 '-d+[Data directory path]: :_files -/' \

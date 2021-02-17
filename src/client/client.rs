@@ -28,7 +28,6 @@ use rgb::{AtomicValue, Genesis};
 use wallet::bip32::{PubkeyChain, UnhardenedIndex};
 use wallet::descriptor::{self, OuterCategory};
 use wallet::script::PubkeyScript;
-use wallet::Psbt;
 
 use super::Config;
 use crate::model::ContractId;
@@ -224,7 +223,8 @@ impl Client {
         invoice: Invoice,
         amount: Option<u64>,
         fee: u64,
-    ) -> Result<Psbt, Error> {
+        giveaway: Option<u64>,
+    ) -> Result<message::PreparedPayment, Error> {
         debug!(
             "Doing transfer for invoice {} using wallet {} with fee {}",
             invoice, contract_id, fee
@@ -264,8 +264,21 @@ impl Client {
                 );
                 message::TransferInfo::Rgb {
                     contract_id: asset_id,
-                    descriptor: None, /* TODO: support "pay-to-descriptor"
-                                       * variant */
+                    receiver: match invoice.beneficiary() {
+                        Beneficiary::Address(_) => Err(Error::ServerFailure(Failure {
+                            code: 0,
+                            info: s!("Malformed invoice: RGB assets can't be paid to an address")
+                        }))?,
+                        Beneficiary::BlindUtxo(hash) => message::RgbReceiver::BlindUtxo(*hash),
+                        Beneficiary::Descriptor(..) => message::RgbReceiver::Descriptor {
+                            descriptor,
+                            giveaway: giveaway.ok_or(Error::ServerFailure(Failure {
+                                code: 0,
+                                info: s!("Giveaway amount is required for descriptor-based RGB payments")
+                            }))?
+                        },
+                        _ => unimplemented!()
+                    }
                 }
             }
             AssetClass::InvalidNativeChain => {
@@ -280,7 +293,7 @@ impl Client {
             }))?,
         };
 
-        match self.request(Request::ComposePsbt(message::ComposePsbtRequest {
+        match self.request(Request::ComposePayment(message::ComposePaymentRequest {
             pay_from: contract_id,
             bitcoin_fee: fee,
             amount: invoice.amount().atomic_value().or(amount).ok_or(Error::ServerFailure(Failure {
@@ -289,7 +302,7 @@ impl Client {
             }))?,
             transfer_info,
         }))? {
-            Reply::Psbt(psbt) => Ok(psbt),
+            Reply::PreparedPayment(payment_info) => Ok(payment_info),
             Reply::Failure(failure) => Err(failure.into()),
             _ => Err(Error::UnexpectedApi),
         }

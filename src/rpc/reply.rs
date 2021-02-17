@@ -20,10 +20,9 @@ use invoice::Invoice;
 use lnpbp::seals::OutpointReveal;
 use microservices::{rpc, rpc_connection};
 use wallet::bip32::UnhardenedIndex;
-use wallet::Psbt;
 
 use crate::model::{AddressDerivation, Contract, Unspent};
-use crate::rpc::message::IdentityInfo;
+use crate::rpc::message::{IdentityInfo, PreparedPayment};
 use crate::Error;
 
 #[derive(Serialize, Deserialize, Clone, Debug, Display, Api)]
@@ -69,8 +68,9 @@ pub enum Reply {
 
     #[api(type = 0x0340)]
     // TODO: Display PSBT once it will support `Display` trait
-    #[display("psbt(...)")]
-    Psbt(Psbt),
+    #[display(inner)]
+    #[serde(skip)]
+    PreparedPayment(PreparedPayment),
 
     #[api(type = 0x0700)]
     #[display("asset({0})")]

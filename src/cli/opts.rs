@@ -413,10 +413,20 @@ pub enum InvoiceCommand {
         #[clap(short, long)]
         output: Option<PathBuf>,
 
+        /// File name to output consignment. If no name is given, consignment
+        /// data are output to STDOUT in Bech32 format
+        #[clap(short, long)]
+        consignment: Option<PathBuf>,
+
         /// PSBT format to use for the output; if no file is specified defaults
         /// to Base64 output; otherwise defaults to binary
         #[clap(short, long)]
         format: Option<PsbtFormat>,
+
+        /// How much satoshis to give away with RGB payment; required and
+        /// allowed only when paying descriptor-based RGB invoices
+        #[clap(short, long)]
+        giveaway: Option<u64>,
     },
 
     /// Accept payment for the invoice. Required only for on-chain RGB

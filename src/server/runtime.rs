@@ -14,6 +14,7 @@
 use std::collections::{BTreeMap, HashMap, HashSet};
 use std::convert::TryInto;
 
+use bitcoin::secp256k1::rand::{rngs::ThreadRng, RngCore};
 use bitcoin::{OutPoint, Transaction, TxIn, TxOut, Txid};
 use electrum_client::{Client as ElectrumClient, ElectrumApi};
 use internet2::zmqsocket::{self, ZmqType};
@@ -27,8 +28,10 @@ use lnpbp::strict_encoding::StrictDecode;
 use microservices::node::TryService;
 use microservices::rpc::Failure;
 use microservices::FileFormat;
+use rgb::{SealDefinition, SealEndpoint};
 use rgb20::Asset;
 use rgb_node::rpc::reply::SyncFormat;
+use rgb_node::rpc::reply::Transfer;
 use rgb_node::util::ToBech32Data;
 use wallet::bip32::{ChildIndex, UnhardenedIndex};
 use wallet::descriptor::ContractDescriptor;
@@ -72,6 +75,9 @@ pub struct Runtime {
     /// RGB20 (fungibled) daemon client
     rgb20_client: rgb_node::i9n::Runtime,
 
+    /// Random number generator (used in creation of blinding secrets)
+    rng: ThreadRng,
+
     /// Known blockchain height by the last received block header
     known_height: u32,
 }
@@ -83,6 +89,9 @@ impl Runtime {
 
         debug!("Initializing wallet cache {:?}", config.cache_conf());
         let cache = cache::FileDriver::with(config.cache_conf())?;
+
+        debug!("Initializing random number generator");
+        let rng = bitcoin::secp256k1::rand::thread_rng();
 
         debug!("Opening RPC API socket {}", config.rpc_endpoint);
         let session_rpc = session::Raw::with_zmq_unencrypted(
@@ -130,6 +139,7 @@ impl Runtime {
             storage,
             cache,
             rgb20_client,
+            rng,
             unmarshaller: Request::create_unmarshaller(),
             known_height,
         })
@@ -403,48 +413,94 @@ impl Runtime {
                 Ok(Reply::Success)
             },
 
-            Request::ComposePsbt(message::ComposePsbtRequest { pay_from, amount, bitcoin_fee, transfer_info }) => {
+            Request::ComposePayment(message::ComposePaymentRequest { pay_from, amount, bitcoin_fee, transfer_info }) => {
                 let contract = self.storage.contract_ref(pay_from).map_err(Error::from)?;
                 let mut coins = self.cache.unspent(pay_from).map_err(Error::from)?.get(&transfer_info.contract_id()).cloned().unwrap_or_default();
-                trace!("Found coins: {:#?}", coins);
                 // TODO: Implement more coinselection strategies
                 coins.sort_by(|a, b| a.value.cmp(&b.value));
-                trace!("Sorted coins: {:#?}", coins);
+                trace!("Found coins: {:#?}", coins);
+
+                // Collecting RGB witness/bitcoin payment inputs
                 let mut input_amount = 0u64;
-                let input: Vec<TxIn> = coins.into_iter().filter_map(|unspent| {
-                    if input_amount >= amount + bitcoin_fee {
-                        return None
-                    }
-                    self.cache.blockpos_to_txid(unspent.height, unspent.offset).map(|txid| {
-                        input_amount += unspent.value;
+                let asset_fee = if transfer_info.is_rgb() { 0 } else { bitcoin_fee };
+
+                let mut asset_change_outpoint = None;
+                let spent_outpoints: Vec<OutPoint> = coins.into_iter().filter_map(|unspent| {
+                    self.cache.blockpos_to_txid(unspent.height, unspent.offset).and_then(|txid| {
                         let outpoint = OutPoint::new(txid, unspent.vout as u32);
+                        if input_amount >= amount + asset_fee {
+                            asset_change_outpoint = Some(outpoint);
+                            return None
+                        }
+                        input_amount += unspent.value;
                         trace!("Adding {} to the inputs with {} sats; total input value is {}", outpoint, unspent.value, input_amount);
-                        outpoint
+                        Some(outpoint)
                     })
-                }).map(|outpoint| {
+                }).collect();
+                let input: Vec<TxIn> = spent_outpoints.iter().map(|outpoint| {
                     TxIn {
-                        previous_output: outpoint,
+                        previous_output: *outpoint,
                         script_sig: Default::default(),
                         sequence: 0,
                         witness: vec![],
                     }
                 }).collect();
-                if input_amount < amount + bitcoin_fee {
+                if input_amount < amount + asset_fee {
                     Err(Error::ServerFailure(Failure {
                         code: 0,
                         info: s!("Insufficient funds")
                     }))?;
                 }
+
+                // Constructing RGB witness/bitcoin payment transaction outputs
                 let mut output = vec![];
-                if let Some(descriptor) = transfer_info.bitcoin_descriptor() {
+                let mut bitcoin_amount = 0u64;
+                let rgb_endpoint = if let Some(descriptor) = transfer_info.bitcoin_descriptor() {
+                    // We need this output only for bitcoin payments
                     trace!("Adding output paying {} to {}", amount, descriptor);
+                    bitcoin_amount = amount;
                     output.push(TxOut {
                         value: amount,
                         script_pubkey: PubkeyScript::from(descriptor).into(),
-                    })
+                    });
+                    SealEndpoint::TxOutpoint(default!())
+                } else if let message::TransferInfo::Rgb {
+                    contract_id,
+                    receiver: message::RgbReceiver::Descriptor { ref descriptor, giveaway }
+                } = transfer_info {
+                    // We need this output only for descriptor-based RGB payments
+                    trace!("Adding output paying {} bitcoin giveaway to {}", giveaway, descriptor);
+                    bitcoin_amount = giveaway;
+                    output.push(TxOut {
+                        value: giveaway,
+                        script_pubkey: PubkeyScript::from(descriptor.clone()).into(),
+                    });
+                    SealEndpoint::with_vout(output.len() as u32 - 1, &mut self.rng)
+                } else if let message::TransferInfo::Rgb {
+                    contract_id: _, receiver: message::RgbReceiver::BlindUtxo(hash)
+                } = transfer_info {
+                    SealEndpoint::TxOutpoint(hash)
+                } else {
+                    unimplemented!()
+                };
+
+                // Get to known how much bitcoins we are spending
+                let mut input_bitcoin_amount = 0u64;
+                let mut outpoint_check = spent_outpoints.clone();
+                for unspent in self.cache.unspent(pay_from).map_err(Error::from)?.get(&rgb::ContractId::default()).ok_or(Error::CacheInconsistency)? {
+                    let txid = self.cache.blockpos_to_txid(unspent.height, unspent.offset).ok_or(Error::CacheInconsistency)?;
+                    if let Some(index) = outpoint_check.iter().position(|o| *o == OutPoint::new(txid, unspent.vout as u32)) {
+                        outpoint_check.remove(index);
+                        input_bitcoin_amount += unspent.value;
+                    }
                 }
-                if input_amount > amount + bitcoin_fee {
-                    let change = input_amount - amount - bitcoin_fee;
+                if outpoint_check.len() > 0 {
+                    Err(Error::CacheInconsistency)?
+                }
+
+                // Adding bitcoin change output, if needed
+                let change_vout = if input_bitcoin_amount > bitcoin_amount + bitcoin_fee {
+                    let change = input_bitcoin_amount - bitcoin_amount - bitcoin_fee;
                     let change_index = self.cache
                         .next_unused_derivation(pay_from).map_err(Error::from)?;
                     let change_address = contract.derive_address(change_index, false).ok_or(Error::ServerFailure(Failure {
@@ -455,44 +511,53 @@ impl Runtime {
                     output.push(TxOut {
                         value: change,
                         script_pubkey: change_address.script_pubkey(),
-                    })
+                    });
+                    Some(output.len() as u32 - 1)
+                } else {
+                    None
+                };
+
+                // Adding RGB change output, if needed
+                // NB: Right now, we use really dumb algorithm, allocating 
+                //     change to first found outpoint with existing assignment
+                //     of the same asset, or, if none, to the bitcoin change
+                //     output - failing if neither of them is present. We can
+                //     be much smarter, assigning to existing bitcoin utxos,
+                //     or creating new output for RGB change
+                let mut rgb_change = bmap! {};
+                if input_amount > amount && transfer_info.is_rgb() {
+                    let change = input_amount - amount;
+                    rgb_change.insert(
+                        asset_change_outpoint.map(|outpoint| SealDefinition::TxOutpoint(
+                            OutpointReveal {
+                                blinding: self.rng.next_u64(),
+                                txid: outpoint.txid,
+                                vout: outpoint.vout
+                            }
+                        )).or_else(|| change_vout.map(|vout| SealDefinition::WitnessVout {
+                            vout,
+                            blinding: self.rng.next_u64()
+                        })).ok_or(Error::ServerFailure(Failure {
+                            code: 0,
+                            info: s!("Can't allocate RGB change")
+                        }))?,
+                        change
+                    );
                 }
 
-                let inputs = input.iter().map(|_| psbt::Input {
-                    non_witness_utxo: None,
-                    witness_utxo: None,
-                    partial_sigs: Default::default(),
-                    sighash_type: None,
-                    redeem_script: None,
-                    witness_script: None,
-                    bip32_derivation: Default::default(),
-                    final_script_sig: None,
-                    final_script_witness: None,
-                    ripemd160_preimages: Default::default(),
-                    sha256_preimages: Default::default(),
-                    hash160_preimages: Default::default(),
-                    hash256_preimages: Default::default(),
-                    proprietary: Default::default(),
-                    unknown: Default::default(),
-                }).collect();
-                let outputs = output.iter().map(|_| psbt::Output {
-                    redeem_script: None,
-                    witness_script: None,
-                    bip32_derivation: Default::default(),
-                    proprietary: Default::default(),
-                    unknown: Default::default(),
-                }).collect();
-
-                let tx = Transaction {
-                    version: 1,
-                    lock_time: 0,
-                    input,
-                    output,
-                };
-                trace!("Resulting transaction: {:#?}", tx);
+                // Constructing bitcoin payment PSBT (for bitcoin payments) or
+                // RGB witness PSBT prototype for the commitment (for RGB
+                // payments)
+                let inputs = input.iter().map(|_| psbt::Input::default()).collect();
+                let outputs = output.iter().map(|_| psbt::Output::default()).collect();
                 let psbt = Psbt {
                     global: psbt::Global {
-                        unsigned_tx: tx,
+                        unsigned_tx: Transaction {
+                            version: 1,
+                            lock_time: 0,
+                            input,
+                            output,
+                        },
                         version: 0,
                         xpub: none!(),
                         proprietary: none!(),
@@ -502,7 +567,23 @@ impl Runtime {
                     outputs,
                 };
                 trace!("Resulting PSBT: {:#?}", psbt);
-                Ok(Reply::Psbt(psbt))
+
+                // Committing to RGB transfer into the witness transaction and
+                // producing consignments (applies to RGB payments only)
+                let payment_data = if let message::TransferInfo::Rgb { contract_id: asset_id, ref receiver} = transfer_info {
+                    let Transfer { consignment, witness } = self.rgb20_client.transfer(
+                        asset_id,
+                        spent_outpoints.into_iter().collect(),
+                        bmap! { rgb_endpoint => amount },
+                        rgb_change,
+                        psbt.clone()
+                    ).map_err(Error::from)?;
+                    message::PreparedPayment { psbt: witness, consignment: Some(consignment) }
+                } else {
+                    message::PreparedPayment { psbt, consignment: None }
+                };
+
+                Ok(Reply::PreparedPayment(payment_data))
             },
 
             Request::ContractUnspent(id) => self

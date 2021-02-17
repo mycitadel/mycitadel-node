@@ -19,6 +19,7 @@ use base64::display::Base64Display;
 use bitcoin::consensus::encode::{serialize, Encodable};
 use bitcoin::hashes::hex::ToHex;
 use microservices::shell::Exec;
+use strict_encoding::StrictEncode;
 
 use super::{
     AddressCommand, AssetCommand, Command, InvoiceCommand, OutputFormat,
@@ -305,11 +306,14 @@ impl Exec for InvoiceCommand {
                 amount,
                 fee,
                 output,
+                consignment,
                 format,
+                giveaway,
             } => {
-                let psbt =
-                    client.invoice_pay(wallet_id, invoice, amount, fee)?;
-                let (mut file, format) = if let Some(filename) = output {
+                let prepared_payment = client
+                    .invoice_pay(wallet_id, invoice, amount, fee, giveaway)?;
+                let (mut psbt_file, format) = if let Some(ref filename) = output
+                {
                     (
                         Box::new(io::BufWriter::new(fs::File::create(
                             filename,
@@ -325,15 +329,19 @@ impl Exec for InvoiceCommand {
                 };
                 match format {
                     PsbtFormat::Binary => {
-                        psbt.consensus_encode(file)?;
+                        prepared_payment.psbt.consensus_encode(psbt_file)?;
                     }
                     PsbtFormat::Hexadecimal => {
-                        file.write_all(serialize(&psbt).to_hex().as_bytes())?;
+                        psbt_file.write_all(
+                            serialize(&prepared_payment.psbt)
+                                .to_hex()
+                                .as_bytes(),
+                        )?;
                     }
                     PsbtFormat::Base64 => {
-                        file.write_all(
+                        psbt_file.write_all(
                             Base64Display::with_config(
-                                &serialize(&psbt),
+                                &serialize(&prepared_payment.psbt),
                                 ::base64::STANDARD,
                             )
                             .to_string()
@@ -341,8 +349,17 @@ impl Exec for InvoiceCommand {
                         )?;
                     }
                 }
+                if let Some(data) = prepared_payment.consignment {
+                    match consignment {
+                        None => println!("{}", data),
+                        Some(filename) => {
+                            let file = fs::File::create(filename)?;
+                            data.strict_encode(file)?;
+                        }
+                    }
+                }
                 if output.is_none() {
-                    prtintln!("");
+                    println!();
                 }
                 Ok(())
             }

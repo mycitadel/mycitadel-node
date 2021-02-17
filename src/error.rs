@@ -72,6 +72,10 @@ pub enum Error {
     #[from]
     ServerFailure(rpc::Failure),
 
+    /// Internal cache inconsistency; you need to refresh balances and try
+    /// again
+    CacheInconsistency,
+
     /// Error in strict data encoding: {0}
     /// Make sure that the storage is not broken.
     #[from]

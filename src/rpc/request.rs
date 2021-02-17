@@ -14,8 +14,8 @@
 use rgb::Genesis;
 
 use super::message::{
-    AddInvoiceRequest, ComposePsbtRequest, ContractAddressTuple, IdentityInfo,
-    NextAddressRequest, RenameContractRequest, SignerAccountInfo,
+    AddInvoiceRequest, ComposePaymentRequest, ContractAddressTuple,
+    IdentityInfo, NextAddressRequest, RenameContractRequest, SignerAccountInfo,
     SingleSigInfo, SyncContractRequest,
 };
 use crate::model::ContractId;
@@ -74,7 +74,7 @@ pub enum Request {
 
     #[api(type = 0x0420)]
     #[display(inner)]
-    ComposePsbt(ComposePsbtRequest),
+    ComposePayment(ComposePaymentRequest),
 
     #[api(type = 0x0500)]
     #[display("list_identities()")]
