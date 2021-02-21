@@ -53,8 +53,9 @@ impl mycitadel_client_t {
         me
     }
 
-    fn inner(&mut self) -> Option<&mut Client> {
-        if self.is_ok() {
+    pub(crate) fn inner(&mut self) -> Option<&mut Client> {
+        if self.inner.is_null() {
+            self.set_error_no(ERRNO_UNINIT);
             return None;
         }
         let boxed = unsafe { Box::from_raw(self.inner as *mut Client) };
@@ -100,23 +101,18 @@ impl mycitadel_client_t {
     }
 
     pub(crate) fn is_ok(&self) -> bool {
-        self.inner.is_null() && self.err_no == SUCCESS
+        self.message.is_null() && self.err_no == SUCCESS
     }
 
     pub(crate) fn has_err(&self) -> bool {
         self.err_no != SUCCESS && !self.message.is_null()
     }
 
-    pub(crate) fn call(&mut self, request: rpc::Request) -> *const c_char {
-        let inner = match self.inner() {
-            None => {
-                self.set_error_no(ERRNO_UNINIT);
-                return ptr::null();
-            }
-            Some(inner) => inner,
-        };
-        inner
-            .request(request)
+    pub(crate) fn process_response(
+        &mut self,
+        response: Result<rpc::Reply, Error>,
+    ) -> *const c_char {
+        response
             .map_err(|err| {
                 self.set_error(err);
                 ()
@@ -142,6 +138,13 @@ impl mycitadel_client_t {
                     ptr::null()
                 }
             })
+            .unwrap_or(ptr::null())
+    }
+
+    pub(crate) fn call(&mut self, request: rpc::Request) -> *const c_char {
+        self.inner()
+            .map(|inner| inner.request(request))
+            .map(|response| self.process_response(response))
             .unwrap_or(ptr::null())
     }
 }

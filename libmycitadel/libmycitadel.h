@@ -78,6 +78,8 @@
 
 #define ERRNO_BECH32 103
 
+#define ERRNO_PARSE 104
+
 typedef enum bip39_mnemonic_type {
         words_12,
         words_15,
@@ -165,6 +167,13 @@ struct mycitadel_client_t *mycitadel_run_embedded(const char *chain,
 bool mycitadel_is_ok(struct mycitadel_client_t *client);
 
 bool mycitadel_has_err(struct mycitadel_client_t *client);
+
+const char *mycitadel_create_single_sig(struct mycitadel_client_t *client,
+                                        const char *name,
+                                        const char *keychain,
+                                        OuterCategory category);
+
+const char *mycitadel_list_contracts(struct mycitadel_client_t *client);
 
 const char *mycitadel_list_assets(struct mycitadel_client_t *client);
 

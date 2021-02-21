@@ -16,7 +16,9 @@ use std::str::FromStr;
 
 use internet2::ZmqSocketAddr;
 use lnpbp::Chain;
-use mycitadel::rpc;
+use mycitadel::{rpc, Client};
+use wallet::bip32::PubkeyChain;
+use wallet::descriptor;
 
 use crate::error::*;
 use crate::mycitadel_client_t;
@@ -62,6 +64,43 @@ pub extern "C" fn mycitadel_has_err(client: *mut mycitadel_client_t) -> bool {
 }
 
 #[no_mangle]
+pub extern "C" fn mycitadel_create_single_sig(
+    client: *mut mycitadel_client_t,
+    name: *const c_char,
+    keychain: *const c_char,
+    category: descriptor::OuterCategory,
+) -> *const c_char {
+    let client =
+        unsafe { client.as_mut().expect("Wrong MyCitadel client pointer") };
+    let pubkey_chain = match PubkeyChain::from_str(&ptr_to_string(keychain)) {
+        Ok(pubkey_chain) => pubkey_chain,
+        Err(err) => {
+            client.set_error_details(
+                ERRNO_PARSE,
+                &format!("invalid keychain data for wallet creation: {}", err),
+            );
+            return ptr::null();
+        }
+    };
+    let call = |client: &mut Client| {
+        client.single_sig_create(ptr_to_string(name), pubkey_chain, category)
+    };
+    client
+        .inner()
+        .map(call)
+        .map(|response| client.process_response(response))
+        .unwrap_or(ptr::null())
+}
+
+#[no_mangle]
+pub extern "C" fn mycitadel_list_contracts(
+    client: *mut mycitadel_client_t,
+) -> *const c_char {
+    unsafe { client.as_mut().expect("Wrong MyCitadel client pointer") }
+        .call(rpc::Request::ListContracts)
+}
+
+#[no_mangle]
 pub extern "C" fn mycitadel_list_assets(
     client: *mut mycitadel_client_t,
 ) -> *const c_char {
@@ -77,17 +116,9 @@ pub extern "C" fn mycitadel_import_asset(
     let client =
         unsafe { client.as_mut().expect("Wrong MyCitadel client pointer") };
     let genesis_b32 = ptr_to_string(genesis_b32);
-    match rgb::Genesis::from_str(&genesis_b32) {
-        Ok(genesis) => client.call(rpc::Request::ImportAsset(genesis)),
-        Err(err) => {
-            client.set_error_details(
-                ERRNO_BECH32,
-                &format!(
-                    "Error in Bech32 encoding of asset genesis: {}",
-                    err.to_string()
-                ),
-            );
-            ptr::null()
-        }
-    }
+    client
+        .inner()
+        .map(|client| client.asset_import(genesis_b32))
+        .map(|response| client.process_response(response))
+        .unwrap_or(ptr::null())
 }
