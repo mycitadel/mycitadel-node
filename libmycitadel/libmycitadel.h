@@ -182,6 +182,11 @@ const char *mycitadel_contract_rename(struct mycitadel_client_t *client,
 const char *mycitadel_contract_delete(struct mycitadel_client_t *client,
                                       const char *contract_id);
 
+const char *mycitadel_contract_balance(struct mycitadel_client_t *client,
+                                       const char *contract_id,
+                                       bool rescan,
+                                       uint8_t lookup_depth);
+
 const char *mycitadel_list_assets(struct mycitadel_client_t *client);
 
 const char *mycitadel_import_asset(struct mycitadel_client_t *client,

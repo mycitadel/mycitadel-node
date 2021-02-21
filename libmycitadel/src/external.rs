@@ -138,6 +138,27 @@ pub extern "C" fn mycitadel_contract_delete(
 }
 
 #[no_mangle]
+pub extern "C" fn mycitadel_contract_balance(
+    client: *mut mycitadel_client_t,
+    contract_id: *const c_char,
+    rescan: bool,
+    lookup_depth: u8,
+) -> *const c_char {
+    let client =
+        unsafe { client.as_mut().expect("Wrong MyCitadel client pointer") };
+    let contract_id = client.contract_id(contract_id);
+    client
+        .inner()
+        .and_then(|inner| {
+            contract_id.map(|contract_id| {
+                inner.contract_balance(contract_id, rescan, lookup_depth)
+            })
+        })
+        .map(|response| client.process_response(response))
+        .unwrap_or(ptr::null())
+}
+
+#[no_mangle]
 pub extern "C" fn mycitadel_list_assets(
     client: *mut mycitadel_client_t,
 ) -> *const c_char {
