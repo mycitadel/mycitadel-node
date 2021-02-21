@@ -34,8 +34,6 @@ use microservices::shell::{Exec, LogLevel};
 use mycitadel::{server, EmbeddedOpts, Error};
 
 fn main() -> Result<(), Error> {
-    println!("mycitadel: command-line runtime");
-
     let opts = EmbeddedOpts::parse();
     LogLevel::from_verbosity_flag_count(opts.daemon.shared.verbose).apply();
 

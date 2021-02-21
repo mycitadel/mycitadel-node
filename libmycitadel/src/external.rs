@@ -9,11 +9,15 @@
 
 #![allow(dead_code)]
 
+use rand::RngCore;
 use std::os::raw::c_char;
 use std::path::PathBuf;
 use std::ptr;
 use std::str::FromStr;
 
+use bitcoin::util::bip32::{ChainCode, ChildNumber, ExtendedPrivKey};
+use bitcoin::Network;
+use bitcoin::{secp256k1, PrivateKey};
 use internet2::ZmqSocketAddr;
 use lnpbp::Chain;
 use mycitadel::rpc;
@@ -21,6 +25,96 @@ use mycitadel::rpc;
 use crate::error::*;
 use crate::mycitadel_client_t;
 use crate::ptr_to_string;
+
+#[allow(non_camel_case_types)]
+#[repr(C)]
+pub struct mycitadel_mnemonic12_t {
+    inner: [u8; 16],
+}
+
+#[allow(non_camel_case_types)]
+#[repr(C)]
+pub struct mycitadel_master_xpriv_t {
+    inner: [u8; 64],
+}
+
+#[allow(non_camel_case_types)]
+#[repr(C)]
+pub struct mycitadel_xpriv_t {
+    inner: [u8; 76],
+}
+
+#[allow(non_camel_case_types)]
+#[repr(C)]
+pub struct mycitadel_xpub_t {
+    inner: [u8; 76],
+}
+
+#[no_manglee]
+pub extern "C" fn mycitadel_seed16_create() -> mycitadel_mnemonic12_t {
+    let mut inner = [0u8; 16];
+    rand::thread_rng().fill_bytes(&inner);
+    mycitadel_mnemonic12_t { inner }
+}
+
+#[no_mangle]
+pub extern "C" fn mycitadel_seed16_wipe(mut seed: mycitadel_mnemonic12_t) {
+    seed.inner.fill(0u8);
+}
+
+#[no_mangle]
+pub extern "C" fn mycitadel_seed16_master(
+    seed: mycitadel_mnemonic12_t,
+    passwd: *const c_char,
+    testnet: bool,
+) -> mycitadel_master_xpriv_t {
+    let mnemonic = bip39::Mnemonic::from_entropy(&seed.inner)?;
+    let passwd = ptr_to_string(passwd);
+    let seed = mnemonic.to_seed(&passwd);
+    let xpriv = ExtendedPrivKey::new_master(
+        if testnet {
+            Network::Testnet
+        } else {
+            Network::Bitcoin
+        },
+        &seed,
+    )?;
+    let mut inner = [0u8; 64];
+    inner[..32].copy_from_slice(xpriv.private_key.key);
+    inner[32..].copy_from_slice(xpriv.chain_code.as_bytes());
+    mycitadel_master_xpriv_t { inner }
+}
+
+#[no_mangle]
+pub extern "C" fn mycitadel_xpriv_derive(
+    master: mycitadel_master_xpriv_t,
+    derivation: *const c_char,
+    testnet: bool,
+) -> mycitadel_xpriv_t {
+    let mut priv_key = [0u8; 32];
+    let mut chain_code = [0u8; 32];
+    priv_key.copy_from_slice(&master.inner[..32]);
+    chain_code.copy_from_slice(&master.inner[32..]);
+    let network = if testnet {
+        Network::Testnet
+    } else {
+        Network::Bitcoin
+    };
+    let master = ExtendedPrivKey {
+        network,
+        depth: 0,
+        parent_fingerprint: Default::default(),
+        child_number: ChildNumber::Normal { index: 0 },
+        private_key: PrivateKey {
+            compressed: true,
+            network,
+            key: secp256k1::SecretKey::from_slice(&priv_key)?,
+        },
+        chain_code: ChainCode::from(&chain_code),
+    };
+    let derivation = ptr_to_string(derivation);
+    let xpriv = master.derive_priv(&wallet::SECP256K1, derivation.parse()?)?;
+}
 
 #[no_mangle]
 pub extern "C" fn mycitadel_run_embedded(

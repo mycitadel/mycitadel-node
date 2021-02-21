@@ -31,6 +31,18 @@ where
     }
 }
 
+impl ToString for *const c_char {
+    fn to_string(&self) -> String {
+        unsafe { CStr::from_ptr(ptr) }.to_string_lossy().to_string()
+    }
+}
+
+impl ToString for *mut c_char {
+    fn to_string(&self) -> String {
+        unsafe { CStr::from_ptr(ptr) }.to_string_lossy().to_string()
+    }
+}
+
 pub fn ptr_to_string(ptr: *const c_char) -> String {
     unsafe { CStr::from_ptr(ptr) }.to_string_lossy().to_string()
 }
