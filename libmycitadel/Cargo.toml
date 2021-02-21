@@ -16,6 +16,7 @@ cbindgen = "0.16"
 openssl = { version = "^0.10", features = ["vendored"] }
 
 [dependencies]
+libc = "0.2"
 amplify = "3"
 amplify_derive = "2.4"
 mycitadel = { path = "..", features = [ "node", "client" ] }

@@ -8,6 +8,7 @@
 // any warranty.
 
 #![recursion_limit = "256"]
+#![feature(try_trait)]
 // Coding conventions
 #![deny(
     non_upper_case_globals,
@@ -21,12 +22,15 @@
 
 #[macro_use]
 extern crate amplify;
+#[macro_use]
+extern crate amplify_derive;
 
 mod bech32;
 mod client;
 pub mod error;
 mod external;
 mod helpers;
+pub mod signer;
 
 pub use client::mycitadel_client_t;
 pub use helpers::{ptr_to_string, ToCharPtr};

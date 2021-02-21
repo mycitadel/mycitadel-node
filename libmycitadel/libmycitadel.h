@@ -78,6 +78,57 @@
 
 #define ERRNO_BECH32 103
 
+typedef enum bip39_mnemonic_type {
+        words_12,
+        words_15,
+        words_18,
+        words_21,
+        words_24,
+} bip39_mnemonic_type;
+
+enum error_t
+#ifdef __cplusplus
+  : uint16_t
+#endif // __cplusplus
+ {
+        success = 0,
+        /**
+         * got a null pointer as one of the function arguments
+         */
+        null_pointer,
+        /**
+         * result data must be a valid string which does not contain zero bytes
+         */
+        invalid_result_data,
+        /**
+         * invalid mnemonic string
+         */
+        invalid_mnemonic,
+        /**
+         * invalid UTF-8 string
+         */
+        invalid_utf8_string,
+        /**
+         * wrong BIP32 extended public or private key data
+         */
+        wrong_extended_key,
+        /**
+         * unable to derive hardened path from a public key
+         */
+        unable_to_derive_hardened,
+        /**
+         * invalid derivation path
+         */
+        invalid_derivation_path,
+        /**
+         * general BIP32-specific failure
+         */
+        bip32_failure,
+};
+#ifndef __cplusplus
+typedef uint16_t error_t;
+#endif // __cplusplus
+
 typedef struct bech32_info_t {
         int status;
         int category;
@@ -90,6 +141,16 @@ typedef struct mycitadel_client_t {
         const char *message;
         int err_no;
 } mycitadel_client_t;
+
+typedef union result_details_t {
+        const char *data;
+        const char *error;
+} result_details_t;
+
+typedef struct string_result_t {
+        error_t code;
+        union result_details_t details;
+} string_result_t;
 
 #ifdef __cplusplus
 extern "C" {
@@ -109,6 +170,37 @@ const char *mycitadel_list_assets(struct mycitadel_client_t *client);
 
 const char *mycitadel_import_asset(struct mycitadel_client_t *client,
                                    const char *genesis_b32);
+
+bool is_success(struct string_result_t result);
+
+void result_destroy(struct string_result_t result);
+
+/**
+ * Creates a rust-owned mnemonic string. You MUSt always call
+ * [`string_destroy`] right after storing the mnemonic string and
+ * do not call other methods from this library on that mnemonic. If you need
+ * to call [`bip39_master_xpriv`] you MUST read mnemonic again and provide
+ * unowned string to the rust.
+ */
+struct string_result_t bip39_mnemonic_create(const uint8_t *entropy,
+                                             enum bip39_mnemonic_type mnemonic_type);
+
+struct string_result_t bip39_master_xpriv(char *seed_phrase,
+                                          char *passwd,
+                                          bool wipe,
+                                          bool testnet);
+
+struct string_result_t bip32_derive_xpriv(char *master,
+                                          bool wipe,
+                                          const char *derivation);
+
+struct string_result_t bip32_derive_xpub(char *master,
+                                         bool wipe,
+                                         const char *derivation);
+
+struct string_result_t psbt_sign(const char *_psbt,
+                                 const char *_xpriv,
+                                 bool _wipe);
 
 #ifdef __cplusplus
 } // extern "C"

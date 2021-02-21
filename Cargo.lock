@@ -608,7 +608,7 @@ dependencies = [
 [[package]]
 name = "descriptor-wallet"
 version = "0.4.0-beta"
-source = "git+https://github.com/LNP-BP/descriptor-wallet#ac043efd947e0fb754270fe00986d0f3e81d64f8"
+source = "git+https://github.com/LNP-BP/descriptor-wallet#576d3055e32ad2ef95e98b201b55359b4024d471"
 dependencies = [
  "amplify",
  "amplify_derive",
@@ -637,7 +637,7 @@ dependencies = [
  "libsqlite3-sys",
  "num-bigint",
  "num-integer",
- "num-traits 0.2.14",
+ "num-traits 0.1.43",
  "uuid",
 ]
 
@@ -1076,6 +1076,7 @@ dependencies = [
  "descriptor-wallet",
  "env_logger",
  "internet2",
+ "libc",
  "libsqlite3-sys",
  "lnpbp",
  "log",
