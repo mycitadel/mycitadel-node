@@ -14,7 +14,8 @@ use std::ptr;
 use mycitadel::{rpc, Client, Error};
 
 use crate::error::*;
-use crate::ToCharPtr;
+use crate::{ptr_to_string, ToCharPtr};
+use std::str::FromStr;
 
 #[allow(non_camel_case_types)]
 #[repr(C)]
@@ -146,5 +147,19 @@ impl mycitadel_client_t {
             .map(|inner| inner.request(request))
             .map(|response| self.process_response(response))
             .unwrap_or(ptr::null())
+    }
+
+    pub(crate) fn contract_id(
+        &mut self,
+        bech32: *const c_char,
+    ) -> Option<mycitadel::model::ContractId> {
+        mycitadel::model::ContractId::from_str(&ptr_to_string(bech32))
+            .map_err(|err| {
+                self.set_error_details(
+                    ERRNO_PARSE,
+                    &format!("invalid contract id: {}", err),
+                )
+            })
+            .ok()
     }
 }

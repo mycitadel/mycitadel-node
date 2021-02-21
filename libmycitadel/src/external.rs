@@ -64,7 +64,15 @@ pub extern "C" fn mycitadel_has_err(client: *mut mycitadel_client_t) -> bool {
 }
 
 #[no_mangle]
-pub extern "C" fn mycitadel_create_single_sig(
+pub extern "C" fn mycitadel_contract_list(
+    client: *mut mycitadel_client_t,
+) -> *const c_char {
+    unsafe { client.as_mut().expect("Wrong MyCitadel client pointer") }
+        .call(rpc::Request::ListContracts)
+}
+
+#[no_mangle]
+pub extern "C" fn mycitadel_single_sig_create(
     client: *mut mycitadel_client_t,
     name: *const c_char,
     keychain: *const c_char,
@@ -93,19 +101,53 @@ pub extern "C" fn mycitadel_create_single_sig(
 }
 
 #[no_mangle]
-pub extern "C" fn mycitadel_list_contracts(
+pub extern "C" fn mycitadel_contract_rename(
     client: *mut mycitadel_client_t,
+    contract_id: *const c_char,
+    new_name: *const c_char,
 ) -> *const c_char {
-    unsafe { client.as_mut().expect("Wrong MyCitadel client pointer") }
-        .call(rpc::Request::ListContracts)
+    let client =
+        unsafe { client.as_mut().expect("Wrong MyCitadel client pointer") };
+    let contract_id = client.contract_id(contract_id);
+    client
+        .inner()
+        .and_then(|inner| {
+            contract_id.map(|contract_id| {
+                inner.contract_rename(contract_id, ptr_to_string(new_name))
+            })
+        })
+        .map(|response| client.process_response(response))
+        .unwrap_or(ptr::null())
+}
+
+#[no_mangle]
+pub extern "C" fn mycitadel_contract_delete(
+    client: *mut mycitadel_client_t,
+    contract_id: *const c_char,
+) -> *const c_char {
+    let client =
+        unsafe { client.as_mut().expect("Wrong MyCitadel client pointer") };
+    let contract_id = client.contract_id(contract_id);
+    client
+        .inner()
+        .and_then(|inner| {
+            contract_id.map(|contract_id| inner.contract_delete(contract_id))
+        })
+        .map(|response| client.process_response(response))
+        .unwrap_or(ptr::null())
 }
 
 #[no_mangle]
 pub extern "C" fn mycitadel_list_assets(
     client: *mut mycitadel_client_t,
 ) -> *const c_char {
-    unsafe { client.as_mut().expect("Wrong MyCitadel client pointer") }
-        .call(rpc::Request::ListAssets)
+    let client =
+        unsafe { client.as_mut().expect("Wrong MyCitadel client pointer") };
+    client
+        .inner()
+        .map(Client::contract_list)
+        .map(|response| client.process_response(response))
+        .unwrap_or(ptr::null())
 }
 
 #[no_mangle]

@@ -76,7 +76,12 @@ open class MyCitadelClient {
         }
         return Data(String(cString: json).utf8)
     }
-    
+
+    public func createContract() throws -> WalletContract {
+        let response = mycitadel_create_contract(client, );
+        return try JSONDecoder().decode(WalletContract.self, from: self.processResponse(response))
+    }
+
     public func refreshAssets() throws -> [RGB20Asset] {
         let response = mycitadel_list_assets(client);
         return try JSONDecoder().decode([RGB20Asset].self, from: self.processResponse(response))

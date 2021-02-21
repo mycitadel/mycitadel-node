@@ -168,12 +168,19 @@ bool mycitadel_is_ok(struct mycitadel_client_t *client);
 
 bool mycitadel_has_err(struct mycitadel_client_t *client);
 
-const char *mycitadel_create_single_sig(struct mycitadel_client_t *client,
+const char *mycitadel_contract_list(struct mycitadel_client_t *client);
+
+const char *mycitadel_single_sig_create(struct mycitadel_client_t *client,
                                         const char *name,
                                         const char *keychain,
                                         OuterCategory category);
 
-const char *mycitadel_list_contracts(struct mycitadel_client_t *client);
+const char *mycitadel_contract_rename(struct mycitadel_client_t *client,
+                                      const char *contract_id,
+                                      const char *new_name);
+
+const char *mycitadel_contract_delete(struct mycitadel_client_t *client,
+                                      const char *contract_id);
 
 const char *mycitadel_list_assets(struct mycitadel_client_t *client);
 
