@@ -153,7 +153,27 @@ impl mycitadel_client_t {
         &mut self,
         bech32: *const c_char,
     ) -> Option<mycitadel::model::ContractId> {
+        if bech32.is_null() {
+            return None;
+        }
         mycitadel::model::ContractId::from_str(&ptr_to_string(bech32))
+            .map_err(|err| {
+                self.set_error_details(
+                    ERRNO_PARSE,
+                    &format!("invalid contract id: {}", err),
+                )
+            })
+            .ok()
+    }
+
+    pub(crate) fn asset_id(
+        &mut self,
+        bech32: *const c_char,
+    ) -> Option<rgb::ContractId> {
+        if bech32.is_null() {
+            return None;
+        }
+        rgb::ContractId::from_str(&ptr_to_string(bech32))
             .map_err(|err| {
                 self.set_error_details(
                     ERRNO_PARSE,

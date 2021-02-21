@@ -197,6 +197,19 @@ const char *mycitadel_address_create(struct mycitadel_client_t *client,
                                      bool mark_used,
                                      bool legacy);
 
+const char *mycitadel_invoice_create(struct mycitadel_client_t *client,
+                                     InvoiceType category,
+                                     const char *contract_id,
+                                     const char *asset_id,
+                                     uint64_t amount,
+                                     const char *merchant,
+                                     const char *purpose,
+                                     bool unmark,
+                                     bool legacy);
+
+const char *mycitadel_invoice_list(struct mycitadel_client_t *client,
+                                   const char *contract_id);
+
 const char *mycitadel_asset_list(struct mycitadel_client_t *client);
 
 const char *mycitadel_asset_import(struct mycitadel_client_t *client,

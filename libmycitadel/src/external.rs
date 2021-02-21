@@ -16,6 +16,7 @@ use std::str::FromStr;
 
 use internet2::ZmqSocketAddr;
 use lnpbp::Chain;
+use mycitadel::client::InvoiceType;
 use mycitadel::{rpc, Client};
 use wallet::bip32::PubkeyChain;
 use wallet::descriptor;
@@ -195,6 +196,81 @@ pub extern "C" fn mycitadel_address_create(
             contract_id.map(|contract_id| {
                 inner.address_create(contract_id, None, mark_used, legacy)
             })
+        })
+        .map(|response| client.process_response(response))
+        .unwrap_or(ptr::null())
+}
+
+#[no_mangle]
+pub extern "C" fn mycitadel_invoice_create(
+    client: *mut mycitadel_client_t,
+    category: InvoiceType,
+    contract_id: *const c_char,
+    asset_id: *const c_char,
+    amount: u64,
+    merchant: *const c_char,
+    purpose: *const c_char,
+    unmark: bool,
+    legacy: bool,
+) -> *const c_char {
+    let client =
+        unsafe { client.as_mut().expect("Wrong MyCitadel client pointer") };
+
+    let contract_id = if let Some(value) = client.contract_id(contract_id) {
+        value
+    } else {
+        return ptr::null();
+    };
+
+    let asset_id = if asset_id.is_null() {
+        None
+    } else if let Some(value) = client.asset_id(asset_id) {
+        Some(value)
+    } else {
+        return ptr::null();
+    };
+
+    let merchant = if merchant.is_null() {
+        None
+    } else {
+        Some(ptr_to_string(merchant))
+    };
+    let purpose = if purpose.is_null() {
+        None
+    } else {
+        Some(ptr_to_string(purpose))
+    };
+
+    let result = client.inner().map(|inner| {
+        inner.invoice_create(
+            category,
+            contract_id,
+            asset_id,
+            amount,
+            merchant,
+            purpose,
+            unmark,
+            legacy,
+        )
+    });
+    result
+        .and_then(|reply| reply.map_err(|err| client.set_error(err)).ok())
+        .map(|invoice| invoice.to_string().as_ptr() as *const c_char)
+        .unwrap_or(ptr::null())
+}
+
+#[no_mangle]
+pub extern "C" fn mycitadel_invoice_list(
+    client: *mut mycitadel_client_t,
+    contract_id: *const c_char,
+) -> *const c_char {
+    let client =
+        unsafe { client.as_mut().expect("Wrong MyCitadel client pointer") };
+    let contract_id = client.contract_id(contract_id);
+    client
+        .inner()
+        .and_then(|inner| {
+            contract_id.map(|contract_id| inner.invoice_list(contract_id))
         })
         .map(|response| client.process_response(response))
         .unwrap_or(ptr::null())
