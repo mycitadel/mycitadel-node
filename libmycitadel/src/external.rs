@@ -159,7 +159,49 @@ pub extern "C" fn mycitadel_contract_balance(
 }
 
 #[no_mangle]
-pub extern "C" fn mycitadel_list_assets(
+pub extern "C" fn mycitadel_address_list(
+    client: *mut mycitadel_client_t,
+    contract_id: *const c_char,
+    rescan: bool,
+    lookup_depth: u8,
+) -> *const c_char {
+    let client =
+        unsafe { client.as_mut().expect("Wrong MyCitadel client pointer") };
+    let contract_id = client.contract_id(contract_id);
+    client
+        .inner()
+        .and_then(|inner| {
+            contract_id.map(|contract_id| {
+                inner.address_list(contract_id, rescan, lookup_depth)
+            })
+        })
+        .map(|response| client.process_response(response))
+        .unwrap_or(ptr::null())
+}
+
+#[no_mangle]
+pub extern "C" fn mycitadel_address_create(
+    client: *mut mycitadel_client_t,
+    contract_id: *const c_char,
+    mark_used: bool,
+    legacy: bool,
+) -> *const c_char {
+    let client =
+        unsafe { client.as_mut().expect("Wrong MyCitadel client pointer") };
+    let contract_id = client.contract_id(contract_id);
+    client
+        .inner()
+        .and_then(|inner| {
+            contract_id.map(|contract_id| {
+                inner.address_create(contract_id, None, mark_used, legacy)
+            })
+        })
+        .map(|response| client.process_response(response))
+        .unwrap_or(ptr::null())
+}
+
+#[no_mangle]
+pub extern "C" fn mycitadel_asset_list(
     client: *mut mycitadel_client_t,
 ) -> *const c_char {
     let client =
@@ -172,7 +214,7 @@ pub extern "C" fn mycitadel_list_assets(
 }
 
 #[no_mangle]
-pub extern "C" fn mycitadel_import_asset(
+pub extern "C" fn mycitadel_asset_import(
     client: *mut mycitadel_client_t,
     genesis_b32: *const c_char,
 ) -> *const c_char {

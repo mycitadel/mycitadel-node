@@ -187,9 +187,19 @@ const char *mycitadel_contract_balance(struct mycitadel_client_t *client,
                                        bool rescan,
                                        uint8_t lookup_depth);
 
-const char *mycitadel_list_assets(struct mycitadel_client_t *client);
+const char *mycitadel_address_list(struct mycitadel_client_t *client,
+                                   const char *contract_id,
+                                   bool rescan,
+                                   uint8_t lookup_depth);
 
-const char *mycitadel_import_asset(struct mycitadel_client_t *client,
+const char *mycitadel_address_create(struct mycitadel_client_t *client,
+                                     const char *contract_id,
+                                     bool mark_used,
+                                     bool legacy);
+
+const char *mycitadel_asset_list(struct mycitadel_client_t *client);
+
+const char *mycitadel_asset_import(struct mycitadel_client_t *client,
                                    const char *genesis_b32);
 
 bool is_success(struct string_result_t result);
