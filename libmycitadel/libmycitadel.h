@@ -85,55 +85,61 @@
 #define ERRNO_NULL 105
 
 typedef enum bip39_mnemonic_type {
-        words_12,
-        words_15,
-        words_18,
-        words_21,
-        words_24,
+        BIP39_MNEMONIC_TYPE_WORDS_12,
+        BIP39_MNEMONIC_TYPE_WORDS_15,
+        BIP39_MNEMONIC_TYPE_WORDS_18,
+        BIP39_MNEMONIC_TYPE_WORDS_21,
+        BIP39_MNEMONIC_TYPE_WORDS_24,
 } bip39_mnemonic_type;
 
-enum error_t
-#ifdef __cplusplus
-  : uint16_t
-#endif // __cplusplus
- {
-        success = 0,
+typedef enum descriptor_type {
+        DESCRIPTOR_TYPE_BARE,
+        DESCRIPTOR_TYPE_HASHED,
+        DESCRIPTOR_TYPE_SEGWIT,
+        DESCRIPTOR_TYPE_TAPROOT,
+} descriptor_type;
+
+typedef enum err_type {
+        ERR_TYPE_SUCCESS = 0,
         /**
          * got a null pointer as one of the function arguments
          */
-        null_pointer,
+        ERR_TYPE_NULL_POINTER,
         /**
          * result data must be a valid string which does not contain zero bytes
          */
-        invalid_result_data,
+        ERR_TYPE_INVALID_RESULT_DATA,
         /**
          * invalid mnemonic string
          */
-        invalid_mnemonic,
+        ERR_TYPE_INVALID_MNEMONIC,
         /**
          * invalid UTF-8 string
          */
-        invalid_utf8_string,
+        ERR_TYPE_INVALID_UTF8_STRING,
         /**
          * wrong BIP32 extended public or private key data
          */
-        wrong_extended_key,
+        ERR_TYPE_WRONG_EXTENDED_KEY,
         /**
          * unable to derive hardened path from a public key
          */
-        unable_to_derive_hardened,
+        ERR_TYPE_UNABLE_TO_DERIVE_HARDENED,
         /**
          * invalid derivation path
          */
-        invalid_derivation_path,
+        ERR_TYPE_INVALID_DERIVATION_PATH,
         /**
          * general BIP32-specific failure
          */
-        bip32_failure,
-};
-#ifndef __cplusplus
-typedef uint16_t error_t;
-#endif // __cplusplus
+        ERR_TYPE_BIP32_FAILURE,
+} err_type;
+
+typedef enum invoice_type {
+        INVOICE_TYPE_ADDRESS_UTXO,
+        INVOICE_TYPE_DESCRIPTOR,
+        INVOICE_TYPE_PSBT,
+} invoice_type;
 
 typedef struct bech32_info_t {
         int status;
@@ -154,7 +160,7 @@ typedef union result_details_t {
 } result_details_t;
 
 typedef struct string_result_t {
-        error_t code;
+        enum err_type code;
         union result_details_t details;
 } string_result_t;
 
@@ -181,7 +187,7 @@ const char *mycitadel_contract_list(struct mycitadel_client_t *client);
 const char *mycitadel_single_sig_create(struct mycitadel_client_t *client,
                                         const char *name,
                                         const char *keychain,
-                                        OuterCategory category);
+                                        enum descriptor_type category);
 
 const char *mycitadel_contract_rename(struct mycitadel_client_t *client,
                                       const char *contract_id,
@@ -206,7 +212,7 @@ const char *mycitadel_address_create(struct mycitadel_client_t *client,
                                      bool legacy);
 
 const char *mycitadel_invoice_create(struct mycitadel_client_t *client,
-                                     InvoiceType category,
+                                     enum invoice_type category,
                                      const char *contract_id,
                                      const char *asset_id,
                                      uint64_t amount,

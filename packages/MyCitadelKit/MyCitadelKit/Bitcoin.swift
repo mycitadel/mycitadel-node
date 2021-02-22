@@ -4,10 +4,26 @@
 
 import Foundation
 
-public enum BitcoinNetwork: String {
-    case Mainnet = "mainnet"
-    case Testnet = "testnet"
-    case Signet = "signet"
+public enum BitcoinNetwork: String, Codable {
+    case mainnet = "mainnet"
+    case testnet = "testnet"
+    case signet = "signet"
+}
+
+public enum DescriptorType {
+    case bare
+    case hashed
+    case segwit
+    case taproot
+
+    public func cDescriptorType() -> descriptor_type {
+        switch self {
+        case .bare: return DESCRIPTOR_TYPE_BARE
+        case .hashed: return DESCRIPTOR_TYPE_HASHED
+        case .segwit: return DESCRIPTOR_TYPE_SEGWIT
+        case .taproot: return DESCRIPTOR_TYPE_TAPROOT
+        }
+    }
 }
 
 public struct Contract {

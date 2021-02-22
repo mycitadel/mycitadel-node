@@ -24,7 +24,7 @@ extension MyCitadelClient {
             return // We already have a seed generated
         }
 
-        let result = bip39_mnemonic_create(nil, words_12);
+        let result = bip39_mnemonic_create(nil, BIP39_MNEMONIC_TYPE_WORDS_12);
         if is_success(result) {
             throw SignerError(details: "Unable to generate seed: \(String(cString: result.details.error))")
         }

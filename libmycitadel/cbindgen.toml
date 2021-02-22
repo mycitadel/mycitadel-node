@@ -42,7 +42,8 @@ args = "auto"
 rename_fields = "None"
 
 [enum]
-rename_variants = "None"
+rename_variants = "QualifiedScreamingSnakeCase"
+prefix_with_name = false
 derive_helper_methods = true
 derive_const_casts = true
 derive_mut_casts = true

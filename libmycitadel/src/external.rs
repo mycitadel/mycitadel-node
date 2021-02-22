@@ -26,6 +26,46 @@ use crate::error::*;
 use crate::helpers::{TryAsStr, TryIntoString};
 use crate::{mycitadel_client_t, TryIntoRaw};
 
+#[allow(non_camel_case_types)]
+#[derive(Clone, Copy, Ord, PartialOrd, Eq, PartialEq, Hash)]
+#[repr(C)]
+pub enum descriptor_type {
+    BARE,
+    HASHED,
+    SEGWIT,
+    TAPROOT,
+}
+
+impl From<descriptor_type> for descriptor::OuterCategory {
+    fn from(t: descriptor_type) -> Self {
+        match t {
+            descriptor_type::BARE => descriptor::OuterCategory::Bare,
+            descriptor_type::HASHED => descriptor::OuterCategory::Hashed,
+            descriptor_type::SEGWIT => descriptor::OuterCategory::SegWit,
+            descriptor_type::TAPROOT => descriptor::OuterCategory::Taproot,
+        }
+    }
+}
+
+#[allow(non_camel_case_types)]
+#[derive(Clone, Copy, Ord, PartialOrd, Eq, PartialEq, Hash)]
+#[repr(C)]
+pub enum invoice_type {
+    ADDRESS_UTXO,
+    DESCRIPTOR,
+    PSBT,
+}
+
+impl From<invoice_type> for InvoiceType {
+    fn from(t: invoice_type) -> Self {
+        match t {
+            invoice_type::ADDRESS_UTXO => InvoiceType::AddressUtxo,
+            invoice_type::DESCRIPTOR => InvoiceType::Descriptor,
+            invoice_type::PSBT => InvoiceType::Psbt,
+        }
+    }
+}
+
 #[no_mangle]
 pub extern "C" fn release_string(s: *mut c_char) {
     s.try_into_string();
@@ -96,7 +136,7 @@ pub extern "C" fn mycitadel_single_sig_create(
     client: *mut mycitadel_client_t,
     name: *const c_char,
     keychain: *const c_char,
-    category: descriptor::OuterCategory,
+    category: descriptor_type,
 ) -> *const c_char {
     let client = mycitadel_client_t::from_raw(client);
 
@@ -122,7 +162,9 @@ pub extern "C" fn mycitadel_single_sig_create(
     };
     client
         .try_as_opaque()
-        .map(|opaque| opaque.single_sig_create(name, pubkey_chain, category))
+        .map(|opaque| {
+            opaque.single_sig_create(name, pubkey_chain, category.into())
+        })
         .map(|response| client.process_response(response))
         .unwrap_or(ptr::null())
 }
@@ -241,7 +283,7 @@ pub extern "C" fn mycitadel_address_create(
 #[no_mangle]
 pub extern "C" fn mycitadel_invoice_create(
     client: *mut mycitadel_client_t,
-    category: InvoiceType,
+    category: invoice_type,
     contract_id: *const c_char,
     asset_id: *const c_char,
     amount: u64,
@@ -264,7 +306,7 @@ pub extern "C" fn mycitadel_invoice_create(
 
     let result = client.try_as_opaque().map(|inner| {
         inner.invoice_create(
-            category,
+            category.into(),
             contract_id,
             asset_id,
             amount,

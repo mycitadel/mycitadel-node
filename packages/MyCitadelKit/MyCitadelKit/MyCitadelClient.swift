@@ -39,7 +39,7 @@ open class MyCitadelClient {
     let dataDir: String
     private var client: UnsafeMutablePointer<mycitadel_client_t>!
     
-    private init(network: BitcoinNetwork = .Signet, electrumServer: String = "pandora.network:60001") {
+    private init(network: BitcoinNetwork = .testnet, electrumServer: String = "pandora.network:60001") {
         self.network = network
         self.dataDir = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!.appendingPathComponent(network.rawValue).path
 
@@ -51,7 +51,7 @@ open class MyCitadelClient {
         get { Self._shared }
     }
     
-    public static func run(network: BitcoinNetwork = .Signet, electrumServer: String = "pandora.network:60001") throws {
+    public static func run(network: BitcoinNetwork = .testnet, electrumServer: String = "pandora.network:60001") throws {
         if Self._shared == nil {
             Self._shared = MyCitadelClient(network: network, electrumServer: electrumServer)
         } else {
@@ -77,18 +77,18 @@ open class MyCitadelClient {
         return Data(String(cString: json).utf8)
     }
 
-    public func createContract() throws -> WalletContract {
-        let response = mycitadel_create_contract(client, );
+    public func createContract(name: String, keychain: String?, descriptorType: DescriptorType) throws -> WalletContract {
+        let response = mycitadel_single_sig_create(client, name, keychain, descriptorType.cDescriptorType());
         return try JSONDecoder().decode(WalletContract.self, from: self.processResponse(response))
     }
 
     public func refreshAssets() throws -> [RGB20Asset] {
-        let response = mycitadel_list_assets(client);
+        let response = mycitadel_asset_list(client);
         return try JSONDecoder().decode([RGB20Asset].self, from: self.processResponse(response))
     }
     
     public func importAsset(bech32 genesis: String) throws -> RGB20Asset {
-        let response = mycitadel_import_asset(client, genesis);
+        let response = mycitadel_asset_import(client, genesis);
         return try JSONDecoder().decode(RGB20Asset.self, from: self.processResponse(response))
     }
 }

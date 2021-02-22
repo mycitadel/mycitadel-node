@@ -54,9 +54,9 @@ impl Wipe for CString {
     From,
 )]
 #[allow(non_camel_case_types)]
-#[repr(u16)]
+#[repr(C)]
 #[display(doc_comments)]
-pub enum error_t {
+pub enum err_type {
     #[display("")]
     success = 0,
 
@@ -87,30 +87,30 @@ pub enum error_t {
     bip32_failure,
 }
 
-impl Default for error_t {
+impl Default for err_type {
     fn default() -> Self {
-        error_t::success
+        err_type::success
     }
 }
 
-impl From<bip32::Error> for error_t {
+impl From<bip32::Error> for err_type {
     fn from(err: bip32::Error) -> Self {
         match err {
             Error::CannotDeriveFromHardenedKey => {
-                error_t::unable_to_derive_hardened
+                err_type::unable_to_derive_hardened
             }
 
             Error::InvalidChildNumber(_)
             | Error::InvalidChildNumberFormat
             | Error::InvalidDerivationPathFormat => {
-                error_t::invalid_derivation_path
+                err_type::invalid_derivation_path
             }
 
             Error::Base58(_)
             | Error::UnknownVersion(_)
-            | Error::WrongExtendedKeyLength(_) => error_t::wrong_extended_key,
+            | Error::WrongExtendedKeyLength(_) => err_type::wrong_extended_key,
 
-            Error::RngError(_) | Error::Ecdsa(_) => error_t::bip32_failure,
+            Error::RngError(_) | Error::Ecdsa(_) => err_type::bip32_failure,
         }
     }
 }
@@ -118,7 +118,7 @@ impl From<bip32::Error> for error_t {
 #[allow(non_camel_case_types)]
 #[repr(C)]
 pub struct string_result_t {
-    pub code: error_t,
+    pub code: err_type,
     pub details: result_details_t,
 }
 
@@ -126,14 +126,14 @@ impl string_result_t {
     pub fn success(data: impl ToString) -> string_result_t {
         let (code, details) = match CString::new(data.to_string()) {
             Ok(s) => {
-                (error_t::success, result_details_t { data: s.into_raw() })
+                (err_type::success, result_details_t { data: s.into_raw() })
             }
-            Err(err) => (error_t::invalid_result_data, err.into()),
+            Err(err) => (err_type::invalid_result_data, err.into()),
         };
         string_result_t { code, details }
     }
 
-    pub fn error(code: error_t) -> string_result_t {
+    pub fn error(code: err_type) -> string_result_t {
         string_result_t {
             code,
             details: result_details_t {
@@ -145,13 +145,13 @@ impl string_result_t {
     }
 
     pub fn is_success(&self) -> bool {
-        self.code == error_t::success
+        self.code == err_type::success
     }
 }
 
 impl Try for string_result_t {
     type Ok = result_details_t;
-    type Error = error_t;
+    type Error = err_type;
 
     fn into_result(self) -> Result<Self::Ok, Self::Error> {
         if self.is_success() {
@@ -167,7 +167,7 @@ impl Try for string_result_t {
 
     fn from_ok(v: Self::Ok) -> Self {
         string_result_t {
-            code: error_t::success,
+            code: err_type::success,
             details: v,
         }
     }
@@ -175,7 +175,7 @@ impl Try for string_result_t {
 
 impl<E> From<E> for string_result_t
 where
-    E: std::error::Error + Clone + Into<error_t>,
+    E: std::error::Error + Clone + Into<err_type>,
 {
     fn from(err: E) -> Self {
         string_result_t {
@@ -279,7 +279,7 @@ pub extern "C" fn bip39_master_xpriv(
     testnet: bool,
 ) -> string_result_t {
     if seed_phrase.is_null() {
-        Err(error_t::null_pointer)?
+        Err(err_type::null_pointer)?
     }
 
     let password = if passwd.is_null() {
