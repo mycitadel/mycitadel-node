@@ -18,7 +18,7 @@ use std::collections::{BTreeMap, HashSet};
 use bitcoin::{Address, BlockHash, OutPoint, Transaction, Txid};
 use wallet::bip32::UnhardenedIndex;
 
-use crate::model::{ContractId, Unspent};
+use crate::model::{ContractId, Utxo};
 
 #[serde_as]
 #[derive(
@@ -70,6 +70,6 @@ pub(super) struct ContractCache {
     #[serde_as(as = "HashSet<DisplayFromStr>")]
     pub utxo: HashSet<OutPoint>,
 
-    #[serde_as(as = "BTreeMap<DisplayFromStr, Vec<DisplayFromStr>>")]
-    pub unspent: BTreeMap<rgb::ContractId, Vec<Unspent>>,
+    #[serde_as(as = "BTreeMap<DisplayFromStr, Vec<_>>")]
+    pub unspent: BTreeMap<rgb::ContractId, Vec<Utxo>>,
 }

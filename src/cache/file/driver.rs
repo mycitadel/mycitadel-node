@@ -18,7 +18,7 @@ use wallet::bip32::UnhardenedIndex;
 
 use super::FileDriver;
 use crate::cache::{Driver, Error};
-use crate::model::{ContractId, Unspent};
+use crate::model::{ContractId, Utxo};
 
 impl Driver for FileDriver {
     fn blockpos_to_txid(&self, height: u32, offset: u16) -> Option<Txid> {
@@ -28,7 +28,7 @@ impl Driver for FileDriver {
     fn unspent(
         &self,
         contract_id: ContractId,
-    ) -> Result<BTreeMap<rgb::ContractId, Vec<Unspent>>, Error> {
+    ) -> Result<BTreeMap<rgb::ContractId, Vec<Utxo>>, Error> {
         self.map_contract_or_default(contract_id, |c| c.unspent.clone())
     }
 
@@ -45,7 +45,7 @@ impl Driver for FileDriver {
         mine_info: BTreeMap<(u32, u16), Txid>,
         updated_height: Option<u32>,
         utxo: Vec<OutPoint>,
-        unspent: BTreeMap<rgb::ContractId, Vec<Unspent>>,
+        unspent: BTreeMap<rgb::ContractId, Vec<Utxo>>,
     ) -> Result<(), Error> {
         self.cache.mine_info.extend(mine_info);
         let cache = self

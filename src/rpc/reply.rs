@@ -21,7 +21,7 @@ use lnpbp::seals::OutpointReveal;
 use microservices::{rpc, rpc_connection};
 use wallet::bip32::UnhardenedIndex;
 
-use crate::model::{AddressDerivation, Contract, Unspent};
+use crate::model::{AddressDerivation, Contract, Utxo};
 use crate::rpc::message::{IdentityInfo, PreparedPayment};
 use crate::Error;
 
@@ -48,7 +48,7 @@ pub enum Reply {
     #[serde(with = "As::<BTreeMap<DisplayFromStr, Vec<DisplayFromStr>>>")]
     #[api(type = 0x0202)]
     #[display("contract_unspent(...)")]
-    ContractUnspent(BTreeMap<rgb::ContractId, Vec<Unspent>>),
+    ContractUnspent(BTreeMap<rgb::ContractId, Vec<Utxo>>),
 
     #[api(type = 0x0310)]
     #[display("addresses(...)")]

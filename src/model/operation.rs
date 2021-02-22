@@ -18,7 +18,7 @@ use std::str::FromStr;
 use bitcoin::Txid;
 use wallet::bip32::UnhardenedIndex;
 use wallet::blockchain::ParseError;
-use wallet::TimeHeight;
+use wallet::{AddressPayload, TimeHeight};
 
 #[derive(
     Clone,
@@ -149,9 +149,11 @@ pub struct Operation {
     pub details: String,
 }
 
+#[serde_as]
 #[derive(
     Serialize,
     Deserialize,
+    Copy,
     Clone,
     Ord,
     PartialOrd,
@@ -163,9 +165,10 @@ pub struct Operation {
     StrictEncode,
     StrictDecode,
 )]
+#[display("{value}@{height}>{offset}>{txid}:{vout}%{derivation_index}")]
+#[serde(rename = "camelCase")]
 #[repr(C)]
-#[display("{value}@{height}>{offset}>{vout}%{index}")]
-pub struct Unspent {
+pub struct Utxo {
     /// Amount (in native atomic asset amount) of unspent asset
     pub value: u64,
 
@@ -176,20 +179,29 @@ pub struct Unspent {
     /// Offset of the transaction within the block
     pub offset: u16,
 
+    /// Outpoint transaction id
+    pub txid: Txid,
+
     /// Transaction output containing asset
     pub vout: u16,
 
     /// Index used by the description in deriving script from the transaction
     /// output
-    pub index: UnhardenedIndex,
+    pub derivation_index: UnhardenedIndex,
+
+    /// Address controlling the output
+    #[serde_as(as = "Option<DisplayFromStr>")]
+    pub address: Option<AddressPayload>,
 }
 
-impl FromStr for Unspent {
+impl FromStr for Utxo {
     type Err = ParseError;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        let mut split = s.split(&['@', '>', '%'][..]);
+        let mut split = s.split(&['@', '>', '%', '=', ':'][..]);
         match (
+            split.next(),
+            split.next(),
             split.next(),
             split.next(),
             split.next(),
@@ -201,15 +213,23 @@ impl FromStr for Unspent {
                 Some(value),
                 Some(height),
                 Some(offset),
+                Some(txid),
                 Some(vout),
                 Some(index),
+                address,
                 None,
-            ) => Ok(Unspent {
+            ) => Ok(Utxo {
                 value: value.parse()?,
                 height: height.parse()?,
                 offset: offset.parse()?,
                 vout: vout.parse()?,
-                index: index.parse().map_err(|_| ParseError)?,
+                txid: txid.parse()?,
+                derivation_index: index.parse().map_err(|_| ParseError)?,
+                address: address
+                    .map(AddressPayload::from_str)
+                    .transpose()
+                    .ok()
+                    .flatten(),
             }),
             _ => Err(ParseError),
         }

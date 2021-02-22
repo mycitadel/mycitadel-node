@@ -23,7 +23,7 @@ use invoice::Invoice;
 use wallet::bip32::UnhardenedIndex;
 
 use super::Formatting;
-use crate::model::{AddressDerivation, Contract, Unspent};
+use crate::model::{AddressDerivation, Contract, Utxo};
 
 pub trait OutputCompact {
     fn output_compact(&self) -> String;
@@ -286,13 +286,13 @@ impl OutputFormat for UnhardenedIndex {
 
 // MARK: Unspent ---------------------------------------------------------------
 
-impl OutputCompact for Unspent {
+impl OutputCompact for Utxo {
     fn output_compact(&self) -> String {
         self.to_string()
     }
 }
 
-impl OutputFormat for Unspent {
+impl OutputFormat for Utxo {
     fn output_id_string(&self) -> String {
         format!("{}", self.value)
     }
@@ -313,7 +313,7 @@ impl OutputFormat for Unspent {
             self.height.to_string(),
             self.offset.to_string(),
             self.vout.to_string(),
-            self.index.to_string(),
+            self.derivation_index.to_string(),
         ]
     }
 }

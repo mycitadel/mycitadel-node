@@ -17,7 +17,7 @@ use bitcoin::{Address, OutPoint, Txid};
 use wallet::bip32::UnhardenedIndex;
 
 use super::Error;
-use crate::model::{ContractId, Unspent};
+use crate::model::{ContractId, Utxo};
 
 pub trait Driver {
     fn blockpos_to_txid(&self, height: u32, offset: u16) -> Option<Txid>;
@@ -25,7 +25,7 @@ pub trait Driver {
     fn unspent(
         &self,
         contract_id: ContractId,
-    ) -> Result<BTreeMap<rgb::ContractId, Vec<Unspent>>, Error>;
+    ) -> Result<BTreeMap<rgb::ContractId, Vec<Utxo>>, Error>;
 
     fn utxo(&self, contract_id: ContractId)
         -> Result<HashSet<OutPoint>, Error>;
@@ -36,7 +36,7 @@ pub trait Driver {
         mine_info: BTreeMap<(u32, u16), Txid>,
         updated_height: Option<u32>,
         utxo: Vec<OutPoint>,
-        unspent: BTreeMap<rgb::ContractId, Vec<Unspent>>,
+        unspent: BTreeMap<rgb::ContractId, Vec<Utxo>>,
     ) -> Result<(), Error>;
 
     fn used_address_derivations(

@@ -37,11 +37,11 @@ use wallet::bip32::{ChildIndex, UnhardenedIndex};
 use wallet::descriptor::ContractDescriptor;
 use wallet::psbt::raw::ProprietaryKey;
 use wallet::script::PubkeyScript;
-use wallet::{psbt, Psbt};
+use wallet::{psbt, AddressPayload, Psbt};
 
 use super::Config;
 use crate::cache::{self, Driver as CacheDriver};
-use crate::model::{Contract, Policy, Unspent};
+use crate::model::{Contract, Policy, Utxo};
 use crate::rpc::{message, Reply, Request};
 use crate::storage::{self, Driver as StorageDriver};
 use crate::Error;
@@ -234,7 +234,7 @@ impl Runtime {
                 let policy =
                     self.storage.policy(contract_id).map_err(Error::from)?;
                 let lookup_depth = UnhardenedIndex::from(lookup_depth);
-                let mut unspent: Vec<Unspent> = vec![];
+                let mut unspent: Vec<Utxo> = vec![];
                 let mut outpoints: Vec<OutPoint> = vec![];
                 let mut mine_info: BTreeMap<(u32, u16), Txid> = bmap!{};
                 let mut index_offset = UnhardenedIndex::zero();
@@ -267,19 +267,22 @@ impl Runtime {
                     trace!("Found txids: {:#?}", txids);
                     let batch = res
                         .iter()
-                        .filter_map(|res| {
-                            let index = index_offset;
+                        .zip(scripts)
+                        .filter_map(|(res, script)| {
+                            let derivation_index = index_offset;
                             // If we overflow we simply ignore these iterations
                             index_offset.checked_inc_assign()?;
                             let _txids = txids.clone();
                             let r = res.iter().filter_map(move |entry| {
                                 let tx_info = _txids.get(&entry.tx_hash)?;
-                                let unspent = Unspent {
+                                let unspent = Utxo {
                                     value: entry.value,
                                     height: tx_info.0.try_into().ok()?,
                                     offset: tx_info.1.try_into().ok()?,
+                                    txid: entry.tx_hash,
+                                    address: AddressPayload::from_script(&script),
                                     vout: entry.tx_pos.try_into().ok()?,
-                                    index,
+                                    derivation_index,
                                 };
                                 let outpoint = OutPoint::new(
                                     entry.tx_hash,
