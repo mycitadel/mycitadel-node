@@ -22,7 +22,7 @@ open class Bech32Info {
         case rgbSchema
         case rgbGenesis
         case rgbConsignment
-        case rgb20Asset(RGB20Asset)
+        case rgb20Asset(AssetData)
 
         public func name() -> String {
             switch self {
@@ -88,7 +88,7 @@ open class Bech32Info {
         do {
             switch info.category {
             case BECH32_RGB20_ASSET:
-                self.details = Details.rgb20Asset(try decoder.decode(RGB20Asset.self, from: jsonData))
+                self.details = Details.rgb20Asset(try decoder.decode(AssetData.self, from: jsonData))
             default: self.details = Details.unknown
             }
 

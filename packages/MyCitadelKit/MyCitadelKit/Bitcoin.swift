@@ -8,6 +8,13 @@ public enum BitcoinNetwork: String, Codable {
     case mainnet = "mainnet"
     case testnet = "testnet"
     case signet = "signet"
+
+    public func derivationIndex() -> UInt32 {
+        switch self {
+        case .mainnet: return 0
+        case .testnet, .signet: return 1
+        }
+    }
 }
 
 public enum DescriptorType {
@@ -24,32 +31,27 @@ public enum DescriptorType {
         case .taproot: return DESCRIPTOR_TYPE_TAPROOT
         }
     }
+
+    public func usesSchnorr() -> Bool {
+        return self == .taproot
+    }
+
+    public func usesSegWit() -> Bool {
+        return self == .segwit
+    }
 }
 
-public struct Contract {
-    let id: String
-    let balance: [UTXO]
-    let assetBalances: [String: [UTXO]]
-}
-
-public struct UTXO {
-    let height: Int32
-    let offset: UInt32
-    let vout: UInt32
-    let value: UInt64
-
-    let derivationIndex: UInt32
-    let address: String
-}
-
-let contracts: [Contract] = []
-
-func some() {
-    var balance: UInt64 = 0
-    let assetId = ""
-    for contract in contracts {
-        if let assetBalance = contract.assetBalances[assetId] {
-            balance += assetBalance.reduce(into: 0) { $0 += $1.value }
-        }
+public struct PubkeyChain {
+    static func construct(network: BitcoinNetwork, rgbSupport: Bool, descriptorType: DescriptorType, multisig: Bool, scope: UInt32?) -> String {
+        let boundary = UInt32.max & 0x7FFFFFFF
+        let id = UInt32.random(in: 0...boundary)
+        let scope = UInt32.random(in: 0...boundary);
+        return rgbSupport
+                ? "m/827166'/\(descriptorType.usesSchnorr() ? "340" : "0")'/\(network.derivationIndex())'/\(id)'/\(scope)'/0/*"
+                : descriptorType.usesSchnorr()
+                ? "m/\(multisig ? 345 : 344)'/0'/\(scope)/0/*"
+                : descriptorType.usesSegWit()
+                ? "m/\(multisig ? 84 : 84)'/0'/\(scope)/0/*"
+                : "m/\(multisig ? 45 : 44)'/0'/\(scope)/0/*"
     }
 }

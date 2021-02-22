@@ -1,5 +1,5 @@
 //
-//  MyCitadelClient.swift
+//  Client.swift
 //  MyCitadelKit
 //
 //  Created by Maxim Orlovsky on 1/31/21.
@@ -35,10 +35,19 @@ extension MyCitadelError: LocalizedError {
 }
 
 open class MyCitadelClient {
+    private var client: UnsafeMutablePointer<mycitadel_client_t>!
+
     let network: BitcoinNetwork
     let dataDir: String
-    private var client: UnsafeMutablePointer<mycitadel_client_t>!
-    
+
+    private var _data: MyCitadel? = nil
+    public var data: MyCitadel {
+        if _data == nil {
+            _data = MyCitadel(withClient: self)
+        }
+        return _data!
+    }
+
     private init(network: BitcoinNetwork = .testnet, electrumServer: String = "pandora.network:60001") {
         self.network = network
         self.dataDir = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!.appendingPathComponent(network.rawValue).path
@@ -51,7 +60,7 @@ open class MyCitadelClient {
         get { Self._shared }
     }
     
-    public static func run(network: BitcoinNetwork = .testnet, electrumServer: String = "pandora.network:60001") throws {
+    public static func connect(network: BitcoinNetwork = .testnet, electrumServer: String = "pandora.network:60001") throws {
         if Self._shared == nil {
             Self._shared = MyCitadelClient(network: network, electrumServer: electrumServer)
         } else {
@@ -74,21 +83,35 @@ open class MyCitadelClient {
             }
             throw err
         }
-        return Data(String(cString: json).utf8)
+        release_string(UnsafeMutablePointer(mutating: response))
+        let data = Data(String(cString: json).utf8)
+        return data
     }
 
-    public func createContract(name: String, keychain: String?, descriptorType: DescriptorType) throws -> WalletContract {
-        let response = mycitadel_single_sig_create(client, name, keychain, descriptorType.cDescriptorType());
-        return try JSONDecoder().decode(WalletContract.self, from: self.processResponse(response))
+    internal func create(singleSig pubkeyChain: String, name: String, descriptorType: DescriptorType) throws -> ContractData {
+        try self.createSeed()
+        try self.deriveXprivIdentity(pubkeyChain: pubkeyChain)
+        let response = mycitadel_single_sig_create(client, name, pubkeyChain, descriptorType.cDescriptorType());
+        return try JSONDecoder().decode(ContractData.self, from: self.processResponse(response))
     }
 
-    public func refreshAssets() throws -> [RGB20Asset] {
+    internal func listContracts() throws -> [ContractData] {
+        let response = mycitadel_contract_list(client)
+        return try JSONDecoder().decode([ContractData].self, from: self.processResponse(response))
+    }
+
+    internal func balance(walletId: String) throws -> [String: [UTXO]] {
+        let response = mycitadel_contract_balance(client, walletId, true, 20)
+        return try JSONDecoder().decode([String: [UTXO]].self, from: self.processResponse(response))
+    }
+
+    internal func listAssets() throws -> [AssetData] {
         let response = mycitadel_asset_list(client);
-        return try JSONDecoder().decode([RGB20Asset].self, from: self.processResponse(response))
+        return try JSONDecoder().decode([AssetData].self, from: self.processResponse(response))
     }
-    
-    public func importAsset(bech32 genesis: String) throws -> RGB20Asset {
+
+    internal func importAsset(bech32 genesis: String) throws -> AssetData {
         let response = mycitadel_asset_import(client, genesis);
-        return try JSONDecoder().decode(RGB20Asset.self, from: self.processResponse(response))
+        return try JSONDecoder().decode(AssetData.self, from: self.processResponse(response))
     }
 }

@@ -7,6 +7,7 @@ import Security
 
 private enum SecurityItemNames: String {
     case seed = "MyCitadel.seed"
+    case masterXpriv = "MyCitadel.masterXpriv"
 }
 
 public struct SignerError: Error {
@@ -14,26 +15,93 @@ public struct SignerError: Error {
 }
 
 extension MyCitadelClient {
+    private func checkKeychain(attrName: String) throws -> Bool {
+        let query = [
+            kSecClass: kSecClassGenericPassword,
+            kSecAttrAccount: attrName,
+            kSecAttrAccessible: kSecAttrAccessibleWhenUnlocked,
+            kSecUseDataProtectionKeychain: true,
+        ] as [String: Any]
+        var foundItem: CFTypeRef?;
+
+        switch SecItemCopyMatching(query as CFDictionary, &foundItem) {
+        case errSecSuccess:
+            guard let data = foundItem as? Data,
+                  let _ = String(data: data, encoding: .utf8)
+                    else { throw SignerError(details: "Wrong encoding of \(attrName) in the Apple Keychain") }
+            return true
+        case errSecItemNotFound: return false
+        case let status: throw SignerError(details: "Keychain read failed: \(status.description)")
+        }
+    }
+
+    private func readKeychain(attrName: String) throws -> String? {
+        let query = [
+            kSecClass: kSecClassGenericPassword,
+            kSecAttrAccount: attrName,
+            kSecAttrAccessible: kSecAttrAccessibleWhenUnlocked,
+            kSecUseDataProtectionKeychain: true,
+            kSecReturnData: true
+        ] as [String: Any]
+        var foundItem: CFTypeRef?;
+
+        switch SecItemCopyMatching(query as CFDictionary, &foundItem) {
+        case errSecSuccess:
+            guard let data = foundItem as? Data,
+                  let stringRepr = String(data: data, encoding: .utf8)
+                    else { throw SignerError(details: "Wrong encoding of \(attrName) in the Apple Keychain") }
+            return stringRepr
+        case errSecItemNotFound: return nil
+        case let status: throw SignerError(details: "Keychain read failed: \(status.description)")
+        }
+    }
+
+    private func writeKeychain(attrName: String, data: String) throws {
+        let query = [
+            kSecClass: kSecClassGenericPassword,
+            kSecAttrAccount: attrName,
+            kSecAttrAccessible: kSecAttrAccessibleWhenUnlocked,
+            kSecUseDataProtectionKeychain: true,
+            kSecValueData: data
+        ] as [String: Any]
+
+        let status = SecItemAdd(query as CFDictionary, nil)
+        if status == errSecSuccess {
+            throw SignerError(details: "Unable to store seed information: \(status.description)")
+        }
+    }
+
     internal func createSeed() throws {
-        var query = [kSecClass: kSecClassGenericPassword,
-                     kSecAttrAccount: SecurityItemNames.seed,
-                     kSecAttrAccessible: kSecAttrAccessibleWhenUnlocked,
-                     kSecUseDataProtectionKeychain: true] as [String: Any]
-        var status = SecItemCopyMatching(query as CFDictionary, nil)
-        guard status == errSecSuccess else {
-            return // We already have a seed generated
+        if try self.checkKeychain(attrName: SecurityItemNames.seed.rawValue) {
+            return // We already have a seed phrase
         }
 
         let result = bip39_mnemonic_create(nil, BIP39_MNEMONIC_TYPE_WORDS_12);
         if is_success(result) {
             throw SignerError(details: "Unable to generate seed: \(String(cString: result.details.error))")
         }
-        let seedData = String(cString: result.details.data);
+        let seedPhrase = String(cString: result.details.data);
+        try self.writeKeychain(attrName: SecurityItemNames.seed.rawValue, data: seedPhrase)
+        result_destroy(result)
 
-        query[kSecValueData as String] = seedData
-        status = SecItemAdd(query as CFDictionary, nil)
-        guard status == errSecSuccess else {
-            throw SignerError(details: "Unable to store seed information: \(status.description)")
+        let xpriv_result = bip39_master_xpriv(UnsafeMutablePointer<Int8>(mutating: (seedPhrase as NSString).utf8String), nil, true, self.network != .mainnet)
+        if !is_success(xpriv_result) {
+            throw SignerError(details: String(cString: xpriv_result.details.error))
         }
+        try self.writeKeychain(attrName: SecurityItemNames.masterXpriv.rawValue, data: String(cString: xpriv_result.details.data))
+        result_destroy(xpriv_result)
+    }
+
+    internal func deriveXprivIdentity(pubkeyChain: String) throws {
+        guard let master = try self.readKeychain(attrName: SecurityItemNames.masterXpriv.rawValue) else {
+            throw SignerError(details: "Unable to generate identity master extended private key")
+        }
+
+        let xpriv_result = bip32_derive_xpriv(UnsafeMutablePointer<Int8>(mutating: (master as NSString).utf8String), true, pubkeyChain)
+        if !is_success(xpriv_result) {
+            throw SignerError(details: String(cString: xpriv_result.details.error))
+        }
+        try self.writeKeychain(attrName: pubkeyChain, data: String(cString: xpriv_result.details.data))
+        result_destroy(xpriv_result)
     }
 }

@@ -4,7 +4,7 @@
 
 import Foundation
 
-public struct RGB20Asset: Codable {
+public struct RGB20Asset {
     public let genesis: String
     public let id: String
     public let ticker: String
@@ -27,5 +27,17 @@ public struct RGB20Asset: Codable {
 
     public var knownCirculatingAssets: Double {
         Double(knownCirculating) / Double(fractionalDivider)
+    }
+
+    init(withAssetData asset: AssetData) {
+        self.genesis = asset.genesis
+        self.id = asset.id
+        self.ticker = asset.ticker
+        self.name = asset.name
+        self.description = asset.description
+        self.fractionalBits = asset.fractionalBits
+        self.date = asset.date
+        self.knownCirculating = asset.knownCirculating
+        self.issueLimit = asset.issueLimit
     }
 }
