@@ -92,7 +92,7 @@ extension MyCitadelClient {
         result_destroy(xpriv_result)
     }
 
-    internal func deriveXprivIdentity(pubkeyChain: String) throws {
+    internal func createIdentity(pubkeyChain: String) throws -> String {
         guard let master = try self.readKeychain(attrName: SecurityItemNames.masterXpriv.rawValue) else {
             throw SignerError(details: "Unable to generate identity master extended private key")
         }
@@ -101,7 +101,17 @@ extension MyCitadelClient {
         if !is_success(xpriv_result) {
             throw SignerError(details: String(cString: xpriv_result.details.error))
         }
-        try self.writeKeychain(attrName: pubkeyChain, data: String(cString: xpriv_result.details.data))
+        var xpriv = String(cString: xpriv_result.details.data)
+        try self.writeKeychain(attrName: pubkeyChain, data: xpriv)
         result_destroy(xpriv_result)
+
+        withUnsafeMutableBytes(of: &xpriv) { pointer in
+            pointer.copyBytes(from: [UInt8](repeating: 0, count: pointer.count))
+        }
+
+        let xpub_result = bip32_derive_xpub(UnsafeMutablePointer(mutating: (xpriv as NSString).utf8String), true, "m")
+        let xpub = String(cString: xpub_result.details.data)
+        result_destroy(xpub_result)
+        return xpub
     }
 }

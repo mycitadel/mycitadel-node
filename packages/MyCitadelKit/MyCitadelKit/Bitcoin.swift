@@ -39,19 +39,23 @@ public enum DescriptorType {
     public func usesSegWit() -> Bool {
         return self == .segwit
     }
-}
 
-public struct PubkeyChain {
-    static func construct(network: BitcoinNetwork, rgbSupport: Bool, descriptorType: DescriptorType, multisig: Bool, scope: UInt32?) -> String {
+    public func createPubkeyChain(network: BitcoinNetwork, rgb: Bool, multisig: Bool, scope: UInt32?) -> String {
         let boundary = UInt32.max & 0x7FFFFFFF
         let id = UInt32.random(in: 0...boundary)
         let scope = UInt32.random(in: 0...boundary);
-        return rgbSupport
-                ? "m/827166'/\(descriptorType.usesSchnorr() ? "340" : "0")'/\(network.derivationIndex())'/\(id)'/\(scope)'/0/*"
-                : descriptorType.usesSchnorr()
+        return rgb
+                ? "m/827166'/\(self.usesSchnorr() ? "340" : "0")'/\(network.derivationIndex())'/\(id)'/\(scope)'/0/*"
+                : self.usesSchnorr()
                 ? "m/\(multisig ? 345 : 344)'/0'/\(scope)/0/*"
-                : descriptorType.usesSegWit()
+                : self.usesSegWit()
                 ? "m/\(multisig ? 84 : 84)'/0'/\(scope)/0/*"
                 : "m/\(multisig ? 45 : 44)'/0'/\(scope)/0/*"
     }
+}
+
+public enum WitnessVersion {
+    case none
+    case segwit
+    case taproot
 }

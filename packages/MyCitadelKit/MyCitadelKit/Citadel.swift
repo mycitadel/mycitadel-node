@@ -4,7 +4,7 @@
 
 import Foundation
 
-public struct MyCitadel {
+public struct Citadel {
     internal let client: MyCitadelClient
 
     public var contracts: [WalletContract] = []
@@ -12,19 +12,34 @@ public struct MyCitadel {
 
     internal init(withClient client: MyCitadelClient) {
         self.client = client
-        self.sync()
+        try? self.syncAll()
     }
 
-    public mutating func sync() {
-        let contractData: [ContractData] = (try? client.listContracts()) ?? []
+    public mutating func syncAll() throws {
+        let _ = try self.syncContracts()
+        let _ = try self.syncAssets()
+    }
+
+    public mutating func syncContracts() throws -> [WalletContract] {
+        let contractData: [ContractData] = try client.listContracts()
         self.contracts = contractData.map { WalletContract(withClient: client, contractData: $0) }
 
         for var contract in self.contracts {
-            contract.sync()
+            try contract.sync()
         }
+        return self.contracts
+    }
 
-        let assetData: [AssetData] = (try? client.listAssets()) ?? []
+    public mutating func syncAssets() throws -> [RGB20Asset] {
+        let assetData: [AssetData] = try client.listAssets()
         self.assets = assetData.map(RGB20Asset.init)
+        return self.assets
+    }
+
+    public mutating func createSingleSig(named name: String, descriptor descriptorType: DescriptorType, enableRGB hasRGB: Bool) throws {
+        let pubkeyChain = descriptorType.createPubkeyChain(network: client.network, rgb: hasRGB, multisig: false, scope: nil)
+        let contractData = try self.client.create(singleSig: pubkeyChain, name: name, descriptorType: descriptorType)
+        self.contracts.append(WalletContract(withClient: self.client, contractData: contractData))
     }
 }
 
@@ -49,8 +64,8 @@ public struct WalletContract {
         self.balances[assetId]?.total ?? 0
     }
 
-    public mutating func sync() {
-        let balanceData = (try? client.balance(walletId: self.id)) ?? [:]
+    public mutating func sync() throws {
+        let balanceData = try client.balance(walletId: self.id)
         balanceData.forEach { (assetId, utxoSet) in
             let unspent = utxoSet.map { UnspentCoins(withAssetId: assetId, utxo: $0) }
             let total = unspent.reduce(into: 0) { sum, u in sum += u.value }

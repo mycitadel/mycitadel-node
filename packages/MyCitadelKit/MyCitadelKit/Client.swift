@@ -40,10 +40,10 @@ open class MyCitadelClient {
     let network: BitcoinNetwork
     let dataDir: String
 
-    private var _data: MyCitadel? = nil
-    public var data: MyCitadel {
+    private var _data: Citadel? = nil
+    public var citadel: Citadel {
         if _data == nil {
-            _data = MyCitadel(withClient: self)
+            _data = Citadel(withClient: self)
         }
         return _data!
     }
@@ -90,7 +90,7 @@ open class MyCitadelClient {
 
     internal func create(singleSig pubkeyChain: String, name: String, descriptorType: DescriptorType) throws -> ContractData {
         try self.createSeed()
-        try self.deriveXprivIdentity(pubkeyChain: pubkeyChain)
+        let _ = try self.createIdentity(pubkeyChain: pubkeyChain)
         let response = mycitadel_single_sig_create(client, name, pubkeyChain, descriptorType.cDescriptorType());
         return try JSONDecoder().decode(ContractData.self, from: self.processResponse(response))
     }
