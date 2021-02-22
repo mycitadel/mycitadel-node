@@ -41,6 +41,11 @@ public struct Citadel {
         let contractData = try self.client.create(singleSig: pubkeyChain, name: name, descriptorType: descriptorType)
         self.contracts.append(WalletContract(withClient: self.client, contractData: contractData))
     }
+
+    public mutating func importAsset(genesisBech32 genesis: String) throws -> RGB20Asset {
+        let assetData = try self.client.importAsset(bech32: genesis)
+        return RGB20Asset(withAssetData: assetData)
+    }
 }
 
 public struct WalletContract {
