@@ -120,3 +120,26 @@ impl From<Error> for Reply {
         Reply::Failure(err.into())
     }
 }
+
+impl Reply {
+    pub fn inner_to_json(&self) -> Result<String, serde_json::Error> {
+        match self {
+            Reply::Success => Ok(s!("")),
+            Reply::Failure(err) => {
+                Ok(format!(r#"{{"error": "{}"}}"#, err.to_string()))
+            }
+            Reply::Contracts(data) => serde_json::to_string(data),
+            Reply::Contract(data) => serde_json::to_string(data),
+            Reply::ContractUnspent(data) => serde_json::to_string(data),
+            Reply::Addresses(data) => serde_json::to_string(data),
+            Reply::AddressDerivation(data) => serde_json::to_string(data),
+            Reply::BlindUtxo(data) => serde_json::to_string(data),
+            Reply::Invoices(data) => serde_json::to_string(data),
+            Reply::PreparedPayment(data) => Ok(s!("{}")),
+            Reply::Validation(data) => serde_json::to_string(data),
+            Reply::Asset(data) => serde_json::to_string(data),
+            Reply::Assets(data) => serde_json::to_string(data),
+            Reply::Identities(data) => serde_json::to_string(data),
+        }
+    }
+}

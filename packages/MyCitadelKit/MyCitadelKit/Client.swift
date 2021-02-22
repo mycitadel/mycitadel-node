@@ -84,6 +84,7 @@ open class MyCitadelClient {
             throw err
         }
         release_string(UnsafeMutablePointer(mutating: response))
+        print(String(cString: json))
         let data = Data(String(cString: json).utf8)
         return data
     }

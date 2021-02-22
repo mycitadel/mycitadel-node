@@ -145,7 +145,7 @@ impl mycitadel_client_t {
                     Ok(reply)
                 }
             })
-            .map(|result| match serde_json::to_string(&result) {
+            .map(|result| match result.inner_to_json() {
                 Ok(json) => {
                     self.set_success();
                     json.try_into_raw().unwrap_or(ptr::null())
