@@ -66,6 +66,12 @@ impl Config {
     }
 }
 
+impl Default for Config {
+    fn default() -> Self {
+        Opts::default().into()
+    }
+}
+
 #[cfg(feature = "shell")]
 impl From<Opts> for Config {
     fn from(opts: Opts) -> Self {

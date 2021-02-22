@@ -22,7 +22,7 @@ use internet2::{
 };
 use invoice::{AssetClass, Beneficiary, Invoice};
 use lnpbp::chain::{AssetId, Chain};
-use lnpbp::client_side_validation::Conceal;
+use lnpbp::client_side_validation::CommitConceal;
 use microservices::rpc::Failure;
 use rgb::{AtomicValue, Consignment, Genesis};
 use wallet::bip32::{PubkeyChain, UnhardenedIndex};
@@ -35,6 +35,7 @@ use crate::rpc::{message, Reply, Request};
 use crate::Error;
 
 #[derive(Copy, Clone, Ord, PartialOrd, Eq, PartialEq, Hash, Debug)]
+#[repr(u8)]
 pub enum InvoiceType {
     AddressUtxo,
     Descriptor,
@@ -85,12 +86,12 @@ impl Client {
 
     pub fn single_sig_create(
         &mut self,
-        name: String,
+        name: impl ToString,
         pubkey_chain: PubkeyChain,
         category: OuterCategory,
     ) -> Result<Reply, Error> {
         self.request(Request::CreateSingleSig(message::SingleSigInfo {
-            name,
+            name: name.to_string(),
             pubkey_chain,
             category,
         }))
@@ -99,11 +100,11 @@ impl Client {
     pub fn contract_rename(
         &mut self,
         contract_id: ContractId,
-        name: String,
+        name: impl ToString,
     ) -> Result<Reply, Error> {
         self.request(Request::RenameContract(message::RenameContractRequest {
             contract_id,
-            name,
+            name: name.to_string(),
         }))
     }
 
@@ -168,8 +169,8 @@ impl Client {
         contract_id: ContractId,
         asset_id: Option<rgb::ContractId>,
         amount: AtomicValue,
-        merchant: Option<String>,
-        purpose: Option<String>,
+        _merchant: Option<impl ToString>,
+        _purpose: Option<impl ToString>,
         unmark: bool,
         legacy: bool,
     ) -> Result<Invoice, Error> {
@@ -181,7 +182,7 @@ impl Client {
                         Reply::BlindUtxo(seal) => seal,
                         _ => Err(Error::UnexpectedApi)?,
                     };
-                (Beneficiary::BlindUtxo(seal.conceal()), Some(seal))
+                (Beneficiary::BlindUtxo(seal.commit_conceal()), Some(seal))
             }
             (InvoiceType::AddressUtxo, None) => {
                 let address = match self.request(Request::NextAddress(
@@ -348,12 +349,13 @@ impl Client {
 
     pub fn asset_import(
         &mut self,
-        genesis_bech: String,
+        genesis_bech: impl AsRef<str>,
     ) -> Result<Reply, Error> {
-        let genesis = Genesis::from_str(&genesis_bech).map_err(|err| {
-            error!("Wrong genesis data: {}", err);
-            Error::EmbeddedNodeInitError
-        })?;
+        let genesis =
+            Genesis::from_str(genesis_bech.as_ref()).map_err(|err| {
+                error!("Wrong genesis data: {}", err);
+                Error::EmbeddedNodeInitError
+            })?;
         self.request(Request::ImportAsset(genesis))
     }
 }

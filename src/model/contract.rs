@@ -19,7 +19,9 @@ use std::time::{SystemTime, UNIX_EPOCH};
 
 use bitcoin::Txid;
 use invoice::Invoice;
-use lnpbp::client_side_validation::{CommitEncode, Conceal, ConsensusCommit};
+use lnpbp::client_side_validation::{
+    CommitConceal, CommitEncode, ConsensusCommit,
+};
 use lnpbp::seals::{OutpointHash, OutpointReveal};
 use lnpbp::Chain;
 use strict_encoding::StrictEncode;
@@ -104,7 +106,7 @@ impl ConsensusCommit for Contract {
 }
 
 impl CommitEncode for Contract {
-    fn commit_encode<E: io::Write>(self, e: E) -> usize {
+    fn commit_encode<E: io::Write>(&self, e: E) -> usize {
         self.policy
             .strict_encode(e)
             .expect("Memory encoders does not fail")
@@ -148,6 +150,6 @@ impl Contract {
     pub(crate) fn add_blinding(&mut self, outpoint_reveal: OutpointReveal) {
         self.data
             .blinding_factors
-            .insert(outpoint_reveal.conceal(), outpoint_reveal);
+            .insert(outpoint_reveal.commit_conceal(), outpoint_reveal);
     }
 }

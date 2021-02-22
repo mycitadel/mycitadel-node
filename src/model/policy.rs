@@ -122,7 +122,7 @@ impl ConsensusCommit for Policy {
 }
 
 impl CommitEncode for Policy {
-    fn commit_encode<E: io::Write>(self, e: E) -> usize {
+    fn commit_encode<E: io::Write>(&self, e: E) -> usize {
         self.strict_encode(e)
             .expect("Memory encoders does not fail")
     }

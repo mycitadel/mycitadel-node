@@ -33,4 +33,4 @@ mod helpers;
 pub mod signer;
 
 pub use client::mycitadel_client_t;
-pub use helpers::{ptr_to_string, ToCharPtr};
+pub use helpers::{TryAsStr, TryFromRaw, TryIntoRaw, TryIntoString};

@@ -12,10 +12,12 @@
 // If not, see <https://www.gnu.org/licenses/agpl-3.0-standalone.html>.
 
 use clap::{AppSettings, Clap, ValueHint};
+use std::ffi::OsString;
+use std::path::PathBuf;
+
 use internet2::ZmqSocketAddr;
 use lnpbp::Chain;
 use microservices::FileFormat;
-use std::path::PathBuf;
 
 #[cfg(any(target_os = "linux"))]
 pub const MYCITADEL_DATA_DIR: &'static str = "~/.mycitadel/{network}";
@@ -106,4 +108,10 @@ pub struct Opts {
         value_hint = ValueHint::FilePath
     )]
     pub config: String,
+}
+
+impl Default for Opts {
+    fn default() -> Self {
+        Opts::parse_from(Vec::<OsString>::new())
+    }
 }

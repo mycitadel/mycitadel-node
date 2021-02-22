@@ -23,3 +23,4 @@ pub const ERRNO_CHAIN: c_int = 101;
 pub const ERRNO_JSON: c_int = 102;
 pub const ERRNO_BECH32: c_int = 103;
 pub const ERRNO_PARSE: c_int = 104;
+pub const ERRNO_NULL: c_int = 105;

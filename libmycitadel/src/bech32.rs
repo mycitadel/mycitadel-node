@@ -11,16 +11,16 @@
 
 // TODO: Move to rgb-core library
 
+use libc::{c_char, c_int};
 use serde::Serialize;
 use std::convert::TryFrom;
-use std::os::raw::{c_char, c_int};
 use std::str::FromStr;
 
 use rgb::bech32::Error;
 use rgb::Bech32;
 use rgb20::Asset;
 
-use crate::{ptr_to_string, ToCharPtr};
+use crate::{TryAsStr, TryIntoRaw, TryIntoString};
 
 pub const BECH32_OK: c_int = 0;
 pub const BECH32_ERR_HRP: c_int = 1;
@@ -29,6 +29,7 @@ pub const BECH32_ERR_ENCODING: c_int = 3;
 pub const BECH32_ERR_PAYLOAD: c_int = 4;
 pub const BECH32_ERR_UNSUPPORTED: c_int = 5;
 pub const BECH32_ERR_INTERNAL: c_int = 6;
+pub const BECH32_ERR_NULL: c_int = 7;
 
 pub const BECH32_UNKNOWN: c_int = 0;
 pub const BECH32_URL: c_int = 1;
@@ -63,19 +64,32 @@ impl bech32_info_t {
     where
         T: ?Sized + Serialize,
     {
-        match serde_json::to_string(value) {
-            Ok(json) => Self {
+        match serde_json::to_string(value).map(String::try_into_raw) {
+            Ok(Some(json)) => Self {
                 status: BECH32_OK,
                 category,
                 bech32m: false,
-                details: json.to_char_ptr(),
+                details: json,
             },
-            Err(_) => Self {
+            Ok(None) => bech32_info_t::with_null_value(),
+            Err(err) => Self {
                 status: BECH32_ERR_INTERNAL,
                 category,
                 bech32m: false,
-                details: "Unable to encode details as JSON".to_char_ptr(),
+                details: format!("Unable to encode details as JSON: {}", err)
+                    .try_into_raw()
+                    .unwrap_or("Unable to encode details as JSON".as_ptr()
+                        as *const c_char),
             },
+        }
+    }
+
+    pub fn with_null_value() -> Self {
+        Self {
+            status: BECH32_ERR_NULL,
+            category: BECH32_UNKNOWN,
+            bech32m: false,
+            details: s!("Value must not be null").try_into_raw().unwrap(),
         }
     }
 
@@ -84,7 +98,9 @@ impl bech32_info_t {
             status: BECH32_ERR_PAYLOAD,
             category: BECH32_UNKNOWN,
             bech32m: false,
-            details: "Payload format does not match bech32 type".to_char_ptr(),
+            details: s!("Payload format does not match bech32 type")
+                .try_into_raw()
+                .unwrap(),
         }
     }
 
@@ -93,8 +109,9 @@ impl bech32_info_t {
             status: BECH32_ERR_UNSUPPORTED,
             category: BECH32_UNKNOWN,
             bech32m: false,
-            details: "This specific kind of Bech32 is not yet supported"
-                .to_char_ptr(),
+            details: s!("This specific kind of Bech32 is not yet supported")
+                .try_into_raw()
+                .unwrap(),
         }
     }
 }
@@ -115,20 +132,33 @@ impl From<Error> for bech32_info_t {
             status,
             category: BECH32_UNKNOWN,
             bech32m: false,
-            details: err.to_string().to_char_ptr(),
+            details: err
+                .to_string()
+                .try_into_raw()
+                .unwrap_or("Unknown error".as_ptr() as *const c_char),
         }
     }
 }
 
 #[no_mangle]
+pub extern "C" fn lnpbp_bech32_release(info: bech32_info_t) {
+    (info.details as *mut c_char).try_into_string();
+}
+
+#[no_mangle]
 pub extern "C" fn lnpbp_bech32_info(bech_str: *const c_char) -> bech32_info_t {
-    match Bech32::from_str(&ptr_to_string(bech_str)) {
-        Ok(Bech32::Genesis(genesis)) => Asset::try_from(genesis.clone())
-            .map(|asset| bech32_info_t::with_value(BECH32_RGB20_ASSET, &asset))
-            .unwrap_or_else(|_| {
-                bech32_info_t::with_value(BECH32_RGB_GENESIS, &genesis)
-            }),
-        Ok(_) => bech32_info_t::unsuported(),
-        Err(err) => bech32_info_t::from(err),
-    }
+    bech_str
+        .try_as_str()
+        .map(|s| match Bech32::from_str(s) {
+            Ok(Bech32::Genesis(genesis)) => Asset::try_from(genesis.clone())
+                .map(|asset| {
+                    bech32_info_t::with_value(BECH32_RGB20_ASSET, &asset)
+                })
+                .unwrap_or_else(|_| {
+                    bech32_info_t::with_value(BECH32_RGB_GENESIS, &genesis)
+                }),
+            Ok(_) => bech32_info_t::unsuported(),
+            Err(err) => bech32_info_t::from(err),
+        })
+        .unwrap_or(bech32_info_t::with_null_value())
 }

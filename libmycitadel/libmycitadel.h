@@ -24,6 +24,8 @@
 
 #define BECH32_ERR_INTERNAL 6
 
+#define BECH32_ERR_NULL 7
+
 #define BECH32_UNKNOWN 0
 
 #define BECH32_URL 1
@@ -79,6 +81,8 @@
 #define ERRNO_BECH32 103
 
 #define ERRNO_PARSE 104
+
+#define ERRNO_NULL 105
 
 typedef enum bip39_mnemonic_type {
         words_12,
@@ -139,7 +143,7 @@ typedef struct bech32_info_t {
 } bech32_info_t;
 
 typedef struct mycitadel_client_t {
-        void *inner;
+        void *opaque;
         const char *message;
         int err_no;
 } mycitadel_client_t;
@@ -158,7 +162,11 @@ typedef struct string_result_t {
 extern "C" {
 #endif // __cplusplus
 
+void lnpbp_bech32_release(struct bech32_info_t info);
+
 struct bech32_info_t lnpbp_bech32_info(const char *bech_str);
+
+void release_string(char *s);
 
 struct mycitadel_client_t *mycitadel_run_embedded(const char *chain,
                                                   const char *data_dir,
@@ -209,6 +217,15 @@ const char *mycitadel_invoice_create(struct mycitadel_client_t *client,
 
 const char *mycitadel_invoice_list(struct mycitadel_client_t *client,
                                    const char *contract_id);
+
+const char *mycitadel_invoice_pay(struct mycitadel_client_t *client,
+                                  const char *contract_id,
+                                  const char *invoice,
+                                  uint64_t fee,
+                                  uint64_t giveaway);
+
+const char *mycitadel_invoice_accept(struct mycitadel_client_t *client,
+                                     const char *contract_id);
 
 const char *mycitadel_asset_list(struct mycitadel_client_t *client);
 

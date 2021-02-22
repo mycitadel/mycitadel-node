@@ -24,6 +24,7 @@ mycitadel = { path = "..", features = [ "node", "client" ] }
 # strict_encoding = { version = "1.0.7", features = ["chrono", "crypto", "miniscript", "derive"] }
 # descriptor-wallet = { git = "https://github.com/LNP-BP/descriptor-wallet" }
 lnpbp = { git = "https://github.com/LNP-BP/rust-lnpbp" }
+lnpbp_invoice = { git = "https://github.com/LNP-BP/rust-lnpbp" }
 # lnp-core = { git = "https://github.com/LNP-BP/lnp-core" }
 rgb-core = { git = "https://github.com/rgb-org/rgb-core" }
 rgb20 = { git = "https://github.com/rgb-org/rgb-core" }

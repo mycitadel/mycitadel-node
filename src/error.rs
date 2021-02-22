@@ -81,6 +81,11 @@ pub enum Error {
     #[from]
     StrictEncoding(strict_encoding::Error),
 
+    /// Bech32 encoding error: {0}
+    #[from]
+    #[from(bech32::Error)]
+    Bech32(lnpbp::bech32::Error),
+
     /// error initializing embedded node
     EmbeddedNodeInitError,
 

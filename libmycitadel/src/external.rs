@@ -9,21 +9,27 @@
 
 #![allow(dead_code)]
 
-use std::os::raw::c_char;
+use libc::c_char;
 use std::path::PathBuf;
 use std::ptr;
 use std::str::FromStr;
 
 use internet2::ZmqSocketAddr;
+use invoice::Invoice;
 use lnpbp::Chain;
 use mycitadel::client::InvoiceType;
-use mycitadel::{rpc, Client};
+use mycitadel::Client;
 use wallet::bip32::PubkeyChain;
 use wallet::descriptor;
 
 use crate::error::*;
-use crate::mycitadel_client_t;
-use crate::ptr_to_string;
+use crate::helpers::{TryAsStr, TryIntoString};
+use crate::{mycitadel_client_t, TryIntoRaw};
+
+#[no_mangle]
+pub extern "C" fn release_string(s: *mut c_char) {
+    s.try_into_string();
+}
 
 #[no_mangle]
 pub extern "C" fn mycitadel_run_embedded(
@@ -31,45 +37,58 @@ pub extern "C" fn mycitadel_run_embedded(
     data_dir: *const c_char,
     electrum_server: *const c_char,
 ) -> *mut mycitadel_client_t {
-    let chain = ptr_to_string(chain);
-    let client = if let Ok(chain) = Chain::from_str(&chain) {
-        mycitadel::run_embedded(mycitadel::server::Config {
-            verbose: 4,
-            chain,
-            rpc_endpoint: ZmqSocketAddr::Inproc(s!("mycitadel.rpc")),
-            rgb20_endpoint: ZmqSocketAddr::Inproc(s!("rgb20.rpc")),
-            rgb_embedded: true,
-            data_dir: PathBuf::from(ptr_to_string(data_dir)),
-            electrum_server: ptr_to_string(electrum_server),
-        })
+    let mut config = mycitadel::server::Config {
+        verbose: 4,
+        rpc_endpoint: ZmqSocketAddr::Inproc(s!("mycitadel.rpc")),
+        rgb20_endpoint: ZmqSocketAddr::Inproc(s!("rgb20.rpc")),
+        rgb_embedded: true,
+        ..default!()
+    };
+
+    if let Some(chain) = chain.try_as_str() {
+        if let Ok(chain) = Chain::from_str(chain) {
+            config.chain = chain;
+        } else {
+            return mycitadel_client_t::from_custom_err(
+                ERRNO_CHAIN,
+                &format!("Unknown chain {}", chain),
+            );
+        }
+    }
+
+    if let Some(data_dir) = data_dir.try_as_str() {
+        config.data_dir = PathBuf::from(data_dir);
+    }
+
+    if let Some(electrum_server) = electrum_server.try_as_str() {
+        config.electrum_server = electrum_server.to_string();
+    }
+
+    mycitadel::run_embedded(config)
         .map(mycitadel_client_t::with)
         .unwrap_or_else(mycitadel_client_t::from_err)
-    } else {
-        mycitadel_client_t::from_custom_err(
-            ERRNO_CHAIN,
-            &format!("Unknown chain {}", chain),
-        )
-    };
-    Box::into_raw(Box::new(client))
 }
 
 #[no_mangle]
 pub extern "C" fn mycitadel_is_ok(client: *mut mycitadel_client_t) -> bool {
-    unsafe { client.as_mut().expect("Wrong MyCitadel client pointer") }.is_ok()
+    mycitadel_client_t::from_raw(client).is_ok()
 }
 
 #[no_mangle]
 pub extern "C" fn mycitadel_has_err(client: *mut mycitadel_client_t) -> bool {
-    unsafe { client.as_mut().expect("Wrong MyCitadel client pointer") }
-        .has_err()
+    mycitadel_client_t::from_raw(client).has_err()
 }
 
 #[no_mangle]
 pub extern "C" fn mycitadel_contract_list(
     client: *mut mycitadel_client_t,
 ) -> *const c_char {
-    unsafe { client.as_mut().expect("Wrong MyCitadel client pointer") }
-        .call(rpc::Request::ListContracts)
+    let client = mycitadel_client_t::from_raw(client);
+    client
+        .try_as_opaque()
+        .map(Client::contract_list)
+        .map(|response| client.process_response(response))
+        .unwrap_or(ptr::null())
 }
 
 #[no_mangle]
@@ -79,9 +98,19 @@ pub extern "C" fn mycitadel_single_sig_create(
     keychain: *const c_char,
     category: descriptor::OuterCategory,
 ) -> *const c_char {
-    let client =
-        unsafe { client.as_mut().expect("Wrong MyCitadel client pointer") };
-    let pubkey_chain = match PubkeyChain::from_str(&ptr_to_string(keychain)) {
+    let client = mycitadel_client_t::from_raw(client);
+
+    let (keychain, name) = match (|| {
+        Some((
+            client.parse_string(keychain, "keychain parameter").ok()?,
+            client.parse_string(name, "contract name").ok()?,
+        ))
+    })() {
+        None => return ptr::null(),
+        Some(v) => v,
+    };
+
+    let pubkey_chain = match PubkeyChain::from_str(&keychain) {
         Ok(pubkey_chain) => pubkey_chain,
         Err(err) => {
             client.set_error_details(
@@ -91,12 +120,9 @@ pub extern "C" fn mycitadel_single_sig_create(
             return ptr::null();
         }
     };
-    let call = |client: &mut Client| {
-        client.single_sig_create(ptr_to_string(name), pubkey_chain, category)
-    };
     client
-        .inner()
-        .map(call)
+        .try_as_opaque()
+        .map(|opaque| opaque.single_sig_create(name, pubkey_chain, category))
         .map(|response| client.process_response(response))
         .unwrap_or(ptr::null())
 }
@@ -107,16 +133,21 @@ pub extern "C" fn mycitadel_contract_rename(
     contract_id: *const c_char,
     new_name: *const c_char,
 ) -> *const c_char {
-    let client =
-        unsafe { client.as_mut().expect("Wrong MyCitadel client pointer") };
-    let contract_id = client.contract_id(contract_id);
+    let client = mycitadel_client_t::from_raw(client);
+
+    let (contract_id, new_name) = match (|| {
+        Some((
+            client.parse_contract_id(contract_id).ok()?,
+            client.parse_string(new_name, "new name").ok()?,
+        ))
+    })() {
+        None => return ptr::null(),
+        Some(v) => v,
+    };
+
     client
-        .inner()
-        .and_then(|inner| {
-            contract_id.map(|contract_id| {
-                inner.contract_rename(contract_id, ptr_to_string(new_name))
-            })
-        })
+        .try_as_opaque()
+        .map(|opaque| opaque.contract_rename(contract_id, new_name))
         .map(|response| client.process_response(response))
         .unwrap_or(ptr::null())
 }
@@ -126,14 +157,16 @@ pub extern "C" fn mycitadel_contract_delete(
     client: *mut mycitadel_client_t,
     contract_id: *const c_char,
 ) -> *const c_char {
-    let client =
-        unsafe { client.as_mut().expect("Wrong MyCitadel client pointer") };
-    let contract_id = client.contract_id(contract_id);
+    let client = mycitadel_client_t::from_raw(client);
+
+    let contract_id = match client.parse_contract_id(contract_id).ok() {
+        None => return ptr::null(),
+        Some(v) => v,
+    };
+
     client
-        .inner()
-        .and_then(|inner| {
-            contract_id.map(|contract_id| inner.contract_delete(contract_id))
-        })
+        .try_as_opaque()
+        .map(|opaque| opaque.contract_delete(contract_id))
         .map(|response| client.process_response(response))
         .unwrap_or(ptr::null())
 }
@@ -145,15 +178,17 @@ pub extern "C" fn mycitadel_contract_balance(
     rescan: bool,
     lookup_depth: u8,
 ) -> *const c_char {
-    let client =
-        unsafe { client.as_mut().expect("Wrong MyCitadel client pointer") };
-    let contract_id = client.contract_id(contract_id);
+    let client = mycitadel_client_t::from_raw(client);
+
+    let contract_id = match client.parse_contract_id(contract_id).ok() {
+        None => return ptr::null(),
+        Some(v) => v,
+    };
+
     client
-        .inner()
-        .and_then(|inner| {
-            contract_id.map(|contract_id| {
-                inner.contract_balance(contract_id, rescan, lookup_depth)
-            })
+        .try_as_opaque()
+        .map(|opaque| {
+            opaque.contract_balance(contract_id, rescan, lookup_depth)
         })
         .map(|response| client.process_response(response))
         .unwrap_or(ptr::null())
@@ -166,16 +201,16 @@ pub extern "C" fn mycitadel_address_list(
     rescan: bool,
     lookup_depth: u8,
 ) -> *const c_char {
-    let client =
-        unsafe { client.as_mut().expect("Wrong MyCitadel client pointer") };
-    let contract_id = client.contract_id(contract_id);
+    let client = mycitadel_client_t::from_raw(client);
+
+    let contract_id = match client.parse_contract_id(contract_id).ok() {
+        None => return ptr::null(),
+        Some(v) => v,
+    };
+
     client
-        .inner()
-        .and_then(|inner| {
-            contract_id.map(|contract_id| {
-                inner.address_list(contract_id, rescan, lookup_depth)
-            })
-        })
+        .try_as_opaque()
+        .map(|opaque| opaque.address_list(contract_id, rescan, lookup_depth))
         .map(|response| client.process_response(response))
         .unwrap_or(ptr::null())
 }
@@ -187,15 +222,17 @@ pub extern "C" fn mycitadel_address_create(
     mark_used: bool,
     legacy: bool,
 ) -> *const c_char {
-    let client =
-        unsafe { client.as_mut().expect("Wrong MyCitadel client pointer") };
-    let contract_id = client.contract_id(contract_id);
+    let client = mycitadel_client_t::from_raw(client);
+
+    let contract_id = match client.parse_contract_id(contract_id).ok() {
+        None => return ptr::null(),
+        Some(v) => v,
+    };
+
     client
-        .inner()
-        .and_then(|inner| {
-            contract_id.map(|contract_id| {
-                inner.address_create(contract_id, None, mark_used, legacy)
-            })
+        .try_as_opaque()
+        .map(|opaque| {
+            opaque.address_create(contract_id, None, mark_used, legacy)
         })
         .map(|response| client.process_response(response))
         .unwrap_or(ptr::null())
@@ -213,49 +250,33 @@ pub extern "C" fn mycitadel_invoice_create(
     unmark: bool,
     legacy: bool,
 ) -> *const c_char {
-    let client =
-        unsafe { client.as_mut().expect("Wrong MyCitadel client pointer") };
+    let client = mycitadel_client_t::from_raw(client);
 
-    let contract_id = if let Some(value) = client.contract_id(contract_id) {
-        value
-    } else {
-        return ptr::null();
+    let (contract_id, asset_id) = match (|| {
+        Some((
+            client.parse_contract_id(contract_id).ok()?,
+            client.parse_asset_id(asset_id).ok()?,
+        ))
+    })() {
+        None => return ptr::null(),
+        Some(v) => v,
     };
 
-    let asset_id = if asset_id.is_null() {
-        None
-    } else if let Some(value) = client.asset_id(asset_id) {
-        Some(value)
-    } else {
-        return ptr::null();
-    };
-
-    let merchant = if merchant.is_null() {
-        None
-    } else {
-        Some(ptr_to_string(merchant))
-    };
-    let purpose = if purpose.is_null() {
-        None
-    } else {
-        Some(ptr_to_string(purpose))
-    };
-
-    let result = client.inner().map(|inner| {
+    let result = client.try_as_opaque().map(|inner| {
         inner.invoice_create(
             category,
             contract_id,
             asset_id,
             amount,
-            merchant,
-            purpose,
+            merchant.try_as_str(),
+            purpose.try_as_str(),
             unmark,
             legacy,
         )
     });
     result
         .and_then(|reply| reply.map_err(|err| client.set_error(err)).ok())
-        .map(|invoice| invoice.to_string().as_ptr() as *const c_char)
+        .and_then(|invoice| invoice.to_string().try_into_raw())
         .unwrap_or(ptr::null())
 }
 
@@ -264,14 +285,78 @@ pub extern "C" fn mycitadel_invoice_list(
     client: *mut mycitadel_client_t,
     contract_id: *const c_char,
 ) -> *const c_char {
-    let client =
-        unsafe { client.as_mut().expect("Wrong MyCitadel client pointer") };
-    let contract_id = client.contract_id(contract_id);
+    let client = mycitadel_client_t::from_raw(client);
+
+    let contract_id = match client.parse_contract_id(contract_id).ok() {
+        None => return ptr::null(),
+        Some(v) => v,
+    };
+
     client
-        .inner()
-        .and_then(|inner| {
-            contract_id.map(|contract_id| inner.invoice_list(contract_id))
-        })
+        .try_as_opaque()
+        .map(|opaque| opaque.invoice_list(contract_id))
+        .map(|response| client.process_response(response))
+        .unwrap_or(ptr::null())
+}
+
+#[no_mangle]
+pub extern "C" fn mycitadel_invoice_pay(
+    client: *mut mycitadel_client_t,
+    contract_id: *const c_char,
+    invoice: *const c_char,
+    fee: u64,
+    giveaway: u64,
+) -> *const c_char {
+    let client = mycitadel_client_t::from_raw(client);
+
+    let (contract_id, invoice) = match (|| {
+        Some((
+            client.parse_contract_id(contract_id).ok()?,
+            client.parse_string(invoice, "invoice").ok()?,
+        ))
+    })() {
+        None => return ptr::null(),
+        Some(v) => v,
+    };
+
+    let invoice = match Invoice::from_str(invoice) {
+        Ok(invoice) => invoice,
+        Err(err) => {
+            client.set_error(err.into());
+            return ptr::null();
+        }
+    };
+
+    let result = client.try_as_opaque().map(|inner| {
+        inner.invoice_pay(
+            contract_id,
+            invoice,
+            None,
+            fee,
+            if giveaway > 0 { Some(giveaway) } else { None },
+        )
+    });
+    result
+        .and_then(|reply| reply.map_err(|err| client.set_error(err)).ok())
+        .and_then(|info| info.to_string().try_into_raw())
+        .unwrap_or(ptr::null())
+}
+
+#[no_mangle]
+pub extern "C" fn mycitadel_invoice_accept(
+    client: *mut mycitadel_client_t,
+    contract_id: *const c_char,
+) -> *const c_char {
+    let client = mycitadel_client_t::from_raw(client);
+
+    let contract_id = match client.parse_contract_id(contract_id).ok() {
+        None => return ptr::null(),
+        Some(v) => v,
+    };
+
+    client
+        .try_as_opaque()
+        .map(|opaque| opaque.invoice_list(contract_id))
         .map(|response| client.process_response(response))
         .unwrap_or(ptr::null())
 }
@@ -280,10 +365,9 @@ pub extern "C" fn mycitadel_invoice_list(
 pub extern "C" fn mycitadel_asset_list(
     client: *mut mycitadel_client_t,
 ) -> *const c_char {
-    let client =
-        unsafe { client.as_mut().expect("Wrong MyCitadel client pointer") };
+    let client = mycitadel_client_t::from_raw(client);
     client
-        .inner()
+        .try_as_opaque()
         .map(Client::contract_list)
         .map(|response| client.process_response(response))
         .unwrap_or(ptr::null())
@@ -294,12 +378,16 @@ pub extern "C" fn mycitadel_asset_import(
     client: *mut mycitadel_client_t,
     genesis_b32: *const c_char,
 ) -> *const c_char {
-    let client =
-        unsafe { client.as_mut().expect("Wrong MyCitadel client pointer") };
-    let genesis_b32 = ptr_to_string(genesis_b32);
+    let client = mycitadel_client_t::from_raw(client);
+
+    let genesis_b32 = match client.parse_string(genesis_b32, "genesis").ok() {
+        None => return ptr::null(),
+        Some(v) => v,
+    };
+
     client
-        .inner()
-        .map(|client| client.asset_import(genesis_b32))
+        .try_as_opaque()
+        .map(|opaque| opaque.asset_import(genesis_b32))
         .map(|response| client.process_response(response))
         .unwrap_or(ptr::null())
 }

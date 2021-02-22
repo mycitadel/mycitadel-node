@@ -7,76 +7,96 @@
 // the public domain worldwide. This software is distributed without
 // any warranty.
 
+use libc::{c_char, c_int};
 use std::ffi::c_void;
-use std::os::raw::{c_char, c_int};
 use std::ptr;
+use std::str::FromStr;
 
 use mycitadel::{rpc, Client, Error};
 
 use crate::error::*;
-use crate::{ptr_to_string, ToCharPtr};
-use std::str::FromStr;
+use crate::{TryAsStr, TryIntoRaw, TryIntoString};
 
 #[allow(non_camel_case_types)]
 #[repr(C)]
 pub struct mycitadel_client_t {
-    inner: *mut c_void,
+    opaque: *mut c_void,
     message: *const c_char,
     err_no: c_int,
 }
 
 impl mycitadel_client_t {
-    pub(crate) fn with(inner_client: Client) -> Self {
-        mycitadel_client_t {
-            inner: Box::into_raw(Box::new(inner_client)) as *mut c_void,
+    pub(crate) fn with(inner_client: Client) -> *mut Self {
+        let client = mycitadel_client_t {
+            opaque: Box::into_raw(Box::new(inner_client)) as *mut c_void,
             err_no: SUCCESS,
             message: ptr::null(),
-        }
+        };
+        Box::into_raw(Box::new(client))
     }
 
-    pub(crate) fn from_err(error: mycitadel::Error) -> Self {
-        let mut me = mycitadel_client_t {
-            inner: ptr::null_mut(),
+    pub(crate) fn from_err(error: mycitadel::Error) -> *mut Self {
+        let mut client = mycitadel_client_t {
+            opaque: ptr::null_mut(),
             err_no: c_int::MAX,
             message: ptr::null(),
         };
-        me.set_error(error);
-        me
+        client.set_error(error);
+        Box::into_raw(Box::new(client))
     }
 
-    pub(crate) fn from_custom_err(err_no: c_int, msg: &str) -> Self {
-        let mut me = mycitadel_client_t {
-            inner: ptr::null_mut(),
+    pub(crate) fn from_custom_err(err_no: c_int, msg: &str) -> *mut Self {
+        let mut client = mycitadel_client_t {
+            opaque: ptr::null_mut(),
             err_no,
             message: ptr::null(),
         };
-        me.set_error_details(err_no, msg);
-        me
+        client.set_error_details(err_no, msg);
+        Box::into_raw(Box::new(client))
     }
 
-    pub(crate) fn inner(&mut self) -> Option<&mut Client> {
-        if self.inner.is_null() {
+    pub(crate) fn from_raw(client: *mut Self) -> &'static mut Self {
+        unsafe { client.as_mut() }.expect("Wrong MyCitadel client pointer")
+    }
+
+    pub(crate) fn try_as_opaque(&mut self) -> Option<&mut Client> {
+        if self.opaque.is_null() {
             self.set_error_no(ERRNO_UNINIT);
             return None;
         }
-        let boxed = unsafe { Box::from_raw(self.inner as *mut Client) };
+        let boxed = unsafe { Box::from_raw(self.opaque as *mut Client) };
         Some(Box::leak(boxed))
+    }
+
+    fn drop_message(&mut self) -> bool {
+        let status = (self.message as *mut c_char).try_into_string().is_some();
+        self.message = ptr::null();
+        status
     }
 
     fn set_success(&mut self) {
         self.err_no = SUCCESS;
-        self.message = ptr::null()
+        self.drop_message();
     }
 
-    pub(crate) fn set_error_details(&mut self, err_no: c_int, msg: &str) {
+    pub(crate) fn set_error_details(
+        &mut self,
+        err_no: c_int,
+        msg: impl ToString,
+    ) {
         self.err_no = err_no;
-        self.message = msg.to_char_ptr();
+        self.drop_message();
+        self.message = msg
+            .to_string()
+            .try_into_raw()
+            .unwrap_or("unparsable failure message".as_ptr() as *const c_char);
     }
 
     pub(crate) fn set_error_no(&mut self, err_no: c_int) {
         let message = match err_no {
             ERRNO_UNINIT => "MyCitadel client is not yet initialized",
-            _ => panic!("Error in mycitadel_error_t::with"),
+            // TODO: Refactor error type system into enum with descriptions
+            _ => "Other error",
         };
         self.set_error_details(err_no, message);
     }
@@ -97,8 +117,7 @@ impl mycitadel_client_t {
     }
 
     pub(crate) fn set_failure(&mut self, failure: microservices::rpc::Failure) {
-        self.err_no = ERRNO_SERVERFAIL;
-        self.message = failure.to_string().to_char_ptr();
+        self.set_error_details(ERRNO_SERVERFAIL, failure);
     }
 
     pub(crate) fn is_ok(&self) -> bool {
@@ -129,7 +148,7 @@ impl mycitadel_client_t {
             .map(|result| match serde_json::to_string(&result) {
                 Ok(json) => {
                     self.set_success();
-                    json.to_char_ptr()
+                    json.try_into_raw().unwrap_or(ptr::null())
                 }
                 Err(err) => {
                     self.set_error_details(
@@ -142,44 +161,53 @@ impl mycitadel_client_t {
             .unwrap_or(ptr::null())
     }
 
-    pub(crate) fn call(&mut self, request: rpc::Request) -> *const c_char {
-        self.inner()
-            .map(|inner| inner.request(request))
-            .map(|response| self.process_response(response))
-            .unwrap_or(ptr::null())
+    pub(crate) fn parse_string<'a>(
+        &mut self,
+        s: *const c_char,
+        arg_name: &'a str,
+    ) -> Result<&'a str, ()> {
+        match s.try_as_str() {
+            Some(s) => Ok(s),
+            None => Err(self.set_error_details(
+                ERRNO_NULL,
+                &format!("{} can't be null", arg_name),
+            )),
+        }
     }
 
-    pub(crate) fn contract_id(
+    pub(crate) fn parse_contract_id(
         &mut self,
         bech32: *const c_char,
-    ) -> Option<mycitadel::model::ContractId> {
-        if bech32.is_null() {
-            return None;
+    ) -> Result<mycitadel::model::ContractId, ()> {
+        match bech32.try_as_str() {
+            Some(s) => {
+                mycitadel::model::ContractId::from_str(s).map_err(|err| {
+                    self.set_error_details(
+                        ERRNO_PARSE,
+                        &format!("invalid wallet contract id: {}", err),
+                    )
+                })
+            }
+            None => Err(self.set_error_details(
+                ERRNO_NULL,
+                "null value instead of valid wallet contract id",
+            )),
         }
-        mycitadel::model::ContractId::from_str(&ptr_to_string(bech32))
+    }
+
+    pub(crate) fn parse_asset_id(
+        &mut self,
+        bech32: *const c_char,
+    ) -> Result<Option<rgb::ContractId>, ()> {
+        bech32
+            .try_as_str()
+            .map(rgb::ContractId::from_str)
+            .transpose()
             .map_err(|err| {
                 self.set_error_details(
                     ERRNO_PARSE,
-                    &format!("invalid contract id: {}", err),
+                    &format!("invalid RGB asset id: {}", err),
                 )
             })
-            .ok()
-    }
-
-    pub(crate) fn asset_id(
-        &mut self,
-        bech32: *const c_char,
-    ) -> Option<rgb::ContractId> {
-        if bech32.is_null() {
-            return None;
-        }
-        rgb::ContractId::from_str(&ptr_to_string(bech32))
-            .map_err(|err| {
-                self.set_error_details(
-                    ERRNO_PARSE,
-                    &format!("invalid contract id: {}", err),
-                )
-            })
-            .ok()
     }
 }
