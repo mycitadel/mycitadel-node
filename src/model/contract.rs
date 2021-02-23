@@ -59,6 +59,7 @@ pub struct Contract {
 
     pub name: String,
 
+    #[serde_as(as = "DisplayFromStr")]
     chain: Chain,
 
     policy: Policy,

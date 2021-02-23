@@ -410,7 +410,7 @@ pub extern "C" fn mycitadel_asset_list(
     let client = mycitadel_client_t::from_raw(client);
     client
         .try_as_opaque()
-        .map(Client::contract_list)
+        .map(Client::asset_list)
         .map(|response| client.process_response(response))
         .unwrap_or(ptr::null())
 }

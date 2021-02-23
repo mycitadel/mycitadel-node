@@ -8,7 +8,7 @@ public struct Citadel {
     internal let client: MyCitadelClient
 
     public var contracts: [WalletContract] = []
-    public var assets: [RGB20Asset] = []
+    public var assets: [String: RGB20Asset] = [:]
 
     internal init(withClient client: MyCitadelClient) {
         self.client = client
@@ -30,9 +30,22 @@ public struct Citadel {
         return self.contracts
     }
 
-    public mutating func syncAssets() throws -> [RGB20Asset] {
+    public mutating func syncAssets() throws -> [String:RGB20Asset] {
         let assetData: [AssetData] = try client.listAssets()
-        self.assets = assetData.map(RGB20Asset.init)
+        self.assets = [
+            "rgb1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqg40adx": RGB20Asset(withAssetData: AssetData(
+                    genesis: "",
+                    id: "rgb1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqg40adx",
+                    ticker: "BTC",
+                    name: "Bitcoin" + (client.network != .mainnet ? " (\(client.network))" : ""),
+                    description: nil,
+                    fractionalBits: 8,
+                    date: "2009-01-03 19:15:00",
+                    knownCirculating: 18_624_337_0000_0000, // TODO: keep these values up to date
+                    issueLimit: 21_000_000_0000_0000
+            ))
+        ]
+        assetData.forEach { self.assets[$0.id] = RGB20Asset(withAssetData: $0) }
         return self.assets
     }
 

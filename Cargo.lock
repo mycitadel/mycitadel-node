@@ -416,7 +416,7 @@ dependencies = [
 [[package]]
 name = "client_side_validation"
 version = "0.4.0-beta"
-source = "git+https://github.com/LNP-BP/rust-lnpbp?branch=fix/commit-encode#e80cac8cf8c3c5a1a67424b5d014cd475f12d96f"
+source = "git+https://github.com/LNP-BP/rust-lnpbp?branch=fix/commit-encode#2f0d69a407894af25a44251e18bb9627f5a979af"
 dependencies = [
  "amplify",
  "amplify_derive",
