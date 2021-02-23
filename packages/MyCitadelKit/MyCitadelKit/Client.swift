@@ -5,6 +5,7 @@
 //  Created by Maxim Orlovsky on 1/31/21.
 //
 
+import os
 import Foundation
 
 public struct MyCitadelError: Error {
@@ -83,15 +84,16 @@ open class MyCitadelClient {
             }
             throw err
         }
-        release_string(UnsafeMutablePointer(mutating: response))
+        // TODO: Remove debugging print here
         print(String(cString: json))
         let data = Data(String(cString: json).utf8)
+        release_string(UnsafeMutablePointer(mutating: response))
         return data
     }
 
-    internal func create(singleSig pubkeyChain: String, name: String, descriptorType: DescriptorType) throws -> ContractData {
+    internal func create(singleSig derivation: String, name: String, descriptorType: DescriptorType) throws -> ContractData {
         try self.createSeed()
-        let _ = try self.createIdentity(pubkeyChain: pubkeyChain)
+        let pubkeyChain = try self.createIdentity(derivation: derivation)
         let response = mycitadel_single_sig_create(client, name, pubkeyChain, descriptorType.cDescriptorType());
         return try JSONDecoder().decode(ContractData.self, from: self.processResponse(response))
     }

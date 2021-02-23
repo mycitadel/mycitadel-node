@@ -13,6 +13,8 @@
 // If not, see <https://opensource.org/licenses/Apache-2.0>.
 
 use libc::c_char;
+use rand::RngCore;
+use std::convert::TryFrom;
 use std::ffi::{CStr, CString};
 use std::ops::Try;
 use std::slice;
@@ -20,13 +22,20 @@ use std::str::{FromStr, Utf8Error};
 
 use bip39::Mnemonic;
 use bitcoin::util::bip32::{
-    self, DerivationPath, Error, ExtendedPrivKey, ExtendedPubKey,
+    self, ChildNumber, DerivationPath, Error, ExtendedPrivKey, ExtendedPubKey,
 };
 use bitcoin::Network;
-use rand::RngCore;
+use wallet::bip32::{
+    BranchStep, ChildIndex, HardenedIndex, HardenedNormalSplit, PubkeyChain,
+    TerminalStep, XpubRef,
+};
 
 pub trait Wipe {
     unsafe fn wipe(self);
+}
+
+pub trait Clean {
+    unsafe fn clean(&self);
 }
 
 impl Wipe for CString {
@@ -37,6 +46,17 @@ impl Wipe for CString {
             *ptr.offset(i) = 0;
         }
         std::mem::drop(self);
+    }
+}
+
+impl Clean for CStr {
+    unsafe fn clean(&self) {
+        let ptr = self.as_ptr() as *mut c_char;
+        let mut i = 0;
+        while *ptr.offset(i) != 0 {
+            *ptr.offset(i) = 0;
+            i += 1;
+        }
     }
 }
 
@@ -260,7 +280,7 @@ pub extern "C" fn bip39_mnemonic_create(
     mnemonic_type: bip39_mnemonic_type,
 ) -> string_result_t {
     let entropy = if entropy.is_null() {
-        let mut inner = Vec::with_capacity(mnemonic_type.byte_len());
+        let mut inner = vec![0u8; mnemonic_type.byte_len()];
         rand::thread_rng().fill_bytes(&mut inner);
         inner
     } else {
@@ -293,12 +313,12 @@ pub extern "C" fn bip39_master_xpriv(
         let mnemonic = Mnemonic::from_str(seed_phrase.to_str()?)?;
         let seed = mnemonic.to_seed(&password);
         if wipe {
-            unsafe { seed_phrase.wipe() };
             let len = mnemonic.as_str().len();
             let ptr = mnemonic.as_str().as_ptr() as *mut c_char;
             for i in 0..len as isize {
                 unsafe { *ptr.offset(i) = 0 };
             }
+            unsafe { seed_phrase.wipe() };
         }
         seed
     };
@@ -328,21 +348,23 @@ pub extern "C" fn bip39_master_xpriv(
 }
 
 #[no_mangle]
-pub extern "C" fn bip32_derive_xpriv(
-    master: *mut c_char,
-    wipe: bool,
+pub extern "C" fn bip32_scoped_xpriv(
+    master: *const c_char,
+    clean: bool,
     derivation: *const c_char,
 ) -> string_result_t {
-    let master_cstring = unsafe { CString::from_raw(master) };
-    let mut master = ExtendedPrivKey::from_str(master_cstring.to_str()?)?;
+    let master_cstr = unsafe { CStr::from_ptr(master) };
+    let mut master = ExtendedPrivKey::from_str(master_cstr.to_str()?)?;
 
     let derivation = unsafe { CStr::from_ptr(derivation).to_str()? };
-    let derivation = DerivationPath::from_str(derivation)?;
+    let derivation = derivation.replace("/*", "");
+    let derivation = DerivationPath::from_str(&derivation)?;
+    let (hardened, _) = derivation.hardened_normal_split();
 
-    let mut xpriv = master.derive_priv(&wallet::SECP256K1, &derivation)?;
+    let mut xpriv = master.derive_priv(&wallet::SECP256K1, &hardened)?;
 
-    if wipe {
-        unsafe { master_cstring.wipe() };
+    if clean {
+        unsafe { master_cstr.clean() };
     }
 
     let xpriv_str = xpriv.to_string();
@@ -358,39 +380,83 @@ pub extern "C" fn bip32_derive_xpriv(
 }
 
 #[no_mangle]
-pub extern "C" fn bip32_derive_xpub(
-    master: *mut c_char,
+pub extern "C" fn bip32_xpriv_to_xpub(
+    xpriv: *mut c_char,
     wipe: bool,
+) -> string_result_t {
+    let xpriv_cstring = unsafe { CString::from_raw(xpriv) };
+
+    let mut xpriv = ExtendedPrivKey::from_str(xpriv_cstring.to_str()?)?;
+    let xpub = ExtendedPubKey::from_private(&wallet::SECP256K1, &xpriv);
+    if wipe {
+        unsafe { xpriv_cstring.wipe() };
+    }
+
+    let ptr = xpriv.private_key.key.as_mut_ptr();
+    for i in 0..32 {
+        unsafe {
+            *ptr.offset(i) = 0;
+        }
+    }
+    string_result_t::success(&xpub)
+}
+
+#[no_mangle]
+pub extern "C" fn bip32_pubkey_chain_create(
+    master_xpriv: *mut c_char,
+    clean: bool,
     derivation: *const c_char,
 ) -> string_result_t {
-    let master_cstring = unsafe { CString::from_raw(master) };
+    let master_cstr = unsafe { CStr::from_ptr(master_xpriv) };
 
     let derivation = unsafe { CStr::from_ptr(derivation).to_str()? };
-    let derivation = DerivationPath::from_str(derivation)?;
+    let derivation = derivation.replace("/*", "");
+    let derivation = DerivationPath::from_str(&derivation)?;
+    let (hardened, unhardened) = derivation.hardened_normal_split();
 
-    if let Ok(mut master) = ExtendedPrivKey::from_str(master_cstring.to_str()?)
-    {
-        let mut xpriv = master.derive_priv(&wallet::SECP256K1, &derivation)?;
-        if wipe {
-            unsafe { master_cstring.wipe() };
-        }
-
-        let xpub = ExtendedPubKey::from_private(&wallet::SECP256K1, &xpriv);
-
-        let ptr1 = master.private_key.key.as_mut_ptr();
-        let ptr2 = xpriv.private_key.key.as_mut_ptr();
-        for i in 0..32 {
-            unsafe {
-                *ptr1.offset(i) = 0;
-                *ptr2.offset(i) = 0;
-            }
-        }
-        string_result_t::success(&xpub)
-    } else {
-        let master = ExtendedPubKey::from_str(master_cstring.to_str()?)?;
-        let xpub = master.derive_pub(&wallet::SECP256K1, &derivation)?;
-        string_result_t::success(&xpub)
+    let mut master_xpriv = ExtendedPrivKey::from_str(master_cstr.to_str()?)?;
+    let master_xpub =
+        ExtendedPubKey::from_private(&wallet::SECP256K1, &master_xpriv);
+    let mut xpriv = master_xpriv.derive_priv(&wallet::SECP256K1, &hardened)?;
+    if clean {
+        unsafe { master_cstr.clean() };
     }
+    let xpub = ExtendedPubKey::from_private(&wallet::SECP256K1, &xpriv);
+
+    let ptr1 = master_xpriv.private_key.key.as_mut_ptr();
+    let ptr2 = xpriv.private_key.key.as_mut_ptr();
+    for i in 0..32 {
+        unsafe {
+            *ptr1.offset(i) = 0;
+            *ptr2.offset(i) = 0;
+        }
+    }
+
+    let mut source_path: Vec<ChildNumber> = hardened.into();
+    let branch_index = source_path
+        .pop()
+        .map(HardenedIndex::try_from)
+        .transpose()?
+        .ok_or(bip32::Error::InvalidDerivationPathFormat)?;
+    let mut terminal_path: Vec<TerminalStep> = unhardened
+        .into_iter()
+        .map(|idx| {
+            TerminalStep::from_index(idx)
+                .expect("Derivation::hardened_normal_split is broken")
+        })
+        .collect();
+    terminal_path.push(TerminalStep::Wildcard);
+    let pubkey_chain = PubkeyChain {
+        seed_based: true,
+        master: XpubRef::Fingerprint(master_xpub.fingerprint()),
+        source_path: source_path.into_iter().map(BranchStep::from).collect(),
+        branch_index,
+        branch_xpub: xpub,
+        revocation_seal: None,
+        terminal_path,
+    };
+
+    string_result_t::success(&pubkey_chain)
 }
 
 #[no_mangle]

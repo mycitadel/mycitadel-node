@@ -8,7 +8,35 @@ struct ContractData: Codable {
     let id: String
     let name: String
     let chain: BitcoinNetwork
-    let policy: String
+    let policy: Policy
+}
+
+public enum Policy {
+    case current(String)
+}
+
+extension Policy: Codable {
+    enum CodingKeys: CodingKey {
+        case current
+    }
+
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        if container.contains(.current) {
+            let value = try container.decode(String.self, forKey: .current)
+            self = .current(value)
+        } else {
+            throw DecodingError.typeMismatch(String.self, DecodingError.Context(codingPath: [CodingKeys.current], debugDescription: "string value expected"))
+        }
+    }
+
+    public func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        switch self {
+        case .current(let value):
+            try container.encode(value, forKey: .current)
+        }
+    }
 }
 
 struct UTXO: Codable {

@@ -257,13 +257,15 @@ struct string_result_t bip39_master_xpriv(char *seed_phrase,
                                           bool wipe,
                                           bool testnet);
 
-struct string_result_t bip32_derive_xpriv(char *master,
-                                          bool wipe,
+struct string_result_t bip32_scoped_xpriv(const char *master,
+                                          bool clean,
                                           const char *derivation);
 
-struct string_result_t bip32_derive_xpub(char *master,
-                                         bool wipe,
-                                         const char *derivation);
+struct string_result_t bip32_xpriv_to_xpub(char *xpriv, bool wipe);
+
+struct string_result_t bip32_pubkey_chain_create(char *master_xpriv,
+                                                 bool clean,
+                                                 const char *derivation);
 
 struct string_result_t psbt_sign(const char *_psbt,
                                  const char *_xpriv,

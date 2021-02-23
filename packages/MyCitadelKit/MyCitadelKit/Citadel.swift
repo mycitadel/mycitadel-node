@@ -54,7 +54,7 @@ public struct WalletContract {
     public let id: String
     public var name: String
     public let chain: BitcoinNetwork
-    public let policy: String
+    public let policy: Policy
     private var balances: [String: Balance] = [:]
 
     internal init(withClient client: MyCitadelClient, contractData: ContractData) {
