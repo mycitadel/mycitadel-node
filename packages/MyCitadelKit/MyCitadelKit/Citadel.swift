@@ -32,17 +32,18 @@ public struct Citadel {
 
     public mutating func syncAssets() throws -> [String:RGB20Asset] {
         let assetData: [AssetData] = try client.listAssets()
+        let network = client.network
         self.assets = [
-            "rgb1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqg40adx": RGB20Asset(withAssetData: AssetData(
-                    genesis: "",
-                    id: "rgb1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqg40adx",
-                    ticker: "BTC",
-                    name: "Bitcoin" + (client.network != .mainnet ? " (\(client.network))" : ""),
+            BitcoinNetwork.rgbAssetId: RGB20Asset(withAssetData: AssetData(
+                    genesis: network.geneisHash(),
+                    id: BitcoinNetwork.rgbAssetId,
+                    ticker: network.ticker(),
+                    name: network.coinName(),
                     description: nil,
                     fractionalBits: 8,
-                    date: "2009-01-03 19:15:00",
-                    knownCirculating: 18_624_337_0000_0000, // TODO: keep these values up to date
-                    issueLimit: 21_000_000_0000_0000
+                    date: network.genesisDate(),
+                    knownCirculating: network.issuedSupply(),
+                    issueLimit: network.issueLimit()
             ))
         ]
         assetData.forEach { self.assets[$0.id] = RGB20Asset(withAssetData: $0) }
@@ -68,7 +69,7 @@ public struct WalletContract {
     public var name: String
     public let chain: BitcoinNetwork
     public let policy: Policy
-    private var balances: [String: Balance] = [:]
+    private var balances: [String: Balance]
 
     internal init(withClient client: MyCitadelClient, contractData: ContractData) {
         self.client = client
@@ -76,6 +77,19 @@ public struct WalletContract {
         self.name = contractData.name
         self.chain = contractData.chain
         self.policy = contractData.policy
+        self.balances = [
+            "rgb1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqg40adx":
+            Balance(withAssetId: "rgb1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqg40adx", total: 0, unspent: [])
+        ]
+        if let balances = try? client.balance(walletId: id) {
+            for (assetId, utxoSet) in balances {
+                self.balances[assetId] = Balance(
+                    withAssetId: assetId,
+                    total: utxoSet.reduce(0) { $0 + $1.value },
+                    unspent: utxoSet.map { UnspentCoins(withAssetId: assetId, utxo: $0) }
+                )
+            }
+        }
     }
 
     public func balance(of assetId: String) -> UInt64 {

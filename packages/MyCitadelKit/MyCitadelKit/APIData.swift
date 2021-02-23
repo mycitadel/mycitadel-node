@@ -58,5 +58,5 @@ public struct AssetData: Codable {
     public let fractionalBits: UInt8
     public let date: String
     public let knownCirculating: UInt64
-    public let issueLimit: UInt64
+    public let issueLimit: UInt64?
 }

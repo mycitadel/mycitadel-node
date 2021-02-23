@@ -38,7 +38,7 @@ extension MyCitadelError: LocalizedError {
 open class MyCitadelClient {
     private var client: UnsafeMutablePointer<mycitadel_client_t>!
 
-    let network: BitcoinNetwork
+    public let network: BitcoinNetwork
     let dataDir: String
 
     private var _data: Citadel? = nil

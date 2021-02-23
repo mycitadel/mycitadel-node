@@ -13,7 +13,7 @@ public struct RGB20Asset {
     public let fractionalBits: UInt8
     public let date: String
     public let knownCirculating: UInt64
-    public let issueLimit: UInt64
+    public let issueLimit: UInt64?
 
     public var fractionalDivider: UInt64 {
         [1, 10, 100,
