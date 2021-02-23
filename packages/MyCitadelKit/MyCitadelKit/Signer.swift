@@ -6,15 +6,26 @@ import Foundation
 import Security
 
 private enum SecurityItemNames: String {
-    case seed = "MyCitadel.seed"
-    case masterXpriv = "MyCitadel.masterXpriv"
+    case seed = "Citadel.seed"
+    case masterXpriv = "Citadel.master"
 }
 
 public struct SignerError: Error {
     let localizedDescription: String
 }
 
-extension MyCitadelClient {
+protocol KeychainStorage {
+    func checkKeychain(attrName: String) throws -> Bool
+    func readKeychain(attrName: String) throws -> String?
+    func writeKeychain(attrName: String, value: String) -> OSStatus
+}
+
+protocol SignerAPI {
+    func createSeed() throws
+    func createScopedChain(derivation: String) throws -> String
+}
+
+extension CitadelVault: KeychainStorage {
     public func checkKeychain(attrName: String) throws -> Bool {
         let query = [
             kSecClass: kSecClassGenericPassword,
@@ -49,7 +60,7 @@ extension MyCitadelClient {
         case errSecSuccess:
             guard let data = foundItem as? Data,
                   let stringRepr = String(data: data, encoding: .utf8)
-            else {
+                    else {
                 print("Wrong encoding of \(attrName) in the Apple Keychain")
                 throw SignerError(localizedDescription: "Wrong encoding of \(attrName) in the Apple Keychain")
             }
@@ -74,7 +85,9 @@ extension MyCitadelClient {
 
         return SecItemAdd(query as CFDictionary, nil)
     }
+}
 
+extension CitadelVault: SignerAPI {
     internal func createSeed() throws {
         print("Initializing seed")
         if try self.checkKeychain(attrName: SecurityItemNames.seed.rawValue) {
@@ -110,7 +123,7 @@ extension MyCitadelClient {
         result_destroy(xpriv_result)
     }
 
-    internal func createIdentity(derivation: String) throws -> String {
+    internal func createScopedChain(derivation: String) throws -> String {
         print("Creating identity private key")
 
         guard var master = try self.readKeychain(attrName: SecurityItemNames.masterXpriv.rawValue) else {

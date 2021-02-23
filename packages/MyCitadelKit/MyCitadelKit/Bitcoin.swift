@@ -63,14 +63,14 @@ public enum BitcoinNetwork: String, Codable {
         }
     }
 
-    public func genesisDate() -> String {
+    public func genesisTimestamp() -> Int64 {
         switch self {
         case .mainnet:
-            return "2009-01-03 19:15:00"
+            return 1231006505
         case .testnet:
-            return "2020-09-01 00:00:00"
+            return 1296688602
         case .signet:
-            return "2011-02-03 00:16:42"
+            return 1598918400
         }
     }
 
@@ -83,6 +83,38 @@ public enum BitcoinNetwork: String, Codable {
         case .signet:
             return "00000008819873e925422c1ff0f99f7cc9bbb232af63a077a480a3633bee1ef6"
         }
+    }
+}
+
+public struct BlockchainState {
+    public let timestamp: Int64
+    public let height: UInt32
+    public let supply: UInt64
+    public let lastBlockHash: String
+    public let lastBlockTime: Int64
+    public let lastBlockReward: UInt64
+    public let knownBurned: UInt64
+
+    public init() {
+        timestamp = 0
+        height = 0
+        supply = 0
+        lastBlockHash = ""
+        lastBlockTime = 0
+        lastBlockReward = 0
+        knownBurned = 0
+    }
+}
+
+public struct MempoolState {
+    public let timestamp: Int64
+    public let txCount: UInt64
+    public let totalFee: UInt64
+
+    public init() {
+        timestamp = 0
+        txCount = 0
+        totalFee = 0
     }
 }
 

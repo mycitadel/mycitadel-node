@@ -4,7 +4,7 @@
 
 import Foundation
 
-struct ContractData: Codable {
+struct ContractJson: Codable {
     let id: String
     let name: String
     let chain: BitcoinNetwork
@@ -39,7 +39,7 @@ extension Policy: Codable {
     }
 }
 
-struct UTXO: Codable {
+struct UTXOJson: Codable {
     let height: Int32
     let offset: UInt32
     let txid: String
@@ -49,14 +49,22 @@ struct UTXO: Codable {
     let address: String?
 }
 
-public struct AssetData: Codable {
-    public let genesis: String
-    public let id: String
-    public let ticker: String
-    public let name: String
-    public let description: String?
-    public let fractionalBits: UInt8
-    public let date: String
-    public let knownCirculating: UInt64
-    public let issueLimit: UInt64?
+struct RGB20Json: Codable {
+    let genesis: String
+    let id: String
+    let ticker: String
+    let name: String
+    let description: String?
+    let fractionalBits: UInt8
+    let date: String
+    let knownCirculating: UInt64
+    let issueLimit: UInt64?
+}
+
+internal protocol CitadelRPC {
+    func create(singleSig derivation: String, name: String, descriptorType: DescriptorType) throws -> ContractJson
+    func listContracts() throws -> [ContractJson]
+    func balance(walletId: String) throws -> [String: [UTXOJson]]
+    func listAssets() throws -> [RGB20Json]
+    func importRGB(genesisBech32 genesis: String) throws -> RGB20Json
 }

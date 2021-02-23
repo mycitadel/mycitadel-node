@@ -22,7 +22,7 @@ open class Bech32Info {
         case rgbSchema
         case rgbGenesis
         case rgbConsignment
-        case rgb20Asset(AssetData)
+        case rgb20Asset(RGB20Asset)
 
         public func name() -> String {
             switch self {
@@ -80,7 +80,7 @@ open class Bech32Info {
     public init(_ bech32: String) {
         let info = lnpbp_bech32_info(bech32)
 
-        self.isBech32m = info.bech32m
+        isBech32m = info.bech32m
 
         let jsonData = Data(String(cString: info.details).utf8)
         let decoder = JSONDecoder();
@@ -88,16 +88,17 @@ open class Bech32Info {
         do {
             switch info.category {
             case BECH32_RGB20_ASSET:
-                self.details = Details.rgb20Asset(try decoder.decode(AssetData.self, from: jsonData))
-            default: self.details = Details.unknown
+                let assetData = try decoder.decode(RGB20Json.self, from: jsonData)
+                details = Details.rgb20Asset(RGB20Asset(withAssetData: assetData, citadelVault: CitadelVault.embedded))
+            default: details = Details.unknown
             }
 
-            self.parseStatus = ParseStatus(rawValue: info.status)!
-            self.parseReport = info.status == 0 ? "Bech32 parsed successfully" : String(cString: info.details)
+            parseStatus = ParseStatus(rawValue: info.status)!
+            parseReport = info.status == 0 ? "Bech32 parsed successfully" : String(cString: info.details)
         } catch {
-            self.details = .unknown
-            self.parseStatus = .invalidJSON
-            self.parseReport = "Unable to recognize details from the provided JSON data"
+            details = .unknown
+            parseStatus = .invalidJSON
+            parseReport = "Unable to recognize details from the provided JSON data"
         }
     }
 }
