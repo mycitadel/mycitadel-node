@@ -31,11 +31,12 @@ public protocol Asset {
     var name: String { get }
     var ricardianContract: String? { get }
     var genesisTimetamp: Int64 { get }
+    var genesisDate: Date { get }
     var decimalPrecision: UInt8 { get }
 
     var isSecondaryIssuePossible: Bool { get }
     var countIssues: UInt16 { get }
-    var latestIssue: Int64 { get }
+    var latestIssue: Date { get }
     var isIssueLimitReached: Bool { get }
     func percentageIssued(includingUnknown: Bool) -> Double?
 
@@ -47,6 +48,7 @@ public protocol Asset {
     func supply(metric: SupplyMetric) -> Double?
 
     var balance: Balance { get }
+    var hasBalance: Bool { get }
 
     func decimalFraction() -> UInt64
 
@@ -56,6 +58,10 @@ public protocol Asset {
 }
 
 public extension Asset {
+    var genesisDate: Date {
+        Date(timeIntervalSince1970: TimeInterval(genesisTimetamp))
+    }
+
     func amount(fromAtoms atoms: UInt64) -> Double {
         Double(atoms / decimalFraction())
     }
@@ -63,6 +69,10 @@ public extension Asset {
     func supply(metric: SupplyMetric) -> Double? {
         guard let sum = supply(metricInAtoms: metric) else { return nil }
         return amount(fromAtoms: sum)
+    }
+
+    var hasBalance: Bool {
+        balance.total > 0
     }
 
     func decimalFraction() -> UInt64 {
@@ -115,8 +125,8 @@ public class NativeAsset: Asset, ObservableObject {
     public var countIssues: UInt16 {
         UInt16(vault.blockchainState.height)
     }
-    public var latestIssue: Int64 {
-        vault.blockchainState.timestamp
+    public var latestIssue: Date {
+        vault.blockchainState.updatedAt
     }
 
     public let isIssueLimitReached: Bool = false
@@ -175,7 +185,7 @@ public class RGB20Asset: Asset, ObservableObject {
     @Published
     public internal(set) var countIssues: UInt16
     @Published
-    public internal(set) var latestIssue: Int64
+    public internal(set) var latestIssue: Date
     @Published
     public internal(set) var isIssueLimitReached: Bool
     public let isRenominationPossible: Bool
@@ -239,7 +249,7 @@ public class RGB20Asset: Asset, ObservableObject {
         isProofOfBurnPossible = false
 
         countIssues = 1
-        latestIssue = 0
+        latestIssue = Date(timeIntervalSince1970: 0)
         isIssueLimitReached = false
 
         authenticity = AssetAuthenticity(issuer: nil, status: .unverified, url: nil, signature: nil)

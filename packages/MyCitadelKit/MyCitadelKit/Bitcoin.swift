@@ -74,6 +74,10 @@ public enum BitcoinNetwork: String, Codable {
         }
     }
 
+    public func genesisDate() -> Date {
+        Date(timeIntervalSince1970: TimeInterval(genesisTimestamp()))
+    }
+
     public func geneisHash() -> String {
         switch self {
         case .mainnet:
@@ -91,7 +95,7 @@ public enum BitcoinNetwork: String, Codable {
 }
 
 public struct BlockchainState {
-    public let timestamp: Int64
+    public let updatedAt: Date
     public let height: UInt32
     public let supply: UInt64
     public let lastBlockHash: String
@@ -100,7 +104,7 @@ public struct BlockchainState {
     public let knownBurned: UInt64
 
     public init() {
-        timestamp = 0
+        updatedAt = Date(timeIntervalSince1970: 0)
         height = 0
         supply = 0
         lastBlockHash = ""
@@ -111,12 +115,12 @@ public struct BlockchainState {
 }
 
 public struct MempoolState {
-    public let timestamp: Int64
+    public let updatedAt: Date
     public let txCount: UInt64
     public let totalFee: UInt64
 
     public init() {
-        timestamp = 0
+        updatedAt = Date(timeIntervalSince1970: 0)
         txCount = 0
         totalFee = 0
     }
