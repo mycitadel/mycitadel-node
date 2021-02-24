@@ -3,12 +3,13 @@
 //
 
 import Foundation
+import Combine
 
 public enum AssetCategory {
-    case Currency
-    case Stablecoin
-    case Token
-    case Nft
+    case currency
+    case stablecoin
+    case token
+    case nft
 }
 
 public enum SupplyMetric {
@@ -47,6 +48,7 @@ public protocol Asset {
 
     var balanceInAtoms: UInt64 { get }
     var balance: Double { get }
+    var unspentAllocations: [Allocation] { get }
 
     func decimalFraction() -> UInt64
 
@@ -90,14 +92,14 @@ public extension Asset {
     }
 }
 
-public class NativeAsset: Asset {
+public class NativeAsset: Asset, ObservableObject {
     internal let vault: CitadelVault
 
     public let isNative: Bool = true
     public var network: BitcoinNetwork {
         vault.network
     }
-    public let category: AssetCategory = .Currency
+    public let category: AssetCategory = .currency
     public var genesis: String {
         network.geneisHash()
     }
@@ -123,6 +125,11 @@ public class NativeAsset: Asset {
         vault.blockchainState.timestamp
     }
 
+    public let isIssueLimitReached: Bool = false
+    public let isRenominationPossible: Bool = false
+    public let isProofOfBurnPossible: Bool = true
+    public let isReplacementPossible: Bool = false
+
     public func supply(metricInAtoms: SupplyMetric) -> UInt64? {
         switch metricInAtoms {
         case .knownIssued:
@@ -137,13 +144,13 @@ public class NativeAsset: Asset {
             return 0
         }
     }
-    @Published
-    public internal(set) var balanceInAtoms: UInt64 = 0
+    public var balanceInAtoms: UInt64 {
+        vault.balances.filter { $0.assetId == BitcoinNetwork.rgbAssetId }.reduce(0) { sum, balance in sum + balance.total }
+    }
 
-    public let isIssueLimitReached: Bool = false
-    public let isRenominationPossible: Bool = false
-    public let isProofOfBurnPossible: Bool = true
-    public let isReplacementPossible: Bool = false
+    public var unspentAllocations: [Allocation] {
+        vault.balances.filter { $0.assetId == BitcoinNetwork.rgbAssetId }.flatMap { $0.unspentAlocations }
+    }
 
     public var authenticity: AssetAuthenticity {
         var issuer: Issuer
@@ -160,10 +167,12 @@ public class NativeAsset: Asset {
     }
 }
 
-public class RGB20Asset: Asset {
+public class RGB20Asset: Asset, ObservableObject {
+    internal let vault: CitadelVault
+
     public let isNative: Bool = false
     public let network: BitcoinNetwork
-    public let category: AssetCategory = .Token
+    public let category: AssetCategory = .token
     public let genesis: String
     public let id: String
     public let ticker: String
@@ -209,10 +218,17 @@ public class RGB20Asset: Asset {
         }
     }
 
-    @Published
-    public internal(set) var balanceInAtoms: UInt64 = 0
+    public var balanceInAtoms: UInt64 {
+        vault.balances.filter { $0.assetId == id }.reduce(0) { sum, balance in sum + balance.total }
+    }
+
+    public var unspentAllocations: [Allocation] {
+        vault.balances.filter { $0.assetId == id }.flatMap { $0.unspentAlocations }
+    }
 
     init(withAssetData asset: RGB20Json, citadelVault: CitadelVault) {
+        vault = citadelVault
+
         network = citadelVault.network
         genesis = asset.genesis
         id = asset.id
@@ -258,4 +274,8 @@ public enum VerificationStatus {
     case publicTruth
     case verified
     case unverified
+
+    public func isVerified() -> Bool {
+        self != .unverified
+    }
 }

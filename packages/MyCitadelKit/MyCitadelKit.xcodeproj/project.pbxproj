@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		3006DD4325E40D3C00E8DAAA /* Security.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3006DD4225E40D3C00E8DAAA /* Security.framework */; };
+		3015233025E5C58D00069C06 /* Combine.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3015232F25E5C58D00069C06 /* Combine.framework */; };
 		304DE85825C6F8B9008FE0A4 /* MyCitadelKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 304DE84E25C6F8B9008FE0A4 /* MyCitadelKit.framework */; };
 		304DE85D25C6F8B9008FE0A4 /* MyCitadelKitTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 304DE85C25C6F8B9008FE0A4 /* MyCitadelKitTests.swift */; };
 		304DE85F25C6F8B9008FE0A4 /* MyCitadelKit.h in Headers */ = {isa = PBXBuildFile; fileRef = 304DE85125C6F8B9008FE0A4 /* MyCitadelKit.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -41,6 +42,7 @@
 
 /* Begin PBXFileReference section */
 		3006DD4225E40D3C00E8DAAA /* Security.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Security.framework; path = System/Library/Frameworks/Security.framework; sourceTree = SDKROOT; };
+		3015232F25E5C58D00069C06 /* Combine.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Combine.framework; path = System/Library/Frameworks/Combine.framework; sourceTree = SDKROOT; };
 		304DE84E25C6F8B9008FE0A4 /* MyCitadelKit.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = MyCitadelKit.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		304DE85125C6F8B9008FE0A4 /* MyCitadelKit.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = MyCitadelKit.h; sourceTree = "<group>"; };
 		304DE85225C6F8B9008FE0A4 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -66,6 +68,7 @@
 			files = (
 				304DE93C25C72736008FE0A4 /* libc++.tbd in Frameworks */,
 				3006DD4325E40D3C00E8DAAA /* Security.framework in Frameworks */,
+				3015233025E5C58D00069C06 /* Combine.framework in Frameworks */,
 				304DE93625C726E0008FE0A4 /* libmycitadel.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -129,6 +132,7 @@
 		304DE87425C6FA75008FE0A4 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				3015232F25E5C58D00069C06 /* Combine.framework */,
 				3006DD4225E40D3C00E8DAAA /* Security.framework */,
 				304DE93B25C72736008FE0A4 /* libc++.tbd */,
 				304DE93525C726E0008FE0A4 /* libmycitadel.a */,

@@ -7,6 +7,7 @@
 
 import os
 import Foundation
+import Combine
 
 public struct CitadelError: Error {
     let errNo: Int
@@ -63,6 +64,8 @@ open class CitadelVault {
     public var contracts: [WalletContract] = []
     @Published
     public var assets: [String: Asset] = [:]
+    @Published
+    public var balances: [Balance] = []
 
     public init(
             connectingCitadelNode citadelNode: String,
