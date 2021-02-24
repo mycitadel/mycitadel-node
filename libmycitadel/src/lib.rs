@@ -25,12 +25,10 @@ extern crate amplify;
 #[macro_use]
 extern crate amplify_derive;
 
-mod bech32;
+pub mod capi;
 mod client;
 pub mod error;
-mod external;
 mod helpers;
-pub mod signer;
 
 pub use client::mycitadel_client_t;
 pub use helpers::{TryAsStr, TryFromRaw, TryIntoRaw, TryIntoString};

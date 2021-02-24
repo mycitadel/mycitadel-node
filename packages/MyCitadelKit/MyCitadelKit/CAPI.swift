@@ -56,6 +56,9 @@ open class CitadelVault {
 
     let dataDir: String
     public let network: BitcoinNetwork
+    public var nativeAsset: NativeAsset {
+        assets[network.nativeAssetId()]
+    }
     @Published
     public var blockchainState = BlockchainState()
     @Published

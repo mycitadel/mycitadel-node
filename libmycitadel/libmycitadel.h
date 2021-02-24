@@ -172,15 +172,9 @@ void lnpbp_bech32_release(struct bech32_info_t info);
 
 struct bech32_info_t lnpbp_bech32_info(const char *bech_str);
 
-void release_string(char *s);
-
 struct mycitadel_client_t *mycitadel_run_embedded(const char *chain,
                                                   const char *data_dir,
                                                   const char *electrum_server);
-
-bool mycitadel_is_ok(struct mycitadel_client_t *client);
-
-bool mycitadel_has_err(struct mycitadel_client_t *client);
 
 const char *mycitadel_contract_list(struct mycitadel_client_t *client);
 
@@ -270,6 +264,12 @@ struct string_result_t bip32_pubkey_chain_create(char *master_xpriv,
 struct string_result_t psbt_sign(const char *_psbt,
                                  const char *_xpriv,
                                  bool _wipe);
+
+void release_string(char *s);
+
+bool mycitadel_is_ok(struct mycitadel_client_t *client);
+
+bool mycitadel_has_err(struct mycitadel_client_t *client);
 
 #ifdef __cplusplus
 } // extern "C"

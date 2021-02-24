@@ -17,59 +17,13 @@ use std::str::FromStr;
 use internet2::ZmqSocketAddr;
 use invoice::Invoice;
 use lnpbp::Chain;
-use mycitadel::client::InvoiceType;
 use mycitadel::Client;
 use wallet::bip32::PubkeyChain;
-use wallet::descriptor;
 
+use super::{descriptor_type, invoice_type};
 use crate::error::*;
-use crate::helpers::{TryAsStr, TryIntoString};
-use crate::{mycitadel_client_t, TryIntoRaw};
-
-#[allow(non_camel_case_types)]
-#[derive(Clone, Copy, Ord, PartialOrd, Eq, PartialEq, Hash)]
-#[repr(C)]
-pub enum descriptor_type {
-    BARE,
-    HASHED,
-    SEGWIT,
-    TAPROOT,
-}
-
-impl From<descriptor_type> for descriptor::OuterCategory {
-    fn from(t: descriptor_type) -> Self {
-        match t {
-            descriptor_type::BARE => descriptor::OuterCategory::Bare,
-            descriptor_type::HASHED => descriptor::OuterCategory::Hashed,
-            descriptor_type::SEGWIT => descriptor::OuterCategory::SegWit,
-            descriptor_type::TAPROOT => descriptor::OuterCategory::Taproot,
-        }
-    }
-}
-
-#[allow(non_camel_case_types)]
-#[derive(Clone, Copy, Ord, PartialOrd, Eq, PartialEq, Hash)]
-#[repr(C)]
-pub enum invoice_type {
-    ADDRESS_UTXO,
-    DESCRIPTOR,
-    PSBT,
-}
-
-impl From<invoice_type> for InvoiceType {
-    fn from(t: invoice_type) -> Self {
-        match t {
-            invoice_type::ADDRESS_UTXO => InvoiceType::AddressUtxo,
-            invoice_type::DESCRIPTOR => InvoiceType::Descriptor,
-            invoice_type::PSBT => InvoiceType::Psbt,
-        }
-    }
-}
-
-#[no_mangle]
-pub extern "C" fn release_string(s: *mut c_char) {
-    s.try_into_string();
-}
+use crate::helpers::{TryAsStr, TryIntoRaw};
+use crate::mycitadel_client_t;
 
 #[no_mangle]
 pub extern "C" fn mycitadel_run_embedded(
@@ -107,16 +61,6 @@ pub extern "C" fn mycitadel_run_embedded(
     mycitadel::run_embedded(config)
         .map(mycitadel_client_t::with)
         .unwrap_or_else(mycitadel_client_t::from_err)
-}
-
-#[no_mangle]
-pub extern "C" fn mycitadel_is_ok(client: *mut mycitadel_client_t) -> bool {
-    mycitadel_client_t::from_raw(client).is_ok()
-}
-
-#[no_mangle]
-pub extern "C" fn mycitadel_has_err(client: *mut mycitadel_client_t) -> bool {
-    mycitadel_client_t::from_raw(client).has_err()
 }
 
 #[no_mangle]
