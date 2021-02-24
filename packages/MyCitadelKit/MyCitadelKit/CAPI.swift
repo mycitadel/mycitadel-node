@@ -85,6 +85,7 @@ open class CitadelVault {
         self.network = network
         dataDir = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!.appendingPathComponent(network.rawValue).path
         rpcClient = mycitadel_run_embedded(network.rawValue, self.dataDir, electrumServer)
+        assets[network.nativeAssetId()] = NativeAsset(withCitadelVault: self)
     }
 
     deinit {

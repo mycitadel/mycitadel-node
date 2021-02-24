@@ -4,6 +4,19 @@
 
 import Foundation
 
+public enum InternalDataInconsistency {
+    case unknownAssetId(String)
+}
+
+extension InternalDataInconsistency: Error {
+    public var localizedDescription: String {
+        switch self {
+        case .unknownAssetId(let id):
+            return "Unknown asset with id \(id)"
+        }
+    }
+}
+
 public protocol VaultAPI: ObservableObject {
     var network: BitcoinNetwork { get }
     var blockchainState: BlockchainState { get }
@@ -11,6 +24,8 @@ public protocol VaultAPI: ObservableObject {
     var contracts: [WalletContract] { get }
     var assets: [String: Asset] { get }
     var balances: [Balance] { get }
+
+    func contract(id: String) -> WalletContract?
 
     func syncAll() throws
     func syncContracts() throws -> [WalletContract]
@@ -20,6 +35,10 @@ public protocol VaultAPI: ObservableObject {
 }
 
 extension CitadelVault: VaultAPI {
+    public func contract(id: String) -> WalletContract? {
+        contracts.first(where: { $0.id == id })
+    }
+
     public func syncAll() throws {
         let _ = try self.syncContracts()
         let _ = try self.syncAssets()
@@ -48,8 +67,8 @@ extension CitadelVault: VaultAPI {
             }
         }
         // TODO: Update balance
-        if !assets.keys.contains(BitcoinNetwork.rgbAssetId) {
-            assets[BitcoinNetwork.rgbAssetId] = NativeAsset(withCitadelVault: self)
+        if !assets.keys.contains(network.nativeAssetId()) {
+            assets[network.nativeAssetId()] = NativeAsset(withCitadelVault: self)
         }
         return assets
     }
@@ -83,26 +102,49 @@ public class WalletContract {
         try? self.sync()
     }
 
-    public func balance(of assetId: String) -> Double {
-        guard let asset = vault.assets[assetId] else { return 0 }
-        return asset.amount(fromAtoms: balanceInAtoms(of: assetId))
+    public var availableAssetIds: [String] {
+        Array(allBalances.keys)
+    }
+
+    public var allBalances: [String: Balance] {
+        var balances: [String: Balance] = [:]
+        vault.balances.filter { $0.walletId == id }.forEach { balances[$0.assetId] = $0 }
+        return balances
+    }
+
+    public func balance(of assetId: String?) -> Balance? {
+        let assetId = assetId ?? vault.network.nativeAssetId()
+        guard let asset = vault.assets[assetId] else { return nil }
+        let allocations = vault.balances.filter { $0.walletId == id && $0.assetId == assetId }.flatMap { $0.unspentAllocations }
+        return Balance(withAsset: asset, walletId: id, unspent: allocations)
     }
 
     public func balanceInAtoms(of assetId: String) -> UInt64 {
-        vault.balances.filter { $0.walletId == id && $0.assetId == assetId }.reduce(0) { sum, balance in sum + balance.total }
+        vault.balances.filter { $0.walletId == id && $0.assetId == assetId }.reduce(0) { sum, balance in sum + balance.totalInAtoms }
     }
 
     public func unspentAllocations(of assetId: String) -> [Allocation] {
-        vault.balances.filter { $0.walletId == id }.flatMap { $0.unspentAlocations }
+        vault.balances.filter { $0.walletId == id }.flatMap { $0.unspentAllocations }
     }
 
     public func sync() throws {
         let balanceData = try vault.balance(walletId: self.id)
-        balanceData.forEach { (assetId, utxoSet) in
+        try balanceData.forEach { (assetId, utxoSet) in
+            var assetId = assetId
+            if assetId == BitcoinNetwork.rgbAssetId {
+                assetId = vault.network.nativeAssetId()
+            }
             vault.balances.removeAll(where: { $0.walletId == id && $0.assetId == assetId })
-            let allocations = utxoSet.map { Allocation(withAssetId: assetId, utxo: $0) }
-            let total = allocations.reduce(into: 0) { sum, u in sum += u.value }
-            vault.balances.append(Balance(withWalletId: id, assetId: assetId, total: total, unspent: allocations))
+            guard let asset = vault.assets[assetId] else {
+                throw InternalDataInconsistency.unknownAssetId(assetId)
+            }
+            let allocations = utxoSet.map { Allocation(withAsset: asset, utxo: $0) }
+            let balance = Balance(
+                    withAsset: asset,
+                    walletId: id,
+                    unspent: allocations
+            )
+            vault.balances.append(balance)
         }
     }
 }
@@ -110,14 +152,16 @@ public class WalletContract {
 public struct Balance {
     public let walletId: String
     public let assetId: String
-    public let total: UInt64
-    public let unspentAlocations: [Allocation]
+    public let totalInAtoms: UInt64
+    public let total: Double
+    public let unspentAllocations: [Allocation]
 
-    internal init(withWalletId walletId: String, assetId: String, total: UInt64, unspent: [Allocation]) {
+    internal init(withAsset asset: Asset, walletId: String, unspent: [Allocation]) {
         self.walletId = walletId
-        self.assetId = assetId
-        self.total = total
-        self.unspentAlocations = unspent
+        self.assetId = asset.id
+        self.totalInAtoms = unspent.reduce(into: 0) { sum, u in sum += u.valueInAtoms }
+        self.total = asset.amount(fromAtoms: self.totalInAtoms)
+        self.unspentAllocations = unspent
     }
 }
 
@@ -125,14 +169,16 @@ public struct Allocation {
     public let assetId: String
     public let txid: String
     public let vout: UInt32
-    public let value: UInt64
+    public let valueInAtoms: UInt64
+    public let amount: Double
     public let address: String?
 
-    internal init(withAssetId assetId: String, utxo: UTXOJson) {
-        self.assetId = assetId
+    internal init(withAsset asset: Asset, utxo: UTXOJson) {
+        self.assetId = asset.id
         self.txid = utxo.txid
         self.vout = utxo.vout
-        self.value = utxo.value
+        self.valueInAtoms = utxo.value
+        self.amount = asset.amount(fromAtoms: utxo.value)
         self.address = utxo.address
     }
 }

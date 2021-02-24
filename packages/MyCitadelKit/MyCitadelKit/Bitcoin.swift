@@ -84,6 +84,10 @@ public enum BitcoinNetwork: String, Codable {
             return "00000008819873e925422c1ff0f99f7cc9bbb232af63a077a480a3633bee1ef6"
         }
     }
+
+    public func nativeAssetId() -> String {
+        geneisHash()
+    }
 }
 
 public struct BlockchainState {

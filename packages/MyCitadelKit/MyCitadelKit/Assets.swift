@@ -46,9 +46,7 @@ public protocol Asset {
     func supply(metricInAtoms: SupplyMetric) -> UInt64?
     func supply(metric: SupplyMetric) -> Double?
 
-    var balanceInAtoms: UInt64 { get }
-    var balance: Double { get }
-    var unspentAllocations: [Allocation] { get }
+    var balance: Balance { get }
 
     func decimalFraction() -> UInt64
 
@@ -65,10 +63,6 @@ public extension Asset {
     func supply(metric: SupplyMetric) -> Double? {
         guard let sum = supply(metricInAtoms: metric) else { return nil }
         return amount(fromAtoms: sum)
-    }
-
-    var balance: Double {
-        amount(fromAtoms: balanceInAtoms)
     }
 
     func decimalFraction() -> UInt64 {
@@ -144,12 +138,9 @@ public class NativeAsset: Asset, ObservableObject {
             return 0
         }
     }
-    public var balanceInAtoms: UInt64 {
-        vault.balances.filter { $0.assetId == BitcoinNetwork.rgbAssetId }.reduce(0) { sum, balance in sum + balance.total }
-    }
-
-    public var unspentAllocations: [Allocation] {
-        vault.balances.filter { $0.assetId == BitcoinNetwork.rgbAssetId }.flatMap { $0.unspentAlocations }
+    public var balance: Balance {
+        let allocations = vault.balances.filter { $0.assetId == network.nativeAssetId() }.flatMap { $0.unspentAllocations }
+        return Balance(withAsset: self, walletId: "", unspent: allocations)
     }
 
     public var authenticity: AssetAuthenticity {
@@ -218,12 +209,9 @@ public class RGB20Asset: Asset, ObservableObject {
         }
     }
 
-    public var balanceInAtoms: UInt64 {
-        vault.balances.filter { $0.assetId == id }.reduce(0) { sum, balance in sum + balance.total }
-    }
-
-    public var unspentAllocations: [Allocation] {
-        vault.balances.filter { $0.assetId == id }.flatMap { $0.unspentAlocations }
+    public var balance: Balance {
+        let allocations = vault.balances.filter { $0.assetId == id }.flatMap { $0.unspentAllocations }
+        return Balance(withAsset: self, walletId: "", unspent: allocations)
     }
 
     init(withAssetData asset: RGB20Json, citadelVault: CitadelVault) {
