@@ -120,6 +120,10 @@ public class WalletContract {
         Array(allBalances.keys)
     }
 
+    public var availableAssets: [Asset] {
+        availableAssetIds.map { vault.assets[$0]! }
+    }
+
     public var allBalances: [String: Balance] {
         var balances: [String: Balance] = [:]
         vault.balances.filter { $0.walletId == id }.forEach { balances[$0.assetId] = $0 }
@@ -135,6 +139,10 @@ public class WalletContract {
 
     public func balanceInAtoms(of assetId: String) -> UInt64 {
         vault.balances.filter { $0.walletId == id && $0.assetId == assetId }.reduce(0) { sum, balance in sum + balance.totalInAtoms }
+    }
+
+    public var hasUtxo: Bool {
+        vault.balances.contains(where: { $0.walletId == id && $0.assetId == vault.nativeAsset.id })
     }
 
     public func unspentAllocations(of assetId: String) -> [Allocation] {
@@ -162,12 +170,12 @@ public class WalletContract {
         }
     }
 
-    public func address(useLegacySegWit legacy: Bool = false) throws -> String {
-        return try vault.address(forContractId: self.id)
+    public func address(useLegacySegWit legacy: Bool = false) throws -> AddressDerivation {
+        return try vault.address(forContractId: self.id, useLegacySegWit: legacy)
     }
 
-    public func invoice(usingFormat format: InvoiceType, nominatedIn asset: Asset, amount: Double, useLegacySegWit legacy: Bool = false) throws -> String {
-        let value = asset.amount(toAtoms: amount)
+    public func invoice(usingFormat format: InvoiceType, nominatedIn asset: Asset, amount: Double?, useLegacySegWit legacy: Bool = false) throws -> String {
+        let value = amount != nil ? asset.amount(toAtoms: amount!) : nil
         return try vault.invoice(usingFormat: format, receiveTo: id, nominatedIn: asset.id, value: value, useLegacySegWit: legacy)
     }
 

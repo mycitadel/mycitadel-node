@@ -150,13 +150,13 @@ extension CitadelVault: CitadelRPC {
         return try JSONDecoder().decode(RGB20Json.self, from: self.processResponse(response))
     }
 
-    public func address(forContractId contractId: String, useLegacySegWit legacy: Bool = false) throws -> String{
-        let address = mycitadel_address_create(rpcClient, contractId, false, legacy)
-        return try processResponseToString(address)
+    public func address(forContractId contractId: String, useLegacySegWit legacy: Bool = false) throws -> AddressDerivation {
+        let response = mycitadel_address_create(rpcClient, contractId, false, legacy)
+        return try JSONDecoder().decode(AddressDerivation.self, from: self.processResponse(response))
     }
 
-    internal func invoice(usingFormat format: InvoiceType, receiveTo contractId: String, nominatedIn assetId: String, value: UInt64, useLegacySegWit legacy: Bool = false) throws -> String {
-        let invoice = mycitadel_invoice_create(rpcClient, format.cType(), contractId, assetId, value, nil, nil, true, legacy)
+    internal func invoice(usingFormat format: InvoiceType, receiveTo contractId: String, nominatedIn assetId: String, value: UInt64?, useLegacySegWit legacy: Bool = false) throws -> String {
+        let invoice = mycitadel_invoice_create(rpcClient, format.cType(), contractId, assetId, value ?? 0, nil, nil, true, legacy)
         return try processResponseToString(invoice)
     }
 

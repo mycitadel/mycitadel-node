@@ -168,3 +168,8 @@ public enum WitnessVersion {
     case segwit
     case taproot
 }
+
+public struct AddressDerivation: Codable {
+    public let address: String
+    public let derivation: [UInt32]
+}

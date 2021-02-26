@@ -14,7 +14,7 @@
 use std::collections::{BTreeMap, HashSet};
 
 use bitcoin::{Address, OutPoint, Txid};
-use wallet::bip32::UnhardenedIndex;
+use wallet::bip32::{ChildIndex, UnhardenedIndex};
 
 use super::FileDriver;
 use crate::cache::{Driver, Error};
@@ -109,6 +109,7 @@ impl Driver for FileDriver {
                 .values()
                 .max()
                 .copied()
+                .and_then(UnhardenedIndex::checked_inc)
                 .unwrap_or_default()
         })
     }
