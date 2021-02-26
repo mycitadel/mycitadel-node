@@ -17,6 +17,20 @@ extension InternalDataInconsistency: Error {
     }
 }
 
+public enum InvoiceType {
+    case addressUtxo
+    case descriptor
+    case psbt
+
+    public func cType() -> invoice_type {
+        switch self {
+        case .addressUtxo: return INVOICE_TYPE_ADDRESS_UTXO
+        case .descriptor: return INVOICE_TYPE_DESCRIPTOR
+        case .psbt: return INVOICE_TYPE_PSBT
+        }
+    }
+}
+
 public protocol VaultAPI: ObservableObject {
     var network: BitcoinNetwork { get }
     var blockchainState: BlockchainState { get }
@@ -147,6 +161,25 @@ public class WalletContract {
             vault.balances.append(balance)
         }
     }
+
+    public func address(useLegacySegWit legacy: Bool = false) throws -> String {
+        return try vault.address(forContractId: self.id)
+    }
+
+    public func invoice(usingFormat format: InvoiceType, nominatedIn asset: Asset, amount: Double, useLegacySegWit legacy: Bool = false) throws -> String {
+        let value = asset.amount(toAtoms: amount)
+        return try vault.invoice(usingFormat: format, receiveTo: id, nominatedIn: asset.id, value: value, useLegacySegWit: legacy)
+    }
+
+    /*
+    public func mark(address: String, used: Bool = true) throws {
+        try vault.mark(address: address, used: used)
+    }
+
+    public func mark(invoice: String, used: Bool = true) throws {
+        try vault.mark(invoice: invoice, used: used)
+    }
+     */
 }
 
 public struct Balance {

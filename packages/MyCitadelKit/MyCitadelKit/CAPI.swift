@@ -57,7 +57,7 @@ open class CitadelVault {
     let dataDir: String
     public let network: BitcoinNetwork
     public var nativeAsset: NativeAsset {
-        assets[network.nativeAssetId()]
+        assets[network.nativeAssetId()] as! NativeAsset
     }
     @Published
     public var blockchainState = BlockchainState()
@@ -104,18 +104,21 @@ open class CitadelVault {
         }
     }
 
-    private func processResponse(_ response: UnsafePointer<Int8>?) throws -> Data {
-        guard let json = response else {
+    private func processResponseToString(_ response: UnsafePointer<Int8>?) throws -> String {
+        guard let response = response else {
             guard let err = self.lastError() else {
-                throw CitadelError("MyCitadelClient API is broken")
+                throw CitadelError("MyCitadel C API is broken")
             }
             throw err
         }
-        // TODO: Remove debugging print here
-        print(String(cString: json))
-        let data = Data(String(cString: json).utf8)
+        var string = String(cString: response)
+        string.reserveCapacity(string.count * 2)
         release_string(UnsafeMutablePointer(mutating: response))
-        return data
+        return string
+    }
+
+    private func processResponse(_ response: UnsafePointer<Int8>?) throws -> Data {
+        try Data(processResponseToString(response).utf8)
     }
 }
 
@@ -146,4 +149,24 @@ extension CitadelVault: CitadelRPC {
         let response = mycitadel_asset_import(rpcClient, genesis);
         return try JSONDecoder().decode(RGB20Json.self, from: self.processResponse(response))
     }
+
+    public func address(forContractId contractId: String, useLegacySegWit legacy: Bool = false) throws -> String{
+        let address = mycitadel_address_create(rpcClient, contractId, false, legacy)
+        return try processResponseToString(address)
+    }
+
+    internal func invoice(usingFormat format: InvoiceType, receiveTo contractId: String, nominatedIn assetId: String, value: UInt64, useLegacySegWit legacy: Bool = false) throws -> String {
+        let invoice = mycitadel_invoice_create(rpcClient, format.cType(), contractId, assetId, value, nil, nil, true, legacy)
+        return try processResponseToString(invoice)
+    }
+
+    /*
+    public func mark(addressUnused address: String) throws {
+        mycitadel_mark
+    }
+
+    public func mark(invoiceUnused invoice: String) throws {
+        try vault.mark(invoice: invoice, used: used)
+    }
+     */
 }

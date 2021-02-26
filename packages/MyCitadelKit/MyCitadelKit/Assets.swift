@@ -53,6 +53,7 @@ public protocol Asset {
     func decimalFraction() -> UInt64
 
     func amount(fromAtoms: UInt64) -> Double
+    func amount(toAtoms: Double) -> UInt64
 
     var authenticity: AssetAuthenticity { get }
 }
@@ -64,6 +65,10 @@ public extension Asset {
 
     func amount(fromAtoms atoms: UInt64) -> Double {
         Double(atoms / decimalFraction())
+    }
+
+    func amount(toAtoms amount: Double) -> UInt64 {
+       UInt64((amount * Double(decimalFraction())).rounded(.toNearestOrAwayFromZero))
     }
 
     func supply(metric: SupplyMetric) -> Double? {
