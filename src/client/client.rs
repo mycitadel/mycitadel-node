@@ -169,8 +169,8 @@ impl Client {
         contract_id: ContractId,
         asset_id: Option<rgb::ContractId>,
         amount: AtomicValue,
-        _merchant: Option<impl ToString>,
-        _purpose: Option<impl ToString>,
+        merchant: Option<impl ToString>,
+        purpose: Option<impl ToString>,
         unmark: bool,
         legacy: bool,
     ) -> Result<Invoice, Error> {
@@ -180,6 +180,7 @@ impl Client {
                 let seal =
                     match self.request(Request::BlindUtxo(contract_id))? {
                         Reply::BlindUtxo(seal) => seal,
+                        Reply::Failure(failure) => Err(failure)?,
                         _ => Err(Error::UnexpectedApi)?,
                     };
                 (Beneficiary::BlindUtxo(seal.commit_conceal()), Some(seal))
@@ -194,6 +195,7 @@ impl Client {
                     },
                 ))? {
                     Reply::AddressDerivation(ad) => ad.address,
+                    Reply::Failure(failure) => Err(failure)?,
                     _ => Err(Error::UnexpectedApi)?,
                 };
                 if address.network != bitcoin::Network::Bitcoin {
@@ -203,11 +205,18 @@ impl Client {
             }
             _ => unimplemented!(),
         };
-        let inv = Invoice::new(beneficiary, Some(amount), asset_id);
-        self.request(Request::AddInvoice(message::AddInvoiceRequest {
-            invoice: inv.clone(),
-            source_info: bmap! { contract_id => reveal_data },
-        }))?;
+        let mut inv = Invoice::new(beneficiary, Some(amount), asset_id);
+        if let Some(merchant) = merchant {
+            inv.set_merchant(merchant.to_string());
+        }
+        if let Some(purpose) = purpose {
+            inv.set_purpose(purpose.to_string());
+        }
+        let _ =
+            self.request(Request::AddInvoice(message::AddInvoiceRequest {
+                invoice: inv.clone(),
+                source_info: bmap! { contract_id => reveal_data },
+            }))?;
         Ok(inv)
     }
 
