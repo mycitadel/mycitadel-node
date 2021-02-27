@@ -175,7 +175,7 @@ public class WalletContract {
     }
 
     public func invoice(usingFormat format: InvoiceType, nominatedIn asset: Asset, amount: Double?, useLegacySegWit legacy: Bool = false) throws -> String {
-        let assetId = asset.isNative ? BitcoinNetwork.rgbAssetId : asset.id
+        let assetId = asset.isNative ? nil : asset.id
         let value = amount != nil ? asset.amount(toAtoms: amount!) : nil
         return try vault.invoice(usingFormat: format, receiveTo: id, nominatedIn: assetId, value: value, useLegacySegWit: legacy)
     }

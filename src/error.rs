@@ -70,6 +70,7 @@ pub enum Error {
     // TODO: split client- and server-side error types
     /// server-reported failure
     #[from]
+    #[display(inner)]
     ServerFailure(rpc::Failure),
 
     /// Internal cache inconsistency; you need to refresh balances and try

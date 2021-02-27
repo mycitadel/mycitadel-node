@@ -998,7 +998,7 @@ dependencies = [
 [[package]]
 name = "internet2"
 version = "0.4.0-alpha.2"
-source = "git+https://github.com/internet2-org/rust-internet2#e4c741cd0579d5f03f81f3f6a0ca57ee0a9bb56e"
+source = "git+https://github.com/internet2-org/rust-internet2#2e3e12939215d00a18df89a8c3de98a369204917"
 dependencies = [
  "amplify",
  "amplify_derive",
@@ -1270,7 +1270,7 @@ dependencies = [
 [[package]]
 name = "microservices"
 version = "0.4.0-beta"
-source = "git+https://github.com/internet2-org/rust-internet2#e4c741cd0579d5f03f81f3f6a0ca57ee0a9bb56e"
+source = "git+https://github.com/internet2-org/rust-internet2#2e3e12939215d00a18df89a8c3de98a369204917"
 dependencies = [
  "amplify",
  "amplify_derive",
@@ -1855,7 +1855,7 @@ dependencies = [
 [[package]]
 name = "rgb-core"
 version = "0.4.0-beta"
-source = "git+https://github.com/rgb-org/rgb-core#bbb457041ade3a6d70ea4ba085be4f54e1c68efc"
+source = "git+https://github.com/rgb-org/rgb-core#f655958a87108a1aaac8e3feafda066ef744a7de"
 dependencies = [
  "amplify",
  "amplify_derive",
@@ -1887,7 +1887,7 @@ dependencies = [
 [[package]]
 name = "rgb20"
 version = "0.4.0-alpha.1"
-source = "git+https://github.com/rgb-org/rgb-core#bbb457041ade3a6d70ea4ba085be4f54e1c68efc"
+source = "git+https://github.com/rgb-org/rgb-core#f655958a87108a1aaac8e3feafda066ef744a7de"
 dependencies = [
  "amplify",
  "amplify_derive",
