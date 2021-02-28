@@ -145,7 +145,9 @@ impl Contract {
     }
 
     pub(crate) fn add_invoice(&mut self, invoice: Invoice) {
-        self.data.sent_invoices.push(invoice)
+        if !self.data.sent_invoices.contains(&invoice) {
+            self.data.sent_invoices.push(invoice)
+        }
     }
 
     pub(crate) fn add_blinding(&mut self, outpoint_reveal: OutpointReveal) {

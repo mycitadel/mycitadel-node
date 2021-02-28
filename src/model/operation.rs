@@ -166,7 +166,6 @@ pub struct Operation {
     StrictDecode,
 )]
 #[display("{value}@{height}>{offset}>{txid}:{vout}%{derivation_index}")]
-#[serde(rename = "camelCase")]
 #[repr(C)]
 pub struct Utxo {
     /// Amount (in native atomic asset amount) of unspent asset

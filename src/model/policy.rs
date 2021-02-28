@@ -46,7 +46,7 @@ use crate::model::AddressDerivation;
     Serialize,
     Deserialize,
 )]
-#[serde(rename = "lowercase")]
+#[serde(rename_all = "lowercase")]
 #[non_exhaustive]
 pub enum PolicyType {
     /// Accounts that allow spending with a simple procedure (like single

@@ -260,7 +260,7 @@ impl Exec for InvoiceCommand {
                 amount,
                 merchant,
                 purpose,
-                unmark,
+                mark_used,
                 legacy,
                 descriptor,
                 psbt,
@@ -280,7 +280,7 @@ impl Exec for InvoiceCommand {
                         amount,
                         merchant,
                         purpose,
-                        unmark,
+                        mark_used,
                         legacy,
                     )
                     .map(|invoice| {

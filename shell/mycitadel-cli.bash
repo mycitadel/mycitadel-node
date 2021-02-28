@@ -297,7 +297,7 @@ _mycitadel-cli() {
             return 0
             ;;
         mycitadel__cli__invoice__create)
-            opts=" -a -m -p -u -v -h -V  --asset --merchant --purpose --unmark --legacy --descriptor --psbt --verbose --help --version  <wallet-id> <amount> "
+            opts=" -a -m -p -m -v -h -V  --asset --merchant --purpose --mark-used --legacy --descriptor --psbt --verbose --help --version  <wallet-id> <amount> "
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0

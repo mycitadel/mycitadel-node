@@ -345,9 +345,9 @@ pub enum InvoiceCommand {
         #[clap(short, long)]
         purpose: Option<String>,
 
-        /// Do not mark the address used in the invoice as used
+        /// Whether to mark address as used
         #[clap(short, long)]
-        unmark: bool,
+        mark_used: bool,
 
         /// Use SegWit legacy address format (applicable only to a SegWit
         /// wallets)

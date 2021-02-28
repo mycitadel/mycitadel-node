@@ -356,8 +356,8 @@ _arguments "${_arguments_options[@]}" \
 '--chain=[Blockchain to use]' \
 '-d+[Data directory path]: :_files -/' \
 '--data-dir=[Data directory path]: :_files -/' \
-'-u[Do not mark the address used in the invoice as used]' \
-'--unmark[Do not mark the address used in the invoice as used]' \
+'-m[Whether to mark address as used]' \
+'--mark-used[Whether to mark address as used]' \
 '--legacy[Use SegWit legacy address format (applicable only to a SegWit wallets)]' \
 '(--psbt)--descriptor[Create descriptor-based invoice (not compatible with instant wallet accounts)]' \
 '(--descriptor)--psbt[Create a PSBT-based invoice (not compatible with instant wallet accounts)]' \

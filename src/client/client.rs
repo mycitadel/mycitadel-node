@@ -171,7 +171,7 @@ impl Client {
         amount: AtomicValue,
         merchant: Option<impl ToString>,
         purpose: Option<impl ToString>,
-        unmark: bool,
+        mark_used: bool,
         legacy: bool,
     ) -> Result<Invoice, Error> {
         let mut asset_id = asset_id.map(AssetId::from);
@@ -191,7 +191,7 @@ impl Client {
                         contract_id,
                         index: None,
                         legacy,
-                        mark_used: !unmark,
+                        mark_used,
                     },
                 ))? {
                     Reply::AddressDerivation(ad) => ad.address,

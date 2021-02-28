@@ -233,7 +233,7 @@ pub extern "C" fn mycitadel_invoice_create(
     amount: u64,
     merchant: *const c_char,
     purpose: *const c_char,
-    unmark: bool,
+    mark_used: bool,
     legacy: bool,
 ) -> *const c_char {
     let client = mycitadel_client_t::from_raw(client);
@@ -256,7 +256,7 @@ pub extern "C" fn mycitadel_invoice_create(
             amount,
             merchant.try_as_str(),
             purpose.try_as_str(),
-            unmark,
+            mark_used,
             legacy,
         )
     });
