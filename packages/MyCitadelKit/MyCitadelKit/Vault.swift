@@ -54,20 +54,21 @@ extension CitadelVault: VaultAPI {
     }
 
     public func syncAll() throws {
-        let _ = try self.syncContracts()
-        let _ = try self.syncAssets()
+        let _ = try syncContracts()
+        let _ = try syncAssets()
     }
 
     public func syncContracts() throws -> [WalletContract] {
         let contractData: [ContractJson] = try listContracts()
-        self.contracts = contractData.map {
+        contracts = contractData.map {
             WalletContract(withContractData: $0, citadelVault: self)
         }
 
-        for contract in self.contracts {
+        for contract in contracts {
             try contract.sync()
         }
-        return self.contracts
+        print("Contracts synced: \(contracts)")
+        return contracts
     }
 
     public func syncAssets() throws -> [String: Asset] {
@@ -84,6 +85,7 @@ extension CitadelVault: VaultAPI {
         if !assets.keys.contains(network.nativeAssetId()) {
             assets[network.nativeAssetId()] = NativeAsset(withCitadelVault: self)
         }
+        print("Assets synced: \(assets)")
         return assets
     }
 

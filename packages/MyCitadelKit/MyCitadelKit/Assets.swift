@@ -64,7 +64,7 @@ public extension Asset {
     }
 
     func amount(fromAtoms atoms: UInt64) -> Double {
-        Double(atoms / decimalFraction())
+        Double(atoms) / Double(decimalFraction())
     }
 
     func amount(toAtoms amount: Double) -> UInt64 {

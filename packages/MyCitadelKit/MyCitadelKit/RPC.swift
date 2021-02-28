@@ -47,6 +47,10 @@ struct UTXOJson: Codable {
     let value: UInt64
     let derivationIndex: UInt32
     let address: String?
+
+    private enum CodingKeys: String, CodingKey {
+        case height, offset, txid, vout, value, derivationIndex = "derivation_index", address
+    }
 }
 
 struct RGB20Json: Codable {

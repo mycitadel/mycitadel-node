@@ -212,7 +212,7 @@ const char *mycitadel_invoice_create(struct mycitadel_client_t *client,
                                      uint64_t amount,
                                      const char *merchant,
                                      const char *purpose,
-                                     bool unmark,
+                                     bool mark_used,
                                      bool legacy);
 
 const char *mycitadel_invoice_list(struct mycitadel_client_t *client,
