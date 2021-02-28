@@ -112,6 +112,8 @@ open class CitadelVault {
             throw err
         }
         var string = String(cString: response)
+        // TODO: Remove this debug printing
+        print(string)
         string.reserveCapacity(string.count * 2)
         release_string(UnsafeMutablePointer(mutating: response))
         return string
@@ -131,16 +133,19 @@ extension CitadelVault: CitadelRPC {
     }
 
     internal func listContracts() throws -> [ContractJson] {
+        print("Listing contracts")
         let response = mycitadel_contract_list(rpcClient)
         return try JSONDecoder().decode([ContractJson].self, from: self.processResponse(response))
     }
 
     internal func balance(walletId: String) throws -> [String: [UTXOJson]] {
+        print("Requesting balance for \(walletId)")
         let response = mycitadel_contract_balance(rpcClient, walletId, true, 20)
         return try JSONDecoder().decode([String: [UTXOJson]].self, from: self.processResponse(response))
     }
 
     internal func listAssets() throws -> [RGB20Json] {
+        print("Listing assets")
         let response = mycitadel_asset_list(rpcClient);
         return try JSONDecoder().decode([RGB20Json].self, from: self.processResponse(response))
     }
@@ -156,7 +161,7 @@ extension CitadelVault: CitadelRPC {
     }
 
     internal func invoice(usingFormat format: InvoiceType, receiveTo contractId: String, nominatedIn assetId: String?, value: UInt64?, useLegacySegWit legacy: Bool = false) throws -> String {
-        let invoice = mycitadel_invoice_create(rpcClient, format.cType(), contractId, assetId ?? nil, value ?? 0, nil, nil, true, legacy)
+        let invoice = mycitadel_invoice_create(rpcClient, format.cType(), contractId, assetId ?? nil, value ?? 0, nil, nil, false, legacy)
         return try processResponseToString(invoice)
     }
 
