@@ -14,13 +14,16 @@ use std::path::PathBuf;
 use std::ptr;
 use std::str::FromStr;
 
+use bitcoin::Address;
 use internet2::ZmqSocketAddr;
-use invoice::Invoice;
+use invoice::{Beneficiary, Invoice};
 use lnpbp::Chain;
+use microservices::rpc::Failure;
 use mycitadel::Client;
 use wallet::bip32::PubkeyChain;
 
 use super::{descriptor_type, invoice_type};
+use crate::capi::prepared_transfer_t;
 use crate::error::*;
 use crate::helpers::{TryAsStr, TryIntoRaw};
 use crate::mycitadel_client_t;
@@ -286,13 +289,55 @@ pub extern "C" fn mycitadel_invoice_list(
 }
 
 #[no_mangle]
+pub extern "C" fn mycitadel_address_pay(
+    client: *mut mycitadel_client_t,
+    address: *const c_char,
+    amount: u64,
+    fee: u64,
+) -> *const c_char {
+    let client = mycitadel_client_t::from_raw(client);
+
+    let address = match client.parse_string(address, "address") {
+        Ok(address) => address,
+        Err(_) => {
+            client.set_error(mycitadel::Error::ServerFailure(Failure {
+                code: 0,
+                info: s!("Address must not be an empty string"),
+            }));
+            return ptr::null();
+        }
+    };
+    let address = match Address::from_str(address) {
+        Ok(invoice) => invoice,
+        Err(err) => {
+            client.set_error(mycitadel::Error::ServerFailure(Failure {
+                code: 0,
+                info: format!("Invalid address data: {}", err),
+            }));
+            return ptr::null();
+        }
+    };
+    let invoice =
+        Invoice::new(Beneficiary::Address(address), Some(amount), None);
+    let invoice = invoice.to_string();
+    mycitadel_invoice_pay(
+        client,
+        ptr::null(),
+        invoice.as_ptr() as *const c_char,
+        fee,
+        0,
+    )
+    .psbt_base64
+}
+
+#[no_mangle]
 pub extern "C" fn mycitadel_invoice_pay(
     client: *mut mycitadel_client_t,
     contract_id: *const c_char,
     invoice: *const c_char,
     fee: u64,
     giveaway: u64,
-) -> *const c_char {
+) -> prepared_transfer_t {
     let client = mycitadel_client_t::from_raw(client);
 
     let (contract_id, invoice) = match (|| {
@@ -301,7 +346,7 @@ pub extern "C" fn mycitadel_invoice_pay(
             client.parse_string(invoice, "invoice").ok()?,
         ))
     })() {
-        None => return ptr::null(),
+        None => return prepared_transfer_t::failure(),
         Some(v) => v,
     };
 
@@ -309,7 +354,7 @@ pub extern "C" fn mycitadel_invoice_pay(
         Ok(invoice) => invoice,
         Err(err) => {
             client.set_error(err.into());
-            return ptr::null();
+            return prepared_transfer_t::failure();
         }
     };
 
@@ -324,8 +369,8 @@ pub extern "C" fn mycitadel_invoice_pay(
     });
     result
         .and_then(|reply| reply.map_err(|err| client.set_error(err)).ok())
-        .and_then(|info| info.to_string().try_into_raw())
-        .unwrap_or(ptr::null())
+        .map(prepared_transfer_t::from)
+        .unwrap_or(prepared_transfer_t::failure())
 }
 
 #[no_mangle]

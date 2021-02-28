@@ -154,6 +154,12 @@ typedef struct mycitadel_client_t {
         int err_no;
 } mycitadel_client_t;
 
+typedef struct prepared_transfer_t {
+        bool success;
+        const char *consignment_bech32;
+        const char *psbt_base64;
+} prepared_transfer_t;
+
 typedef union result_details_t {
         const char *data;
         const char *error;
@@ -218,11 +224,16 @@ const char *mycitadel_invoice_create(struct mycitadel_client_t *client,
 const char *mycitadel_invoice_list(struct mycitadel_client_t *client,
                                    const char *contract_id);
 
-const char *mycitadel_invoice_pay(struct mycitadel_client_t *client,
-                                  const char *contract_id,
-                                  const char *invoice,
-                                  uint64_t fee,
-                                  uint64_t giveaway);
+const char *mycitadel_address_pay(struct mycitadel_client_t *client,
+                                  const char *address,
+                                  uint64_t amount,
+                                  uint64_t fee);
+
+struct prepared_transfer_t mycitadel_invoice_pay(struct mycitadel_client_t *client,
+                                                 const char *contract_id,
+                                                 const char *invoice,
+                                                 uint64_t fee,
+                                                 uint64_t giveaway);
 
 const char *mycitadel_invoice_accept(struct mycitadel_client_t *client,
                                      const char *contract_id);

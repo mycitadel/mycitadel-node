@@ -420,7 +420,12 @@ impl Runtime {
             Request::ComposePayment(message::ComposePaymentRequest { pay_from, amount, bitcoin_fee, transfer_info }) => {
                 let contract = self.storage.contract_ref(pay_from).map_err(Error::from)?;
                 let policy = contract.policy().clone();
-                let mut coins = self.cache.unspent(pay_from).map_err(Error::from)?.get(&transfer_info.contract_id()).cloned().unwrap_or_default();
+                let mut coins = self.cache
+                    .unspent(pay_from)
+                    .map_err(Error::from)?
+                    .get(&transfer_info.contract_id())
+                    .cloned()
+                    .unwrap_or_default();
                 // TODO: Implement more coinselection strategies
                 coins.sort_by(|a, b| a.value.cmp(&b.value));
                 trace!("Found coins: {:#?}", coins);
@@ -603,6 +608,8 @@ impl Runtime {
                     ).map_err(Error::from)?;
                     message::PreparedPayment { psbt: witness, consignment: Some(consignment) }
                 } else {
+                    // TODO: If any of bitcoin inputs contain some RGB assets
+                    //       we must do an "internal transfer"
                     message::PreparedPayment { psbt, consignment: None }
                 };
 
