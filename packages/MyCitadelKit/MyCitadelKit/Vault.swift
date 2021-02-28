@@ -54,8 +54,8 @@ extension CitadelVault: VaultAPI {
     }
 
     public func syncAll() throws {
-        let _ = try syncContracts()
         let _ = try syncAssets()
+        let _ = try syncContracts()
     }
 
     public func syncContracts() throws -> [WalletContract] {

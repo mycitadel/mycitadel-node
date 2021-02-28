@@ -4,6 +4,11 @@
 <dict>
 	<key>SchemeUserState</key>
 	<dict>
+		<key>CitadelKit.xcscheme_^#shared#^_</key>
+		<dict>
+			<key>orderHint</key>
+			<integer>1</integer>
+		</dict>
 		<key>MyCitadelKit.xcscheme_^#shared#^_</key>
 		<dict>
 			<key>orderHint</key>
@@ -12,6 +17,11 @@
 	</dict>
 	<key>SuppressBuildableAutocreation</key>
 	<dict>
+		<key>301404F825EAF51000F4AA07</key>
+		<dict>
+			<key>primary</key>
+			<true />
+		</dict>
 		<key>304DE84D25C6F8B9008FE0A4</key>
 		<dict>
 			<key>primary</key>
