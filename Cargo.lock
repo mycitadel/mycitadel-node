@@ -425,7 +425,7 @@ dependencies = [
 [[package]]
 name = "client_side_validation"
 version = "0.4.0-beta"
-source = "git+https://github.com/LNP-BP/rust-lnpbp?branch=fix/commit-encode#2f0d69a407894af25a44251e18bb9627f5a979af"
+source = "git+https://github.com/LNP-BP/rust-lnpbp#7de0e4e4b57adfe68332ccdab65ea3f4dff8bf0d"
 dependencies = [
  "amplify",
  "amplify_derive",
@@ -616,7 +616,7 @@ dependencies = [
 [[package]]
 name = "descriptor-wallet"
 version = "0.4.0-beta"
-source = "git+https://github.com/LNP-BP/descriptor-wallet#a59de0b534bdab5bc27ed9d6844a1a0dbe5c10ff"
+source = "git+https://github.com/LNP-BP/descriptor-wallet#a6e304af6eb708e79e4d4da457f310a72ccc1f51"
 dependencies = [
  "amplify",
  "amplify_derive",
@@ -1176,7 +1176,7 @@ dependencies = [
 [[package]]
 name = "lnpbp"
 version = "0.4.0-beta"
-source = "git+https://github.com/LNP-BP/rust-lnpbp#e9d5ab45a5058ec0cf8c44cc40c4383b3bf6c50e"
+source = "git+https://github.com/LNP-BP/rust-lnpbp#7de0e4e4b57adfe68332ccdab65ea3f4dff8bf0d"
 dependencies = [
  "amplify",
  "amplify_derive",
@@ -1200,7 +1200,7 @@ dependencies = [
 [[package]]
 name = "lnpbp_invoice"
 version = "0.4.0-alpha.1"
-source = "git+https://github.com/LNP-BP/rust-lnpbp#e9d5ab45a5058ec0cf8c44cc40c4383b3bf6c50e"
+source = "git+https://github.com/LNP-BP/rust-lnpbp#7de0e4e4b57adfe68332ccdab65ea3f4dff8bf0d"
 dependencies = [
  "amplify",
  "amplify_derive",
@@ -1865,7 +1865,7 @@ dependencies = [
 [[package]]
 name = "rgb-core"
 version = "0.4.0-beta"
-source = "git+https://github.com/rgb-org/rgb-core#f655958a87108a1aaac8e3feafda066ef744a7de"
+source = "git+https://github.com/rgb-org/rgb-core#4d28b4d29d830a8596708b5cb8f7533acce411a2"
 dependencies = [
  "amplify",
  "amplify_derive",
@@ -1896,8 +1896,8 @@ dependencies = [
 
 [[package]]
 name = "rgb20"
-version = "0.4.0-alpha.1"
-source = "git+https://github.com/rgb-org/rgb-core#f655958a87108a1aaac8e3feafda066ef744a7de"
+version = "0.4.0-beta"
+source = "git+https://github.com/rgb-org/rgb-core#4d28b4d29d830a8596708b5cb8f7533acce411a2"
 dependencies = [
  "amplify",
  "amplify_derive",
@@ -1914,7 +1914,7 @@ dependencies = [
 [[package]]
 name = "rgb_node"
 version = "0.4.0-alpha"
-source = "git+https://github.com/rgb-org/rgb-node#b420a12b014a8bc828a5a54d52c8e7a4c7cb8e72"
+source = "git+https://github.com/rgb-org/rgb-node#c65e93c489deaaa940c0f6fea54133db534883d1"
 dependencies = [
  "amplify",
  "amplify_derive",
@@ -2095,9 +2095,9 @@ dependencies = [
 
 [[package]]
 name = "serde_json"
-version = "1.0.63"
+version = "1.0.64"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "43535db9747a4ba938c0ce0a98cc631a46ebf943c9e1d604e091df6007620bf6"
+checksum = "799e97dc9fdae36a5c8b8f2cae9ce2ee9fdce2058c57a93e6099d919fd982f79"
 dependencies = [
  "itoa",
  "ryu",

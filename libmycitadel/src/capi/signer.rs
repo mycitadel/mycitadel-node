@@ -21,6 +21,7 @@ use std::slice;
 use std::str::{FromStr, Utf8Error};
 
 use bip39::Mnemonic;
+use bitcoin::consensus::{deserialize, serialize};
 use bitcoin::util::bip32::{
     self, ChildNumber, DerivationPath, Error, ExtendedPrivKey, ExtendedPubKey,
 };
@@ -29,6 +30,7 @@ use wallet::bip32::{
     BranchStep, ChildIndex, HardenedIndex, HardenedNormalSplit, PubkeyChain,
     TerminalStep, XpubRef,
 };
+use wallet::{psbt::Signer, Psbt};
 
 pub trait Wipe {
     unsafe fn wipe(self);
@@ -105,6 +107,14 @@ pub enum err_type {
 
     /// general BIP32-specific failure
     bip32_failure,
+
+    #[from(base64::DecodeError)]
+    /// error in encoding of PSBT data
+    psbt_failure,
+
+    /// signature error
+    #[from(wallet::psbt::SigningError)]
+    signature,
 }
 
 impl Default for err_type {
@@ -461,9 +471,26 @@ pub extern "C" fn bip32_pubkey_chain_create(
 
 #[no_mangle]
 pub extern "C" fn psbt_sign(
-    _psbt: *const c_char,
-    _xpriv: *const c_char,
-    _wipe: bool,
+    psbt: *const c_char,
+    master_xpriv_str: *const c_char,
+    wipe: bool,
 ) -> string_result_t {
-    unimplemented!()
+    let master_xpriv_s = unsafe { CStr::from_ptr(master_xpriv_str).to_str()? };
+    let len = master_xpriv_s.len();
+    let master_xpriv = ExtendedPrivKey::from_str(master_xpriv_s)?;
+
+    let psbt = unsafe { CStr::from_ptr(psbt).to_str()? };
+    let mut psbt: Psbt = deserialize(&base64::decode(psbt)?)
+        .map_err(|_| err_type::psbt_failure)?;
+
+    psbt.sign(master_xpriv, true)?;
+
+    if wipe {
+        unsafe {
+            (master_xpriv_str as *mut c_char)
+                .copy_from(vec![0u8; len].as_ptr() as *const c_char, len);
+        }
+    }
+
+    string_result_t::success(base64::encode(&serialize(&psbt)))
 }

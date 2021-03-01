@@ -15,10 +15,10 @@ use chrono::NaiveDateTime;
 use serde_with::DisplayFromStr;
 use std::str::FromStr;
 
-use bitcoin::Txid;
+use bitcoin::{OutPoint, Txid};
 use wallet::bip32::UnhardenedIndex;
 use wallet::blockchain::ParseError;
-use wallet::{AddressPayload, TimeHeight};
+use wallet::{AddressPayload, Slice32, TimeHeight};
 
 #[derive(
     Clone,
@@ -188,9 +188,23 @@ pub struct Utxo {
     /// output
     pub derivation_index: UnhardenedIndex,
 
+    /// Tweak (if any) applied to the public key and the index of the public
+    /// key which receives tweak
+    #[serde_as(as = "Option<(DisplayFromStr, _)>")]
+    pub tweak: Option<(Slice32, u16)>,
+
     /// Address controlling the output
     #[serde_as(as = "Option<DisplayFromStr>")]
     pub address: Option<AddressPayload>,
+}
+
+impl Utxo {
+    pub fn outpoint(&self) -> OutPoint {
+        OutPoint {
+            txid: self.txid,
+            vout: self.vout as u32,
+        }
+    }
 }
 
 impl FromStr for Utxo {
@@ -224,6 +238,7 @@ impl FromStr for Utxo {
                 vout: vout.parse()?,
                 txid: txid.parse()?,
                 derivation_index: index.parse().map_err(|_| ParseError)?,
+                tweak: None,
                 address: address
                     .map(AddressPayload::from_str)
                     .transpose()

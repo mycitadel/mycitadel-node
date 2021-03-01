@@ -12,11 +12,12 @@
 // If not, see <https://www.gnu.org/licenses/agpl-3.0-standalone.html>.
 
 use serde_with::DisplayFromStr;
+use std::collections::BTreeMap;
 use std::convert::TryInto;
 use std::io;
 use std::ops::Range;
 
-use bitcoin::util::bip32::ChildNumber;
+use bitcoin::util::bip32::KeySource;
 use bitcoin::Script;
 use internet2::RemoteNodeAddr;
 use lnp::ChannelId;
@@ -160,56 +161,39 @@ impl Policy {
                 path.remove(path.len() - 1);
             }
             path.push(TerminalStep::Index(index.into()));
-            chain
-                .branch_xpub
-                .derive_pub(
-                    &wallet::SECP256K1,
-                    &path
-                        .into_iter()
-                        .map(TerminalStep::index)
-                        .map(Option::unwrap_or_default)
-                        .map(|index| ChildNumber::Normal { index })
-                        .collect::<Vec<_>>(),
-                )
-                .expect("Unhardened derivation can't fail")
-                .public_key
+            chain.derive_pubkey(Some(index))
         })
+    }
+
+    pub fn pubkey_chains(&self) -> Vec<PubkeyChain> {
+        let mut collected = vec![];
+        self.to_descriptor().for_each_key(|key| {
+            if let ForEach::Key(pubkey_chain) = key {
+                collected.push(pubkey_chain.clone())
+            }
+            true
+        });
+        collected
+    }
+
+    pub fn bip32_derivations(
+        &self,
+        index: UnhardenedIndex,
+    ) -> BTreeMap<bitcoin::PublicKey, KeySource> {
+        self.pubkey_chains()
+            .into_iter()
+            .map(|pubkey_chain| pubkey_chain.bip32_derivation(Some(index)))
+            .collect()
     }
 
     pub fn first_public_key(
         &self,
         index: UnhardenedIndex,
     ) -> bitcoin::PublicKey {
-        let mut found = None;
-        self.to_descriptor().for_each_key(|key| match key {
-            ForEach::Key(key) => {
-                if found.is_none() {
-                    found = Some(key.clone())
-                }
-                false
-            }
-            ForEach::Hash(_) => true,
-        });
-        let chain = found
-            .expect("Descriptor mut always contain at least one singning key");
-        let mut path = chain.terminal_path.clone();
-        if path.last() == Some(&TerminalStep::Wildcard) {
-            path.remove(path.len() - 1);
-        }
-        path.push(TerminalStep::Index(index.into()));
-        chain
-            .branch_xpub
-            .derive_pub(
-                &wallet::SECP256K1,
-                &path
-                    .into_iter()
-                    .map(TerminalStep::index)
-                    .map(Option::unwrap_or_default)
-                    .map(|index| ChildNumber::Normal { index })
-                    .collect::<Vec<_>>(),
-            )
-            .expect("Unhardened derivation can't fail")
-            .public_key
+        self.pubkey_chains()
+            .first()
+            .expect("Descriptor must contain at least one signing key")
+            .derive_pubkey(Some(index))
     }
 
     pub fn derive_scripts(&self, range: Range<UnhardenedIndex>) -> Vec<Script> {
@@ -223,12 +207,11 @@ impl Policy {
         scripts
     }
 
-    pub fn derive_address(
+    pub fn derive_descriptor(
         &self,
         index: UnhardenedIndex,
-        chain: &Chain,
         legacy: bool,
-    ) -> Option<AddressDerivation> {
+    ) -> Option<Descriptor<bitcoin::PublicKey>> {
         let mut d = self.to_descriptor();
         // TODO: Propose a PR to rust-miniscript with `to_nested()` method
         if legacy {
@@ -247,12 +230,18 @@ impl Policy {
                 _ => d,
             };
         }
-        chain
-            .try_into()
-            .ok()
-            .and_then(|network| {
-                Self::translate(&d, index.into()).address(network).ok()
-            })
+        Some(Self::translate(&d, index.into()))
+    }
+
+    pub fn derive_address(
+        &self,
+        index: UnhardenedIndex,
+        chain: &Chain,
+        legacy: bool,
+    ) -> Option<AddressDerivation> {
+        self.derive_descriptor(index, legacy)
+            .and_then(|d| chain.try_into().ok().map(|network| (d, network)))
+            .and_then(|(d, network)| d.address(network).ok())
             .map(|address| AddressDerivation::with(address, vec![index]))
     }
 }

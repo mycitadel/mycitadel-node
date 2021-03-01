@@ -11,7 +11,7 @@
 // along with this software.
 // If not, see <https://www.gnu.org/licenses/agpl-3.0-standalone.html>.
 
-use std::collections::{BTreeMap, HashMap, HashSet};
+use std::collections::{BTreeMap, BTreeSet, HashMap, HashSet};
 use std::convert::TryInto;
 
 use bitcoin::secp256k1::rand::{rngs::ThreadRng, RngCore};
@@ -283,6 +283,7 @@ impl Runtime {
                                     address: AddressPayload::from_script(&script),
                                     vout: entry.tx_pos.try_into().ok()?,
                                     derivation_index,
+                                    tweak: None // TODO: FIND TWEAKS!!!!
                                 };
                                 let outpoint = OutPoint::new(
                                     entry.tx_hash,
@@ -426,7 +427,7 @@ impl Runtime {
                     .get(&transfer_info.contract_id())
                     .cloned()
                     .unwrap_or_default();
-                // TODO: Implement more coinselection strategies
+                // TODO: Implement more coin-selection strategies
                 coins.sort_by(|a, b| a.value.cmp(&b.value));
                 trace!("Found coins: {:#?}", coins);
 
@@ -435,21 +436,18 @@ impl Runtime {
                 let asset_fee = if transfer_info.is_rgb() { 0 } else { bitcoin_fee };
 
                 let mut asset_change_outpoint = None;
-                let spent_outpoints: Vec<OutPoint> = coins.into_iter().filter_map(|unspent| {
-                    self.cache.blockpos_to_txid(unspent.height, unspent.offset).and_then(|txid| {
-                        let outpoint = OutPoint::new(txid, unspent.vout as u32);
-                        if input_amount >= amount + asset_fee {
-                            asset_change_outpoint = Some(outpoint);
-                            return None
-                        }
-                        input_amount += unspent.value;
-                        trace!("Adding {} to the inputs with {} sats; total input value is {}", outpoint, unspent.value, input_amount);
-                        Some(outpoint)
-                    })
+                let selected_utxos: Vec<Utxo> = coins.into_iter().filter_map(|utxo| {
+                    if input_amount >= amount + asset_fee {
+                        asset_change_outpoint = Some(utxo.outpoint());
+                        return None
+                    }
+                    input_amount += utxo.value;
+                    trace!("Adding {} to the inputs with {} sats; total input value is {}", utxo.outpoint(), utxo.value, input_amount);
+                    Some(utxo)
                 }).collect();
-                let input: Vec<TxIn> = spent_outpoints.iter().map(|outpoint| {
+                let input: Vec<TxIn> = selected_utxos.iter().map(|utxo| {
                     TxIn {
-                        previous_output: *outpoint,
+                        previous_output: utxo.outpoint(),
                         script_sig: Default::default(),
                         sequence: 0,
                         witness: vec![],
@@ -495,18 +493,20 @@ impl Runtime {
                 };
 
                 // Get to known how much bitcoins we are spending
-                let mut input_bitcoin_amount = 0u64;
-                let mut outpoint_check = spent_outpoints.clone();
-                for unspent in self.cache.unspent(pay_from).map_err(Error::from)?.get(&rgb::ContractId::default()).ok_or(Error::CacheInconsistency)? {
-                    let txid = self.cache.blockpos_to_txid(unspent.height, unspent.offset).ok_or(Error::CacheInconsistency)?;
-                    if let Some(index) = outpoint_check.iter().position(|o| *o == OutPoint::new(txid, unspent.vout as u32)) {
-                        outpoint_check.remove(index);
-                        input_bitcoin_amount += unspent.value;
-                    }
-                }
-                if outpoint_check.len() > 0 {
-                    Err(Error::CacheInconsistency)?
-                }
+                let all_unspent = self.cache
+                    .unspent(pay_from)
+                    .map_err(Error::from)?;
+                let bitcoin_utxos = all_unspent
+                    .get(&rgb::ContractId::default())
+                    .ok_or(Error::CacheInconsistency)?;
+                let outpoints = selected_utxos
+                    .iter()
+                    .map(Utxo::outpoint)
+                    .collect::<BTreeSet<_>>();
+                let input_bitcoin_amount = bitcoin_utxos
+                    .iter()
+                    .filter(|bitcoin_utxo| outpoints.contains(&bitcoin_utxo.outpoint()))
+                    .fold(0u64, |sum, utxo| sum + utxo.value);
 
                 // Adding bitcoin change output, if needed
                 let change_vout = if input_bitcoin_amount > bitcoin_amount + bitcoin_fee {
@@ -558,10 +558,11 @@ impl Runtime {
                 // Constructing bitcoin payment PSBT (for bitcoin payments) or
                 // RGB witness PSBT prototype for the commitment (for RGB
                 // payments)
-                let inputs = input.iter().map(|txin| {
+                let inputs = input.iter().zip(&selected_utxos).map(|(txin, utxo)| {
                     let mut input = psbt::Input::default();
                     // TODO: cache transactions
                     input.non_witness_utxo = self.electrum.transaction_get(&txin.previous_output.txid).ok();
+                    input.bip32_derivation = policy.bip32_derivations(utxo.derivation_index);
                     input
                 }).collect();
                 let outputs = output.iter().map(|(txout, index)| {
@@ -584,7 +585,7 @@ impl Runtime {
                             version: 1,
                             lock_time: 0,
                             input,
-                            output: output.into_iter().map(|x| x.0).collect(),
+                            output: output.into_iter().map(|(txout, _)| txout).collect(),
                         },
                         version: 0,
                         xpub: none!(),
@@ -601,7 +602,7 @@ impl Runtime {
                 let payment_data = if let message::TransferInfo::Rgb { contract_id: asset_id, ref receiver} = transfer_info {
                     let Transfer { consignment, witness } = self.rgb20_client.transfer(
                         asset_id,
-                        spent_outpoints.into_iter().collect(),
+                        selected_utxos.iter().map(Utxo::outpoint).collect(),
                         bmap! { rgb_endpoint => amount },
                         rgb_change,
                         psbt.clone()

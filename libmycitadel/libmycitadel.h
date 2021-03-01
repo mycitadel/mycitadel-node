@@ -133,6 +133,14 @@ typedef enum err_type {
          * general BIP32-specific failure
          */
         ERR_TYPE_BIP32_FAILURE,
+        /**
+         * error in encoding of PSBT data
+         */
+        ERR_TYPE_PSBT_FAILURE,
+        /**
+         * signature error
+         */
+        ERR_TYPE_SIGNATURE,
 } err_type;
 
 typedef enum invoice_type {
@@ -272,9 +280,9 @@ struct string_result_t bip32_pubkey_chain_create(char *master_xpriv,
                                                  bool clean,
                                                  const char *derivation);
 
-struct string_result_t psbt_sign(const char *_psbt,
-                                 const char *_xpriv,
-                                 bool _wipe);
+struct string_result_t psbt_sign(const char *psbt,
+                                 const char *master_xpriv_str,
+                                 bool wipe);
 
 void release_string(char *s);
 
