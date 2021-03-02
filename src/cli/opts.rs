@@ -15,6 +15,7 @@ use clap::{AppSettings, ArgGroup, Clap, ValueHint};
 use std::path::PathBuf;
 use std::str::FromStr;
 
+use bitcoin::Address;
 use invoice::Invoice;
 use wallet::bip32::PubkeyChain;
 use wallet::bip32::UnhardenedIndex;
@@ -293,6 +294,30 @@ pub enum AddressCommand {
         /// Remove use mark (inverses the command)
         #[clap(short, long, takes_value = false, global = true)]
         unmark: bool,
+    },
+
+    Pay {
+        /// Address to pay to
+        address: Address,
+
+        /// Amount to pay to the address
+        amount: bitcoin::Amount,
+
+        /// Fee to pay, in satoshis
+        fee: u64,
+
+        /// Wallet to take funds from for paying to the address
+        pay_from: model::ContractId,
+
+        /// File name to output PSBT. If no name is given PSBT data are output
+        /// to STDOUT
+        #[clap(short, long)]
+        output: Option<PathBuf>,
+
+        /// PSBT format to use for the output; if no file is specified defaults
+        /// to Base64 output; otherwise defaults to binary
+        #[clap(short, long)]
+        format: Option<PsbtFormat>,
     },
 }
 

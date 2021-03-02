@@ -14,6 +14,7 @@
 mod command;
 mod opts;
 mod output;
+pub(self) mod util;
 
 pub use opts::{
     AddressCommand, AssetCommand, Command, DescriptorOpts, Formatting,

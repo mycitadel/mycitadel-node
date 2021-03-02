@@ -129,6 +129,7 @@ Register-ArgumentCompleter -Native -CommandName 'mycitadel-cli' -ScriptBlock {
             [CompletionResult]::new('list-used', 'list-used', [CompletionResultType]::ParameterValue, 'Print address list')
             [CompletionResult]::new('create', 'create', [CompletionResultType]::ParameterValue, 'create')
             [CompletionResult]::new('mark-used', 'mark-used', [CompletionResultType]::ParameterValue, 'mark-used')
+            [CompletionResult]::new('pay', 'pay', [CompletionResultType]::ParameterValue, 'pay')
             break
         }
         'mycitadel-cli;address;list-used' {
@@ -165,6 +166,19 @@ Register-ArgumentCompleter -Native -CommandName 'mycitadel-cli' -ScriptBlock {
             [CompletionResult]::new('--legacy', 'legacy', [CompletionResultType]::ParameterName, 'Use SegWit legacy address format (applicable only to a SegWit wallets)')
             [CompletionResult]::new('-u', 'u', [CompletionResultType]::ParameterName, 'Remove use mark (inverses the command)')
             [CompletionResult]::new('--unmark', 'unmark', [CompletionResultType]::ParameterName, 'Remove use mark (inverses the command)')
+            [CompletionResult]::new('-v', 'v', [CompletionResultType]::ParameterName, 'Set verbosity level')
+            [CompletionResult]::new('--verbose', 'verbose', [CompletionResultType]::ParameterName, 'Set verbosity level')
+            [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Prints help information')
+            [CompletionResult]::new('--help', 'help', [CompletionResultType]::ParameterName, 'Prints help information')
+            [CompletionResult]::new('-V', 'V', [CompletionResultType]::ParameterName, 'Prints version information')
+            [CompletionResult]::new('--version', 'version', [CompletionResultType]::ParameterName, 'Prints version information')
+            break
+        }
+        'mycitadel-cli;address;pay' {
+            [CompletionResult]::new('-o', 'o', [CompletionResultType]::ParameterName, 'File name to output PSBT. If no name is given PSBT data are output to STDOUT')
+            [CompletionResult]::new('--output', 'output', [CompletionResultType]::ParameterName, 'File name to output PSBT. If no name is given PSBT data are output to STDOUT')
+            [CompletionResult]::new('-f', 'f', [CompletionResultType]::ParameterName, 'PSBT format to use for the output; if no file is specified defaults to Base64 output; otherwise defaults to binary')
+            [CompletionResult]::new('--format', 'format', [CompletionResultType]::ParameterName, 'PSBT format to use for the output; if no file is specified defaults to Base64 output; otherwise defaults to binary')
             [CompletionResult]::new('-v', 'v', [CompletionResultType]::ParameterName, 'Set verbosity level')
             [CompletionResult]::new('--verbose', 'verbose', [CompletionResultType]::ParameterName, 'Set verbosity level')
             [CompletionResult]::new('-h', 'h', [CompletionResultType]::ParameterName, 'Prints help information')

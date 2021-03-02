@@ -243,7 +243,7 @@ impl Runtime {
                 let mut outpoints: Vec<OutPoint> = vec![];
                 let mut mine_info: BTreeMap<(u32, u16), Txid> = bmap!{};
 
-                let index_offset = UnhardenedIndex::zero();
+                let mut index_offset = UnhardenedIndex::zero();
                 let last_used_index = self.cache.last_used_derivation(contract_id).unwrap_or_default();
 
                 let mut scripts: Vec<(UnhardenedIndex, Script, Option<TweakedOutput>)> = contract
@@ -313,11 +313,16 @@ impl Runtime {
                         break;
                     }
 
-                    let to = index_offset
+                    if index_offset == UnhardenedIndex::largest() {
+                        debug!("Reached last possible index number, breaking");
+                        break;
+                    }
+                    let from = index_offset;
+                    index_offset = index_offset
                         .checked_add(lookup_depth)
                         .unwrap_or(UnhardenedIndex::largest());
                     scripts = policy
-                        .derive_scripts(index_offset..to)
+                        .derive_scripts(from..index_offset)
                         .into_iter()
                         .map(|(derivation_index, script)| (derivation_index, script, None))
                         .collect();

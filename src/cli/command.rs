@@ -13,19 +13,18 @@
 
 use colored::Colorize;
 use std::collections::HashMap;
+use std::fs;
 use std::str::FromStr;
-use std::{fs, io};
 
-use base64::display::Base64Display;
-use bitcoin::consensus::encode::{serialize, Encodable};
-use bitcoin::hashes::hex::ToHex;
+use invoice::Invoice;
 use microservices::shell::Exec;
 use rgb::{Consignment, Validity};
 use strict_encoding::StrictEncode;
 
+use super::util;
 use super::{
     AddressCommand, AssetCommand, Command, InvoiceCommand, OutputFormat,
-    PsbtFormat, WalletCommand, WalletCreateCommand, WalletOpts,
+    WalletCommand, WalletCreateCommand, WalletOpts,
 };
 use crate::client::InvoiceType;
 use crate::rpc::Reply;
@@ -211,6 +210,20 @@ impl Exec for AddressCommand {
                     address_derivation.output_print(format)
                 }),
             AddressCommand::MarkUsed { .. } => unimplemented!(),
+            AddressCommand::Pay {
+                address,
+                amount,
+                fee,
+                pay_from,
+                output,
+                format,
+            } => {
+                let invoice =
+                    Invoice::with_address(address, Some(amount.as_sat()));
+                let prepared_payment =
+                    client.invoice_pay(pay_from, invoice, None, fee, None)?;
+                util::psbt_output(&prepared_payment.psbt, output, format)
+            }
         }
     }
 }
@@ -314,53 +327,7 @@ impl Exec for InvoiceCommand {
             } => {
                 let prepared_payment = client
                     .invoice_pay(wallet_id, invoice, amount, fee, giveaway)?;
-                let (mut psbt_file, format) = if let Some(ref filename) = output
-                {
-                    (
-                        Box::new(io::BufWriter::new(fs::File::create(
-                            filename,
-                        )?)) as Box<dyn io::Write>,
-                        format.unwrap_or(PsbtFormat::Binary),
-                    )
-                } else {
-                    (
-                        Box::new(io::BufWriter::new(io::stdout()))
-                            as Box<dyn io::Write>,
-                        format.unwrap_or(PsbtFormat::Base64),
-                    )
-                };
-
-                if output.is_none() {
-                    eprint!("{} ", "PSBT:".bright_yellow());
-                }
-                match format {
-                    PsbtFormat::Binary => {
-                        prepared_payment
-                            .psbt
-                            .consensus_encode(&mut psbt_file)?;
-                    }
-                    PsbtFormat::Hexadecimal => {
-                        psbt_file.write_all(
-                            serialize(&prepared_payment.psbt)
-                                .to_hex()
-                                .as_bytes(),
-                        )?;
-                    }
-                    PsbtFormat::Base64 => {
-                        psbt_file.write_all(
-                            Base64Display::with_config(
-                                &serialize(&prepared_payment.psbt),
-                                ::base64::STANDARD,
-                            )
-                            .to_string()
-                            .as_bytes(),
-                        )?;
-                    }
-                }
-                psbt_file.flush()?;
-                if output.is_none() {
-                    eprintln!("\n");
-                }
+                util::psbt_output(&prepared_payment.psbt, output, format)?;
                 if consignment.is_none() {
                     eprint!("{} ", "Consignment:".bright_yellow());
                 }

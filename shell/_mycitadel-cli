@@ -211,6 +211,24 @@ _arguments "${_arguments_options[@]}" \
 '::index -- Index of address derivation path (use `address list` command to see address indexes:' \
 && ret=0
 ;;
+(pay)
+_arguments "${_arguments_options[@]}" \
+'-o+[File name to output PSBT. If no name is given PSBT data are output to STDOUT]' \
+'--output=[File name to output PSBT. If no name is given PSBT data are output to STDOUT]' \
+'-f+[PSBT format to use for the output; if no file is specified defaults to Base64 output; otherwise defaults to binary]' \
+'--format=[PSBT format to use for the output; if no file is specified defaults to Base64 output; otherwise defaults to binary]' \
+'*-v[Set verbosity level]' \
+'*--verbose[Set verbosity level]' \
+'-h[Prints help information]' \
+'--help[Prints help information]' \
+'-V[Prints version information]' \
+'--version[Prints version information]' \
+':address -- Address to pay to:' \
+':amount -- Amount to pay to the address:' \
+':fee -- Fee to pay, in satoshis:' \
+':pay-from -- Wallet to take funds from for paying to the address:' \
+&& ret=0
+;;
         esac
     ;;
 esac
@@ -402,6 +420,7 @@ _mycitadel-cli__address_commands() {
         "list-used:Print address list" \
 "create:" \
 "mark-used:" \
+"pay:" \
     )
     _describe -t commands 'mycitadel-cli address commands' commands "$@"
 }
@@ -514,6 +533,13 @@ _mycitadel-cli__address__mark-used_commands() {
         
     )
     _describe -t commands 'mycitadel-cli address mark-used commands' commands "$@"
+}
+(( $+functions[_mycitadel-cli__address__pay_commands] )) ||
+_mycitadel-cli__address__pay_commands() {
+    local commands; commands=(
+        
+    )
+    _describe -t commands 'mycitadel-cli address pay commands' commands "$@"
 }
 (( $+functions[_mycitadel-cli__invoice__pay_commands] )) ||
 _mycitadel-cli__invoice__pay_commands() {
