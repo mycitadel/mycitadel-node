@@ -714,11 +714,19 @@ impl Runtime {
                         }
                     }
                     trace!("Witness PSBT: {:#?}", psbt);
-                    message::PreparedTransfer { psbt: witness, consignment: Some(consignment) }
+                    let mut concealed = consignment.clone();
+                    concealed.finalize(&bset![ rgb_endpoint ], asset_id);
+                    message::PreparedTransfer {
+                        psbt: witness,
+                        consignments: Some(message::ConsignmentPair {
+                            revealed: consignment,
+                            concealed
+                        })
+                    }
                 } else {
                     // TODO: If any of bitcoin inputs contain some RGB assets
                     //       we must do an "internal transfer"
-                    message::PreparedTransfer { psbt, consignment: None }
+                    message::PreparedTransfer { psbt, consignments: None }
                 };
 
                 // TODO: Store operation information

@@ -1865,7 +1865,7 @@ dependencies = [
 [[package]]
 name = "rgb-core"
 version = "0.4.0-beta"
-source = "git+https://github.com/rgb-org/rgb-core#bf93e430a5278e6de8117a4a24bf3b7b0f84f5da"
+source = "git+https://github.com/rgb-org/rgb-core#e5b6c0a0a8149e96009f07a61ec00db420dc8852"
 dependencies = [
  "amplify",
  "amplify_derive",
@@ -1897,7 +1897,7 @@ dependencies = [
 [[package]]
 name = "rgb20"
 version = "0.4.0-beta"
-source = "git+https://github.com/rgb-org/rgb-core#bf93e430a5278e6de8117a4a24bf3b7b0f84f5da"
+source = "git+https://github.com/rgb-org/rgb-core#e5b6c0a0a8149e96009f07a61ec00db420dc8852"
 dependencies = [
  "amplify",
  "amplify_derive",
@@ -1913,8 +1913,8 @@ dependencies = [
 
 [[package]]
 name = "rgb_node"
-version = "0.4.0-alpha"
-source = "git+https://github.com/rgb-org/rgb-node#cbf28c2e4d111dc51f6cb826e3655aa82d26d9da"
+version = "0.4.0-beta"
+source = "git+https://github.com/rgb-org/rgb-node#c0e7031dc3cdc18053a5611f11984b40d84ff15b"
 dependencies = [
  "amplify",
  "amplify_derive",

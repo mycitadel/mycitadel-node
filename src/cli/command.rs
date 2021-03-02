@@ -19,6 +19,7 @@ use std::{fs, io};
 use bitcoin::consensus::{deserialize, serialize};
 use bitcoin::util::bip32::ExtendedPrivKey;
 use invoice::Invoice;
+use microservices::rpc::Failure;
 use microservices::shell::Exec;
 use rgb::{Consignment, Validity};
 use slip132::FromSlip132;
@@ -32,9 +33,8 @@ use super::{
     WalletCommand, WalletCreateCommand, WalletOpts,
 };
 use crate::client::InvoiceType;
-use crate::rpc::Reply;
+use crate::rpc::{message, Reply};
 use crate::{Client, Error};
-use microservices::rpc::Failure;
 
 const LOOKUP_DEPTH_DEFAULT: u8 = 20;
 
@@ -384,22 +384,39 @@ impl Exec for InvoiceCommand {
                 amount,
                 fee,
                 output,
-                consignment,
+                consignment: consignment_file,
                 format,
                 giveaway,
             } => {
                 let prepared_payment = client
                     .invoice_pay(wallet_id, invoice, amount, fee, giveaway)?;
                 util::psbt_output(&prepared_payment.psbt, output, format)?;
-                if consignment.is_none() {
-                    eprint!("{} ", "Consignment:".bright_yellow());
-                }
-                if let Some(data) = prepared_payment.consignment {
-                    match consignment {
-                        None => println!("{}", data),
-                        Some(filename) => {
-                            let file = fs::File::create(filename)?;
-                            data.strict_encode(file)?;
+                if let Some(message::ConsignmentPair {
+                    revealed,
+                    concealed,
+                }) = prepared_payment.consignments
+                {
+                    match consignment_file {
+                        None => {
+                            eprint!(
+                                "{} ",
+                                "Revealed consignment:".bright_yellow()
+                            );
+                            println!("{}", revealed);
+                            eprint!(
+                                "{} ",
+                                "Conceled consignment:".bright_yellow()
+                            );
+                            println!("{}", concealed);
+                        }
+                        Some(mut filename) => {
+                            filename.set_extension("revealed.rgb");
+                            let file = fs::File::create(&filename)?;
+                            revealed.strict_encode(file)?;
+
+                            filename.set_extension("concealed.rgb");
+                            let file = fs::File::create(&filename)?;
+                            concealed.strict_encode(file)?;
                         }
                     }
                 }

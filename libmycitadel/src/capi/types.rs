@@ -82,7 +82,8 @@ impl From<message::PreparedTransfer> for prepared_transfer_t {
         prepared_transfer_t {
             success: true,
             consignment_bech32: p
-                .consignment
+                .consignments
+                .map(|pair| pair.concealed)
                 .as_ref()
                 .map(Consignment::to_bech32_string)
                 .and_then(String::try_into_raw)
