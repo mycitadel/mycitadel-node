@@ -462,7 +462,7 @@ impl Runtime {
                 // containing RGB assets
                 // TODO: Support using RGB-containing outputs moving RGB assets
                 //       if possible
-                let mut coins = if !transfer_info.is_rgb() {
+                let mut coins = if transfer_info.is_rgb() {
                     self.cache
                         .unspent(pay_from)
                         .map_err(Error::from)?
@@ -477,24 +477,29 @@ impl Runtime {
 
                 // TODO: Implement more coin-selection strategies
                 coins.sort_by(|a, b| a.value.cmp(&b.value));
+                coins.reverse();
 
                 trace!("Found coins: {:#?}", coins);
 
                 // Collecting RGB witness/bitcoin payment inputs
-                let mut input_amount = 0u64;
+                let mut asset_input_amount = 0u64;
                 let asset_fee = if transfer_info.is_rgb() { 0 } else { bitcoin_fee };
 
                 let mut asset_change_outpoint = None;
                 let selected_utxos: Vec<Utxo> = coins.into_iter().filter_map(|utxo| {
-                    if input_amount >= amount + asset_fee {
-                        asset_change_outpoint = Some(utxo.outpoint());
+                    if asset_input_amount >= amount + asset_fee {
+                        debug!("Change value {} will be allocated to {}", asset_input_amount - amount - asset_fee, utxo.outpoint());
+                        asset_change_outpoint = asset_change_outpoint.or(Some(utxo.outpoint()));
                         return None
                     }
-                    input_amount += utxo.value;
-                    trace!("Adding {} to the inputs with {} sats; total input value is {}", utxo.outpoint(), utxo.value, input_amount);
+                    if utxo.value == 0 {
+                        return None
+                    }
+                    asset_input_amount += utxo.value;
+                    trace!("Adding {} to the inputs with {} sats; total input value is {}", utxo.outpoint(), utxo.value, asset_input_amount);
                     Some(utxo)
                 }).collect();
-                let input: Vec<TxIn> = selected_utxos.iter().map(|utxo| {
+                let tx_inputs: Vec<TxIn> = selected_utxos.iter().map(|utxo| {
                     TxIn {
                         previous_output: utxo.outpoint(),
                         script_sig: Default::default(),
@@ -502,28 +507,28 @@ impl Runtime {
                         witness: vec![],
                     }
                 }).collect();
-                if input_amount < amount + asset_fee {
+                if asset_input_amount < amount + asset_fee {
                     Err(Error::ServerFailure(Failure {
                         code: 0,
                         info: format!(
                             "Insufficient funds{}",
                             if transfer_info.is_rgb() {
-                                " on bitcoin outputs which does not have RGB assets on them"
-                            } else {
                                 ""
+                            } else {
+                                " on bitcoin outputs which does not have RGB assets on them"
                             }
                         )
                     }))?;
                 }
 
                 // Constructing RGB witness/bitcoin payment transaction outputs
-                let mut output = vec![];
+                let mut tx_outputs = vec![];
                 let mut bitcoin_amount = 0u64;
                 let rgb_endpoint = if let Some(descriptor) = transfer_info.bitcoin_descriptor() {
                     // We need this output only for bitcoin payments
                     trace!("Adding output paying {} to {}", amount, descriptor);
                     bitcoin_amount = amount;
-                    output.push((TxOut {
+                    tx_outputs.push((TxOut {
                         value: amount,
                         script_pubkey: PubkeyScript::from(descriptor).into(),
                     }, None));
@@ -535,11 +540,11 @@ impl Runtime {
                     // We need this output only for descriptor-based RGB payments
                     trace!("Adding output paying {} bitcoin giveaway to {}", giveaway, descriptor);
                     bitcoin_amount = giveaway;
-                    output.push((TxOut {
+                    tx_outputs.push((TxOut {
                         value: giveaway,
                         script_pubkey: PubkeyScript::from(descriptor.clone()).into(),
                     }, None));
-                    SealEndpoint::with_vout(output.len() as u32 - 1, &mut self.rng)
+                    SealEndpoint::with_vout(tx_outputs.len() as u32 - 1, &mut self.rng)
                 } else if let message::TransferInfo::Rgb {
                     contract_id: _, receiver: message::RgbReceiver::BlindUtxo(hash)
                 } = transfer_info {
@@ -547,6 +552,7 @@ impl Runtime {
                 } else {
                     unimplemented!()
                 };
+                debug!("RGB endpoint will be {:?}", rgb_endpoint);
 
                 // Get to known how much bitcoins we are spending
                 let all_unspent = self.cache
@@ -575,11 +581,11 @@ impl Runtime {
                     }))?.address;
                     self.cache.use_address_derivation(pay_from, change_address.clone(), change_index).map_err(Error::from)?;
                     trace!("Adding change output paying {} to our address {} at derivation index {}", change, change_address, change_index);
-                    output.push((TxOut {
+                    tx_outputs.push((TxOut {
                         value: change,
                         script_pubkey: change_address.script_pubkey(),
                     }, Some(change_index)));
-                    Some(output.len() as u32 - 1)
+                    Some(tx_outputs.len() as u32 - 1)
                 } else {
                     None
                 };
@@ -592,8 +598,8 @@ impl Runtime {
                 //     be much smarter, assigning to existing bitcoin utxos,
                 //     or creating new output for RGB change
                 let mut rgb_change = bmap! {};
-                if input_amount > amount && transfer_info.is_rgb() {
-                    let change = input_amount - amount;
+                if asset_input_amount > amount && transfer_info.is_rgb() {
+                    let change = asset_input_amount - amount;
                     rgb_change.insert(
                         asset_change_outpoint.map(|outpoint| SealDefinition::TxOutpoint(
                             OutpointReveal {
@@ -611,11 +617,12 @@ impl Runtime {
                         change
                     );
                 }
+                trace!("RGB change: {:?}", rgb_change);
 
                 // Constructing bitcoin payment PSBT (for bitcoin payments) or
                 // RGB witness PSBT prototype for the commitment (for RGB
                 // payments)
-                let inputs = input.iter().zip(&selected_utxos).map(|(txin, utxo)| {
+                let psbt_inputs = tx_inputs.iter().zip(&selected_utxos).map(|(txin, utxo)| {
                     let mut input = psbt::Input::default();
                     // TODO: cache transactions
                     input.non_witness_utxo = self.electrum.transaction_get(&txin.previous_output.txid).ok();
@@ -633,7 +640,7 @@ impl Runtime {
                     }
                     input
                 }).collect();
-                let outputs = output.iter().map(|(txout, index)| {
+                let psbt_outputs = tx_outputs.iter().map(|(txout, index)| {
                     let mut output = psbt::Output::default();
                     if let Some(index) = index {
                         output.proprietary.insert(
@@ -652,16 +659,16 @@ impl Runtime {
                         unsigned_tx: Transaction {
                             version: 1,
                             lock_time: 0,
-                            input,
-                            output: output.iter().map(|(txout, _)| txout.clone()).collect(),
+                            input: tx_inputs,
+                            output: tx_outputs.iter().map(|(txout, _)| txout.clone()).collect(),
                         },
                         version: 0,
                         xpub: none!(),
                         proprietary: none!(),
                         unknown: none!()
                     },
-                    inputs,
-                    outputs,
+                    inputs: psbt_inputs,
+                    outputs: psbt_outputs,
                 };
                 trace!("Prepared PSBT: {:#?}", psbt);
 
@@ -693,7 +700,7 @@ impl Runtime {
                             .transpose()
                             .ok()
                             .flatten();
-                        let derivation_index = output[vout].1;
+                        let derivation_index = tx_outputs[vout].1;
                         if let (Some(pubkey), Some(tweak), Some(derivation_index)) = (pubkey, tweak, derivation_index) {
                             let tweaked_output = TweakedOutput {
                                 outpoint: OutPoint::new(txid, vout as u32),

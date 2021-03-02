@@ -256,7 +256,7 @@ pub enum WalletCreateCommand {
         ///
         /// You can use more advanced scenarios allowing full record of the
         /// key origin and extending derivation paths with range values:
-        /// `![6734cda8]/84'/0'/1'
+        /// `m=[6734cda8]/84'/0'/1'
         /// =[xpub661MyMwAqRbcFtXgS5sYJABqqG9YLmC4Q1Rdap9gSE8NqtwybGhePY2gZ29ESFjqJoCu1Rupje8YtGqsefD265TMg7usUDFdp6W1EGMcet8]/
         /// 0-1/*`
         #[clap()]
@@ -393,7 +393,7 @@ pub enum InvoiceCommand {
         purpose: Option<String>,
 
         /// Whether to mark address as used
-        #[clap(short, long)]
+        #[clap(short = 'u', long = "unmark", parse(from_flag = std::ops::Not::not))]
         mark_used: bool,
 
         /// Use SegWit legacy address format (applicable only to a SegWit

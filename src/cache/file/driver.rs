@@ -37,13 +37,13 @@ impl Driver for FileDriver {
         contract_id: ContractId,
     ) -> Result<Vec<Utxo>, Error> {
         let unspent = self.unspent(contract_id)?;
-        let allocations = self
+        let outpoints = self
             .allocations(contract_id)?
             .into_iter()
-            .filter_map(|(outpoint, assets)| {
-                if vec![rgb::ContractId::default()]
-                    != assets.keys().copied().collect::<Vec<_>>()
-                {
+            .filter_map(|(outpoint, mut assets)| {
+                // Removing bitcoins from accounting
+                assets.remove(&rgb::ContractId::default());
+                if assets.values().sum::<u64>() == 0 {
                     Some(outpoint)
                 } else {
                     None
@@ -55,7 +55,7 @@ impl Driver for FileDriver {
             .map(|utxo_set| {
                 utxo_set
                     .into_iter()
-                    .filter(|utxo| !allocations.contains(&utxo.outpoint()))
+                    .filter(|utxo| outpoints.contains(&utxo.outpoint()))
                     .map(Utxo::clone)
                     .collect()
             })

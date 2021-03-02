@@ -326,8 +326,8 @@ _arguments "${_arguments_options[@]}" \
 '--merchant=[Optional details about the merchant providing the invoice]' \
 '-p+[Information about the invoice]' \
 '--purpose=[Information about the invoice]' \
-'-m[Whether to mark address as used]' \
-'--mark-used[Whether to mark address as used]' \
+'-u[Whether to mark address as used]' \
+'--unmark[Whether to mark address as used]' \
 '--legacy[Use SegWit legacy address format (applicable only to a SegWit wallets)]' \
 '(--psbt)--descriptor[Create descriptor-based invoice (not compatible with instant wallet accounts)]' \
 '(--descriptor)--psbt[Create a PSBT-based invoice (not compatible with instant wallet accounts)]' \

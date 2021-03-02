@@ -425,7 +425,7 @@ dependencies = [
 [[package]]
 name = "client_side_validation"
 version = "0.4.0-beta"
-source = "git+https://github.com/LNP-BP/rust-lnpbp#dd28d6083763bcf4bd91f51dd09b9e4005779add"
+source = "git+https://github.com/LNP-BP/rust-lnpbp#b80e290c7c73f2770c8add58f7913aa96ee9d537"
 dependencies = [
  "amplify",
  "amplify_derive",
@@ -1176,7 +1176,7 @@ dependencies = [
 [[package]]
 name = "lnpbp"
 version = "0.4.0-beta"
-source = "git+https://github.com/LNP-BP/rust-lnpbp#dd28d6083763bcf4bd91f51dd09b9e4005779add"
+source = "git+https://github.com/LNP-BP/rust-lnpbp#b80e290c7c73f2770c8add58f7913aa96ee9d537"
 dependencies = [
  "amplify",
  "amplify_derive",
@@ -1200,7 +1200,7 @@ dependencies = [
 [[package]]
 name = "lnpbp_invoice"
 version = "0.4.0-alpha.1"
-source = "git+https://github.com/LNP-BP/rust-lnpbp#dd28d6083763bcf4bd91f51dd09b9e4005779add"
+source = "git+https://github.com/LNP-BP/rust-lnpbp#b80e290c7c73f2770c8add58f7913aa96ee9d537"
 dependencies = [
  "amplify",
  "amplify_derive",
@@ -1914,7 +1914,7 @@ dependencies = [
 [[package]]
 name = "rgb_node"
 version = "0.4.0-alpha"
-source = "git+https://github.com/rgb-org/rgb-node#c65e93c489deaaa940c0f6fea54133db534883d1"
+source = "git+https://github.com/rgb-org/rgb-node#cbf28c2e4d111dc51f6cb826e3655aa82d26d9da"
 dependencies = [
  "amplify",
  "amplify_derive",

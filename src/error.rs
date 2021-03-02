@@ -51,7 +51,7 @@ pub enum Error {
     /// RGB node error - {0}
     #[cfg(any(feature = "server", feature = "embedded"))]
     #[from(rgb_node::i9n::Error)]
-    RgbNode,
+    RgbNode(String),
 
     /// electrum server error
     #[from(electrum_client::Error)]
