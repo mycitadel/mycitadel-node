@@ -246,7 +246,7 @@ impl TransferInfo {
 #[display(
     "compose_payment(from: {pay_from}, amount: {amount}, fee: {bitcoin_fee}, ...)"
 )]
-pub struct ComposePaymentRequest {
+pub struct ComposeTransferRequest {
     pub pay_from: model::ContractId,
     pub bitcoin_fee: u64,
     pub amount: u64,
@@ -254,8 +254,8 @@ pub struct ComposePaymentRequest {
 }
 
 #[derive(Clone, PartialEq, Debug, Display, StrictEncode, StrictDecode)]
-#[display("prepared_payment(...)")]
-pub struct PreparedPayment {
+#[display("prepared_transfer(...)")]
+pub struct PreparedTransfer {
     pub psbt: Psbt,
     pub consignment: Option<Consignment>,
 }

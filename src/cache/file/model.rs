@@ -63,8 +63,6 @@ pub(super) struct Cache {
 pub(super) struct ContractCache {
     pub updated_height: u32,
 
-    /// First index indicates `case` field (normal, change, descriptor invoice
-    /// fingerprint), second - sequence number within the case
     pub used_address_derivations: BTreeMap<Address, UnhardenedIndex>,
 
     #[serde_as(as = "HashSet<DisplayFromStr>")]

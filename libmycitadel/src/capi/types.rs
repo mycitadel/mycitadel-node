@@ -77,8 +77,8 @@ impl prepared_transfer_t {
     }
 }
 
-impl From<message::PreparedPayment> for prepared_transfer_t {
-    fn from(p: message::PreparedPayment) -> Self {
+impl From<message::PreparedTransfer> for prepared_transfer_t {
+    fn from(p: message::PreparedTransfer) -> Self {
         prepared_transfer_t {
             success: true,
             consignment_bech32: p

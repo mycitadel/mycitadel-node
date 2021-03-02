@@ -32,6 +32,7 @@ use wallet::descriptor::ContractDescriptor;
 
 use super::ContractId;
 use crate::model::AddressDerivation;
+use miniscript::descriptor::DescriptorType;
 
 /// Defines a type of a wallet contract basing on the banking use case,
 /// abstracting the underlying technology(ies) into specific contract details
@@ -142,6 +143,24 @@ impl Policy {
         }
     }
 
+    pub fn has_witness(&self) -> bool {
+        match self {
+            Policy::Instant { .. } => true,
+            _ => match self.to_descriptor().desc_type() {
+                DescriptorType::Bare
+                | DescriptorType::Sh
+                | DescriptorType::Pkh
+                | DescriptorType::ShSortedMulti => false,
+                DescriptorType::Wpkh
+                | DescriptorType::Wsh
+                | DescriptorType::ShWsh
+                | DescriptorType::ShWpkh
+                | DescriptorType::WshSortedMulti
+                | DescriptorType::ShWshSortedMulti => true,
+            },
+        }
+    }
+
     pub fn to_descriptor(&self) -> Descriptor<PubkeyChain> {
         match self {
             Policy::Current(descriptor) => descriptor.to_descriptor(false),
@@ -196,15 +215,21 @@ impl Policy {
             .derive_pubkey(Some(index))
     }
 
-    pub fn derive_scripts(&self, range: Range<UnhardenedIndex>) -> Vec<Script> {
-        let mut scripts = vec![];
+    pub fn derive_scripts(
+        &self,
+        range: Range<UnhardenedIndex>,
+    ) -> BTreeMap<UnhardenedIndex, Script> {
+        let mut script_map = bmap![];
         let d = self.to_descriptor();
         let mut index = range.start;
         while index < range.end {
-            scripts.push(Self::translate(&d, index).script_pubkey());
-            let _ = index.checked_inc_assign().unwrap_or_default();
+            script_map
+                .insert(index, Self::translate(&d, index).script_pubkey());
+            index
+                .checked_inc_assign()
+                .expect("UnhardenedIndex ranges are broken");
         }
-        scripts
+        script_map
     }
 
     pub fn derive_descriptor(

@@ -13,11 +13,11 @@
 
 use chrono::NaiveDateTime;
 use serde_with::DisplayFromStr;
-use std::collections::BTreeMap;
+use std::collections::{BTreeMap, BTreeSet};
 use std::io;
 use std::time::{SystemTime, UNIX_EPOCH};
 
-use bitcoin::Txid;
+use bitcoin::{OutPoint, PublicKey, Script};
 use invoice::Invoice;
 use lnpbp::client_side_validation::{
     CommitConceal, CommitEncode, ConsensusCommit,
@@ -26,9 +26,9 @@ use lnpbp::seals::{OutpointHash, OutpointReveal};
 use lnpbp::Chain;
 use strict_encoding::StrictEncode;
 use wallet::bip32::UnhardenedIndex;
-use wallet::{Psbt, TimeHeight};
+use wallet::{Slice32, TimeHeight};
 
-use super::{ContractId, Operation, PaymentSlip, Policy, PolicyType, State};
+use super::{ContractId, Operation, Policy, PolicyType, State};
 use crate::model::AddressDerivation;
 
 #[serde_as]
@@ -93,10 +93,10 @@ pub struct ContractData {
     #[serde_as(as = "Vec<DisplayFromStr>")]
     sent_invoices: Vec<Invoice>,
 
-    #[serde_as(as = "BTreeMap<DisplayFromStr, DisplayFromStr>")]
-    paid_invoices: BTreeMap<Invoice, PaymentSlip>,
+    #[serde_as(as = "BTreeMap<DisplayFromStr, chrono::DateTime<chrono::Utc>>")]
+    unpaid_invoices: BTreeMap<Invoice, NaiveDateTime>,
 
-    transactions: BTreeMap<Txid, Psbt>,
+    p2c_tweaks: BTreeSet<TweakedOutput>,
 
     #[serde_as(as = "Vec<(DisplayFromStr, _)>")]
     operations: BTreeMap<TimeHeight, Operation>,
@@ -144,15 +144,50 @@ impl Contract {
         self.policy.derive_address(index, &self.chain, legacy)
     }
 
+    pub fn tweaked_script_iter(&self) -> impl Iterator<Item = Script> + '_ {
+        self.data
+            .p2c_tweaks
+            .iter()
+            .map(|tweak| tweak.script.clone())
+    }
+
+    pub(crate) fn add_p2c_tweak(&mut self, tweak: TweakedOutput) {
+        self.data.p2c_tweaks.insert(tweak);
+    }
+
+    // TODO: This must be private and must be used by storage driver only
     pub(crate) fn add_invoice(&mut self, invoice: Invoice) {
         if !self.data.sent_invoices.contains(&invoice) {
             self.data.sent_invoices.push(invoice)
         }
     }
 
+    // TODO: This must be private and must be used by storage driver only
     pub(crate) fn add_blinding(&mut self, outpoint_reveal: OutpointReveal) {
         self.data
             .blinding_factors
             .insert(outpoint_reveal.commit_conceal(), outpoint_reveal);
     }
+}
+
+#[derive(
+    Getters,
+    Clone,
+    PartialEq,
+    Eq,
+    PartialOrd,
+    Ord,
+    Hash,
+    Debug,
+    StrictEncode,
+    StrictDecode,
+    Serialize,
+    Deserialize,
+)]
+pub struct TweakedOutput {
+    pub outpoint: OutPoint,
+    pub script: Script,
+    pub tweak: Slice32,
+    pub pubkey: PublicKey,
+    pub derivation_index: UnhardenedIndex,
 }

@@ -13,12 +13,17 @@
 
 use chrono::NaiveDateTime;
 use serde_with::DisplayFromStr;
+use std::collections::BTreeMap;
 use std::str::FromStr;
 
-use bitcoin::{OutPoint, Txid};
+use bitcoin::{OutPoint, PublicKey, Transaction, Txid};
+use rgb::AtomicValue;
 use wallet::bip32::UnhardenedIndex;
 use wallet::blockchain::ParseError;
-use wallet::{AddressPayload, Slice32, TimeHeight};
+use wallet::{AddressPayload, Psbt, Slice32, TimeHeight};
+
+pub type Allocations =
+    BTreeMap<OutPoint, BTreeMap<rgb::ContractId, AtomicValue>>;
 
 #[derive(
     Clone,
@@ -111,21 +116,7 @@ pub enum PaymentDirecton {
 
 #[serde_as]
 #[derive(
-    Serialize,
-    Deserialize,
-    Clone,
-    Ord,
-    PartialOrd,
-    Eq,
-    PartialEq,
-    Hash,
-    Debug,
-    Display,
-    StrictEncode,
-    StrictDecode,
-)]
-#[display(
-    "{direction:#} {txid}:{vout} {direction}{value} @ {mined_at}: {details}\n"
+    Serialize, Deserialize, Clone, PartialEq, Debug, StrictEncode, StrictDecode,
 )]
 pub struct Operation {
     pub direction: PaymentDirecton,
@@ -133,20 +124,33 @@ pub struct Operation {
     #[serde_as(as = "chrono::DateTime<chrono::Utc>>")]
     pub created_at: NaiveDateTime,
 
-    #[serde_as(as = "DisplayFromStr")]
-    pub mined_at: TimeHeight,
+    #[serde_as(as = "Option<DisplayFromStr>")]
+    pub mined_at: Option<TimeHeight>,
 
+    /// We cache txid to save computing time
     #[serde_as(as = "DisplayFromStr")]
     pub txid: Txid,
 
-    pub vout: u16,
-
+    /// Sum of all external outputs minus external inputs
     #[serde_as(as = "DisplayFromStr")]
-    pub value: bitcoin::Amount,
+    pub transferred_amount: bitcoin::Amount,
+
+    #[serde_as(as = "Option<_>")]
+    pub details: Option<String>,
 
     pub invoice: String,
 
-    pub details: String,
+    pub psbt: Psbt,
+}
+
+impl Operation {
+    pub fn outgoing(psbt: Psbt) -> Self {
+        unimplemented!()
+    }
+
+    pub fn incoming(tx: Transaction, mined_at: Option<TimeHeight>) -> Self {
+        unimplemented!()
+    }
 }
 
 #[serde_as]
@@ -191,7 +195,7 @@ pub struct Utxo {
     /// Tweak (if any) applied to the public key and the index of the public
     /// key which receives tweak
     #[serde_as(as = "Option<(DisplayFromStr, _)>")]
-    pub tweak: Option<(Slice32, u16)>,
+    pub tweak: Option<(Slice32, PublicKey)>,
 
     /// Address controlling the output
     #[serde_as(as = "Option<DisplayFromStr>")]

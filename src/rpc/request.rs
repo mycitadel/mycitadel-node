@@ -12,9 +12,10 @@
 // If not, see <https://www.gnu.org/licenses/agpl-3.0-standalone.html>.
 
 use rgb::{Consignment, Genesis};
+use wallet::Psbt;
 
 use super::message::{
-    AddInvoiceRequest, ComposePaymentRequest, ContractAddressTuple,
+    AddInvoiceRequest, ComposeTransferRequest, ContractAddressTuple,
     IdentityInfo, NextAddressRequest, RenameContractRequest, SignerAccountInfo,
     SingleSigInfo, SyncContractRequest,
 };
@@ -74,11 +75,15 @@ pub enum Request {
 
     #[api(type = 0x0420)]
     #[display(inner)]
-    ComposePayment(ComposePaymentRequest),
+    ComposeTransfer(ComposeTransferRequest),
 
     #[api(type = 0x0421)]
+    #[display("finalize_transfer(...)")]
+    FinalizeTransfer(Psbt),
+
+    #[api(type = 0x0422)]
     #[display(inner)]
-    AcceptPayment(Consignment),
+    AcceptTransfer(Consignment),
 
     #[api(type = 0x0500)]
     #[display("list_identities()")]

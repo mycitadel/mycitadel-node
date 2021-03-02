@@ -21,8 +21,9 @@ pub use file::{FileConfig, FileDriver};
 
 use invoice::Invoice;
 use lnpbp::seals::OutpointReveal;
+use wallet::Psbt;
 
-use crate::model::{self, Contract, ContractId, Policy};
+use crate::model::{self, Contract, ContractId, Policy, TweakedOutput};
 use crate::rpc::message::{IdentityInfo, SignerAccountInfo};
 
 pub trait Driver {
@@ -45,6 +46,19 @@ pub trait Driver {
         contract_id: ContractId,
         invoice: Invoice,
         reveal_info: Vec<OutpointReveal>,
+    ) -> Result<(), Error>;
+
+    fn add_p2c_tweak(
+        &mut self,
+        contract_id: ContractId,
+        tweak: TweakedOutput,
+    ) -> Result<(), Error>;
+
+    fn register_operation(
+        &mut self,
+        contract_id: ContractId,
+        invoice: Invoice,
+        psbt: Psbt,
     ) -> Result<(), Error>;
 
     fn signers(&self) -> Result<Vec<SignerAccountInfo>, Error>;

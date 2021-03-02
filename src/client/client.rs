@@ -234,7 +234,7 @@ impl Client {
         amount: Option<u64>,
         fee: u64,
         giveaway: Option<u64>,
-    ) -> Result<message::PreparedPayment, Error> {
+    ) -> Result<message::PreparedTransfer, Error> {
         debug!(
             "Doing transfer for invoice {} using wallet {} with fee {}",
             invoice, contract_id, fee
@@ -326,7 +326,7 @@ impl Client {
             }
         };
 
-        match self.request(Request::ComposePayment(message::ComposePaymentRequest {
+        match self.request(Request::ComposeTransfer(message::ComposeTransferRequest {
             pay_from: contract_id,
             bitcoin_fee: fee,
             amount: invoice.amount().atomic_value().or(amount).ok_or(Error::ServerFailure(Failure {
@@ -345,7 +345,7 @@ impl Client {
         &mut self,
         consignment: Consignment,
     ) -> Result<rgb::validation::Status, Error> {
-        match self.request(Request::AcceptPayment(consignment))? {
+        match self.request(Request::AcceptTransfer(consignment))? {
             Reply::Validation(status) => Ok(status),
             Reply::Failure(failure) => Err(failure.into()),
             _ => Err(Error::UnexpectedApi),

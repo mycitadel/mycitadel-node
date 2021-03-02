@@ -17,7 +17,7 @@ use bitcoin::{Address, OutPoint, Txid};
 use wallet::bip32::UnhardenedIndex;
 
 use super::Error;
-use crate::model::{ContractId, Utxo};
+use crate::model::{Allocations, ContractId, Utxo};
 
 pub trait Driver {
     fn blockpos_to_txid(&self, height: u32, offset: u16) -> Option<Txid>;
@@ -26,6 +26,16 @@ pub trait Driver {
         &self,
         contract_id: ContractId,
     ) -> Result<BTreeMap<rgb::ContractId, Vec<Utxo>>, Error>;
+
+    fn unspent_bitcoin_only(
+        &self,
+        contract_id: ContractId,
+    ) -> Result<Vec<Utxo>, Error>;
+
+    fn allocations(
+        &self,
+        contract_id: ContractId,
+    ) -> Result<Allocations, Error>;
 
     fn utxo(&self, contract_id: ContractId)
         -> Result<HashSet<OutPoint>, Error>;
@@ -65,6 +75,11 @@ pub trait Driver {
         address: Address,
         path: UnhardenedIndex,
     ) -> Result<bool, Error>;
+
+    fn last_used_derivation(
+        &self,
+        contract_id: ContractId,
+    ) -> Option<UnhardenedIndex>;
 
     fn forget_address(
         &mut self,

@@ -22,7 +22,7 @@ use microservices::{rpc, rpc_connection};
 use wallet::bip32::UnhardenedIndex;
 
 use crate::model::{AddressDerivation, Contract, Utxo};
-use crate::rpc::message::{IdentityInfo, PreparedPayment};
+use crate::rpc::message::{IdentityInfo, PreparedTransfer};
 use crate::Error;
 
 #[derive(Serialize, Deserialize, Clone, Debug, Display, Api)]
@@ -70,9 +70,13 @@ pub enum Reply {
     // TODO: Display PSBT once it will support `Display` trait
     #[display(inner)]
     #[serde(skip)]
-    PreparedPayment(PreparedPayment),
+    PreparedPayment(PreparedTransfer),
 
     #[api(type = 0x0341)]
+    #[display("unsigned()")]
+    PsbtUnsigned,
+
+    #[api(type = 0x0351)]
     #[display("validation({0})")]
     #[serde(skip)]
     Validation(rgb::validation::Status),
@@ -140,6 +144,7 @@ impl Reply {
             Reply::Asset(data) => serde_json::to_string(data),
             Reply::Assets(data) => serde_json::to_string(data),
             Reply::Identities(data) => serde_json::to_string(data),
+            Reply::PsbtUnsigned => Ok(s!("{}")),
         }
     }
 }

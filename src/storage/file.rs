@@ -23,9 +23,10 @@ use lnpbp::strict_encoding::{StrictDecode, StrictEncode};
 use microservices::FileFormat;
 
 use super::{Driver, Error};
-use crate::model::{Contract, ContractId, Policy, Wallet};
+use crate::model::{Contract, ContractId, Policy, TweakedOutput, Wallet};
 use crate::rpc::message::{IdentityInfo, SignerAccountInfo};
 use crate::server::opts::MYCITADEL_STORAGE_FILE;
+use bitcoin::util::psbt::PartiallySignedTransaction;
 
 #[derive(Debug)]
 pub struct FileDriver {
@@ -210,6 +211,30 @@ impl Driver for FileDriver {
         }
         self.store()?;
         Ok(())
+    }
+
+    fn add_p2c_tweak(
+        &mut self,
+        contract_id: ContractId,
+        tweak: TweakedOutput,
+    ) -> Result<(), Error> {
+        let contract = self
+            .data
+            .contracts
+            .get_mut(&contract_id)
+            .ok_or(Error::ContractNotFound(contract_id))?;
+        contract.add_p2c_tweak(tweak);
+        self.store()?;
+        Ok(())
+    }
+
+    fn register_operation(
+        &mut self,
+        contract_id: ContractId,
+        invoice: Invoice,
+        psbt: PartiallySignedTransaction,
+    ) -> Result<(), Error> {
+        unimplemented!()
     }
 
     fn signers(&self) -> Result<Vec<SignerAccountInfo>, Error> {

@@ -11,11 +11,10 @@
 // along with this software.
 // If not, see <https://www.gnu.org/licenses/agpl-3.0-standalone.html>.
 
-use std::collections::{BTreeMap, BTreeSet, HashMap, HashSet};
-use std::convert::TryInto;
+use std::collections::{BTreeMap, BTreeSet};
 
 use bitcoin::secp256k1::rand::{rngs::ThreadRng, RngCore};
-use bitcoin::{OutPoint, Transaction, TxIn, TxOut, Txid};
+use bitcoin::{OutPoint, PublicKey, Script, Transaction, TxIn, TxOut, Txid};
 use electrum_client::{Client as ElectrumClient, ElectrumApi};
 use internet2::zmqsocket::{self, ZmqType};
 use internet2::ZmqSocketAddr;
@@ -28,20 +27,21 @@ use lnpbp::strict_encoding::StrictDecode;
 use microservices::node::TryService;
 use microservices::rpc::Failure;
 use microservices::FileFormat;
-use rgb::{SealDefinition, SealEndpoint, Validity, PSBT_OUT_PUBKEY};
+use miniscript::{Descriptor, DescriptorTrait};
+use rgb::{SealDefinition, SealEndpoint, Validity};
 use rgb20::Asset;
 use rgb_node::rpc::reply::SyncFormat;
 use rgb_node::rpc::reply::Transfer;
 use rgb_node::util::ToBech32Data;
 use wallet::bip32::{ChildIndex, UnhardenedIndex};
 use wallet::descriptor::ContractDescriptor;
-use wallet::psbt::raw::ProprietaryKey;
+use wallet::psbt::{ProprietaryKey, ProprietaryWalletInput};
 use wallet::script::PubkeyScript;
-use wallet::{psbt, AddressPayload, Psbt};
+use wallet::{psbt, AddressPayload, Psbt, Slice32};
 
 use super::Config;
 use crate::cache::{self, Driver as CacheDriver};
-use crate::model::{Contract, Policy, Utxo};
+use crate::model::{Contract, Policy, TweakedOutput, Utxo};
 use crate::rpc::{message, Reply, Request};
 use crate::storage::{self, Driver as StorageDriver};
 use crate::Error;
@@ -231,78 +231,101 @@ impl Runtime {
                 contract_id,
                 lookup_depth,
             }) => {
+                debug!("Synchronizing contract data with electrum server");
+
+                let lookup_depth = UnhardenedIndex::from(lookup_depth);
+
+                let contract = self.storage.contract_ref(contract_id).map_err(Error::from)?;
                 let policy =
                     self.storage.policy(contract_id).map_err(Error::from)?;
-                let lookup_depth = UnhardenedIndex::from(lookup_depth);
+
                 let mut unspent: Vec<Utxo> = vec![];
                 let mut outpoints: Vec<OutPoint> = vec![];
                 let mut mine_info: BTreeMap<(u32, u16), Txid> = bmap!{};
-                let mut index_offset = UnhardenedIndex::zero();
+
+                let index_offset = UnhardenedIndex::zero();
+                let last_used_index = self.cache.last_used_derivation(contract_id).unwrap_or_default();
+
+                let mut scripts: Vec<(UnhardenedIndex, Script, Option<TweakedOutput>)> = contract
+                    .data()
+                    .p2c_tweaks()
+                    .into_iter()
+                    .map(|tweak| (tweak.derivation_index, tweak.script.clone(), Some(tweak.clone())))
+                    .collect();
+                debug!("Requesting unspent information for {} known tweaked scripts", scripts.len());
+
                 loop {
+                    let mut count = 0usize;
+                    trace!("{:#?}", scripts);
+
+                    let txid_map = self
+                        .electrum
+                        .batch_script_list_unspent(&scripts.iter().map(|(_, script, _)| script.clone()).collect::<Vec<_>>())
+                        .map_err(|_| Error::Electrum)?
+                        .into_iter()
+                        .zip(scripts)
+                        .fold(
+                            BTreeMap::<(u32, Txid), Vec<(u16, u64, UnhardenedIndex, Script, Option<TweakedOutput>)>>::new(),
+                            |mut map, (found, (derivation_index, script, tweak))| {
+                                for item in found {
+                                    map.entry((item.height as u32, item.tx_hash))
+                                        .or_insert(Vec::new())
+                                        .push((item.tx_pos as u16, item.value, derivation_index, script.clone(), tweak.clone()));
+                                    count += 1;
+                                }
+                                map
+                            }
+                        );
+                    debug!("Found {} unspent outputs in the batch", count);
+                    trace!("{:#?}", txid_map);
+
+                    trace!("Resolving block transaction position for {} transactions", txid_map.len());
+                    for ((height, txid), outs) in txid_map {
+                        match self.electrum.transaction_get_merkle(&txid, height as usize) {
+                            Ok(res) => {
+                                mine_info.insert((height, res.pos as u16), txid);
+                                for (vout, value, derivation_index, script, tweak) in outs {
+                                    outpoints.push(OutPoint::new(txid, vout as u32));
+                                    unspent.push(Utxo {
+                                        value,
+                                        height,
+                                        offset: res.pos as u16,
+                                        txid,
+                                        vout,
+                                        derivation_index,
+                                        tweak: tweak.map(|tweak| (tweak.tweak, tweak.pubkey)),
+                                        address: AddressPayload::from_script(&script)
+                                    });
+                                }
+                            },
+                            Err(err) => warn!(
+                                "Unable to get tx block position for {} at height {}: electrum server error {:?}",
+                                txid, height, err
+                            ),
+                        }
+                    }
+
+                    if count == 0 && index_offset > last_used_index {
+                        debug!(
+                            "No unspent outputs are found in the batch and we \
+                            are behind the last used derivation; stopping search"
+                        );
+                        break;
+                    }
+
                     let to = index_offset
                         .checked_add(lookup_depth)
                         .unwrap_or(UnhardenedIndex::largest());
-                    let scripts = policy.derive_scripts(index_offset..to);
-                    let res = self
-                        .electrum
-                        .batch_script_list_unspent(&scripts)
-                        .map_err(|_| Error::Electrum)?;
-                    let txids = res
-                        .iter()
-                        .flatten()
-                        .map(|entry| (entry.tx_hash, entry.height))
-                        .collect::<HashSet<_>>()
-                        .iter()
-                        .filter_map(|(txid, height)| {
-                            self.electrum
-                                .transaction_get_merkle(txid, *height)
-                                .map(|res| {
-                                    let block_pos = (res.block_height as u32, res.pos as u16);
-                                    mine_info.insert(block_pos, *txid);
-                                    (*txid, block_pos)
-                                })
-                                .ok()
-                        })
-                        .collect::<HashMap<_, _>>();
-                    trace!("Found txids: {:#?}", txids);
-                    let batch = res
-                        .iter()
-                        .zip(scripts)
-                        .filter_map(|(res, script)| {
-                            let derivation_index = index_offset;
-                            // If we overflow we simply ignore these iterations
-                            index_offset.checked_inc_assign()?;
-                            let _txids = txids.clone();
-                            let r = res.iter().filter_map(move |entry| {
-                                let tx_info = _txids.get(&entry.tx_hash)?;
-                                let unspent = Utxo {
-                                    value: entry.value,
-                                    height: tx_info.0.try_into().ok()?,
-                                    offset: tx_info.1.try_into().ok()?,
-                                    txid: entry.tx_hash,
-                                    address: AddressPayload::from_script(&script),
-                                    vout: entry.tx_pos.try_into().ok()?,
-                                    derivation_index,
-                                    tweak: None // TODO: FIND TWEAKS!!!!
-                                };
-                                let outpoint = OutPoint::new(
-                                    entry.tx_hash,
-                                    entry.tx_pos as u32,
-                                );
-                                Some((unspent, outpoint))
-                            });
-                            Some(r)
-                        })
-                        .flatten()
-                        .unzip::<_, _, Vec<_>, Vec<_>>();
-                    if batch.0.is_empty() {
-                        break;
-                    }
-                    unspent.extend(batch.0);
-                    outpoints.extend(batch.1);
+                    scripts = policy
+                        .derive_scripts(index_offset..to)
+                        .into_iter()
+                        .map(|(derivation_index, script)| (derivation_index, script, None))
+                        .collect();
+                    debug!("Generating next spending script batch");
                 }
 
                 while let Ok(Some(info)) = self.electrum.block_headers_pop() {
+                    debug!("Updating known blockchain height: {}", info.height);
                     self.known_height = info.height as u32;
                 }
 
@@ -321,7 +344,7 @@ impl Runtime {
                     }
                 }
 
-                trace!("Mine info: {:#?}", mine_info);
+                trace!("Transaction mining info: {:#?}", mine_info);
                 self.cache
                     .update(
                         contract_id,
@@ -331,6 +354,7 @@ impl Runtime {
                         assets.clone(),
                     )
                     .map_err(Error::from)?;
+
                 Ok(Reply::ContractUnspent(assets))
             }
 
@@ -418,17 +442,30 @@ impl Runtime {
                 Ok(Reply::Success)
             },
 
-            Request::ComposePayment(message::ComposePaymentRequest { pay_from, amount, bitcoin_fee, transfer_info }) => {
+            Request::ComposeTransfer(message::ComposeTransferRequest { pay_from, amount, bitcoin_fee, transfer_info }) => {
                 let contract = self.storage.contract_ref(pay_from).map_err(Error::from)?;
-                let policy = contract.policy().clone();
-                let mut coins = self.cache
-                    .unspent(pay_from)
-                    .map_err(Error::from)?
-                    .get(&transfer_info.contract_id())
-                    .cloned()
-                    .unwrap_or_default();
+                let policy: Policy = contract.policy().clone();
+
+                // For pure bitcoin transfers we must avoid using outputs
+                // containing RGB assets
+                // TODO: Support using RGB-containing outputs moving RGB assets
+                //       if possible
+                let mut coins = if !transfer_info.is_rgb() {
+                    self.cache
+                        .unspent(pay_from)
+                        .map_err(Error::from)?
+                        .get(&transfer_info.contract_id())
+                        .cloned()
+                        .unwrap_or_default()
+                } else {
+                    self.cache
+                        .unspent_bitcoin_only(pay_from)
+                        .map_err(Error::from)?
+                };
+
                 // TODO: Implement more coin-selection strategies
                 coins.sort_by(|a, b| a.value.cmp(&b.value));
+
                 trace!("Found coins: {:#?}", coins);
 
                 // Collecting RGB witness/bitcoin payment inputs
@@ -456,7 +493,14 @@ impl Runtime {
                 if input_amount < amount + asset_fee {
                     Err(Error::ServerFailure(Failure {
                         code: 0,
-                        info: s!("Insufficient funds")
+                        info: format!(
+                            "Insufficient funds{}",
+                            if transfer_info.is_rgb() {
+                                " on bitcoin outputs which does not have RGB assets on them"
+                            } else {
+                                ""
+                            }
+                        )
                     }))?;
                 }
 
@@ -517,6 +561,7 @@ impl Runtime {
                         code: 0,
                         info: s!("Unable to derive change address"),
                     }))?.address;
+                    self.cache.use_address_derivation(pay_from, change_address.clone(), change_index).map_err(Error::from)?;
                     trace!("Adding change output paying {} to our address {} at derivation index {}", change, change_address, change_index);
                     output.push((TxOut {
                         value: change,
@@ -563,6 +608,15 @@ impl Runtime {
                     // TODO: cache transactions
                     input.non_witness_utxo = self.electrum.transaction_get(&txin.previous_output.txid).ok();
                     input.bip32_derivation = policy.bip32_derivations(utxo.derivation_index);
+                    let script = policy.derive_descriptor(utxo.derivation_index, false).as_ref().map(Descriptor::script_pubkey);
+                    if policy.has_witness() {
+                        input.witness_script = script;
+                    } else {
+                        input.redeem_script = script;
+                    }
+                    if let Some((tweak, pubkey)) = utxo.tweak {
+                        input.p2c_tweak_add(pubkey, tweak);
+                    }
                     input
                 }).collect();
                 let outputs = output.iter().map(|(txout, index)| {
@@ -570,8 +624,8 @@ impl Runtime {
                     if let Some(index) = index {
                         output.proprietary.insert(
                             ProprietaryKey {
-                                prefix: b"RGB".to_vec(),
-                                subtype: PSBT_OUT_PUBKEY,
+                                prefix: rgb::PSBT_PREFIX.to_vec(),
+                                subtype: rgb::PSBT_OUT_PUBKEY,
                                 key: vec![],
                             },
                             policy.first_public_key(*index).to_bytes(),
@@ -585,7 +639,7 @@ impl Runtime {
                             version: 1,
                             lock_time: 0,
                             input,
-                            output: output.into_iter().map(|(txout, _)| txout).collect(),
+                            output: output.iter().map(|(txout, _)| txout.clone()).collect(),
                         },
                         version: 0,
                         xpub: none!(),
@@ -595,7 +649,7 @@ impl Runtime {
                     inputs,
                     outputs,
                 };
-                trace!("Resulting PSBT: {:#?}", psbt);
+                trace!("Prepared PSBT: {:#?}", psbt);
 
                 // Committing to RGB transfer into the witness transaction and
                 // producing consignments (applies to RGB payments only)
@@ -607,17 +661,66 @@ impl Runtime {
                         rgb_change,
                         psbt.clone()
                     ).map_err(Error::from)?;
-                    message::PreparedPayment { psbt: witness, consignment: Some(consignment) }
+                    let txid = witness.global.unsigned_tx.txid();
+                    for (vout, out) in witness.outputs.iter().enumerate() {
+                        let tweak = out.proprietary.get(&ProprietaryKey {
+                            prefix: rgb::PSBT_PREFIX.to_vec(),
+                            subtype: rgb::PSBT_OUT_TWEAK,
+                            key: vec![],
+                        })
+                            .and_then(Slice32::from_slice);
+                        let pubkey = out.proprietary.get(&ProprietaryKey {
+                            prefix: rgb::PSBT_PREFIX.to_vec(),
+                            subtype: rgb::PSBT_OUT_PUBKEY,
+                            key: vec![],
+                        })
+                            .map(Vec::as_slice)
+                            .map(PublicKey::from_slice)
+                            .transpose()
+                            .ok()
+                            .flatten();
+                        let derivation_index = output[vout].1;
+                        if let (Some(pubkey), Some(tweak), Some(derivation_index)) = (pubkey, tweak, derivation_index) {
+                            let tweaked_output = TweakedOutput {
+                                outpoint: OutPoint::new(txid, vout as u32),
+                                script: psbt.global.unsigned_tx.output[vout].script_pubkey.clone(),
+                                tweak,
+                                pubkey,
+                                derivation_index
+                            };
+                            debug!("Extracted tweak information from witness PSBT: {:?}", tweaked_output);
+                            self.storage.add_p2c_tweak(pay_from, tweaked_output).map_err(Error::from)?;
+                        }
+                    }
+                    trace!("Witness PSBT: {:#?}", psbt);
+                    message::PreparedTransfer { psbt: witness, consignment: Some(consignment) }
                 } else {
                     // TODO: If any of bitcoin inputs contain some RGB assets
                     //       we must do an "internal transfer"
-                    message::PreparedPayment { psbt, consignment: None }
+                    message::PreparedTransfer { psbt, consignment: None }
                 };
+
+                // TODO: Store operation information
 
                 Ok(Reply::PreparedPayment(payment_data))
             },
 
-            Request::AcceptPayment(consignment) => {
+            Request::FinalizeTransfer(mut psbt) => {
+                match miniscript::psbt::finalize(&mut psbt, &wallet::SECP256K1) {
+                    Ok(_) => {
+                        // TODO: Update saved PSBT
+                        self.electrum
+                            .transaction_broadcast(&psbt.global.unsigned_tx)
+                            .map(|_| Reply::Success)
+                            .map_err(Error::from)
+                    }
+                    Err(_) => {
+                        Ok(Reply::PsbtUnsigned)
+                    }
+                }
+            }
+
+            Request::AcceptTransfer(consignment) => {
                 let status = self.rgb20_client.validate(consignment.clone()).map_err(Error::from)?;
                 if status.validity() == Validity::Valid {
                     let hashes = consignment.endpoints.iter().filter_map(|(_, seal_endpoint)| match seal_endpoint {

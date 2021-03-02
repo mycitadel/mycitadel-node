@@ -425,7 +425,7 @@ dependencies = [
 [[package]]
 name = "client_side_validation"
 version = "0.4.0-beta"
-source = "git+https://github.com/LNP-BP/rust-lnpbp#7de0e4e4b57adfe68332ccdab65ea3f4dff8bf0d"
+source = "git+https://github.com/LNP-BP/rust-lnpbp#7ed740b705144beb587cf29a76ff8a33a7187ae7"
 dependencies = [
  "amplify",
  "amplify_derive",
@@ -616,7 +616,7 @@ dependencies = [
 [[package]]
 name = "descriptor-wallet"
 version = "0.4.0-beta"
-source = "git+https://github.com/LNP-BP/descriptor-wallet#a6e304af6eb708e79e4d4da457f310a72ccc1f51"
+source = "git+https://github.com/LNP-BP/descriptor-wallet#95a53624990091fcf458cd85bb67cc017a0de354"
 dependencies = [
  "amplify",
  "amplify_derive",
@@ -1176,7 +1176,7 @@ dependencies = [
 [[package]]
 name = "lnpbp"
 version = "0.4.0-beta"
-source = "git+https://github.com/LNP-BP/rust-lnpbp#7de0e4e4b57adfe68332ccdab65ea3f4dff8bf0d"
+source = "git+https://github.com/LNP-BP/rust-lnpbp#7ed740b705144beb587cf29a76ff8a33a7187ae7"
 dependencies = [
  "amplify",
  "amplify_derive",
@@ -1200,7 +1200,7 @@ dependencies = [
 [[package]]
 name = "lnpbp_invoice"
 version = "0.4.0-alpha.1"
-source = "git+https://github.com/LNP-BP/rust-lnpbp#7de0e4e4b57adfe68332ccdab65ea3f4dff8bf0d"
+source = "git+https://github.com/LNP-BP/rust-lnpbp#7ed740b705144beb587cf29a76ff8a33a7187ae7"
 dependencies = [
  "amplify",
  "amplify_derive",
@@ -1865,7 +1865,7 @@ dependencies = [
 [[package]]
 name = "rgb-core"
 version = "0.4.0-beta"
-source = "git+https://github.com/rgb-org/rgb-core#4d28b4d29d830a8596708b5cb8f7533acce411a2"
+source = "git+https://github.com/rgb-org/rgb-core#bf93e430a5278e6de8117a4a24bf3b7b0f84f5da"
 dependencies = [
  "amplify",
  "amplify_derive",
@@ -1897,7 +1897,7 @@ dependencies = [
 [[package]]
 name = "rgb20"
 version = "0.4.0-beta"
-source = "git+https://github.com/rgb-org/rgb-core#4d28b4d29d830a8596708b5cb8f7533acce411a2"
+source = "git+https://github.com/rgb-org/rgb-core#bf93e430a5278e6de8117a4a24bf3b7b0f84f5da"
 dependencies = [
  "amplify",
  "amplify_derive",
