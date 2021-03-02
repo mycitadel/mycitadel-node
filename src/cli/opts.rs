@@ -210,6 +210,28 @@ pub enum WalletCommand {
         #[clap(flatten)]
         scan_opts: WalletOpts,
     },
+
+    /// Signs given PSBT with keys controlled by a wallet master extended keys.
+    ///
+    /// Will ask for each extended master private key for each of the keychains
+    /// used under the wallet.
+    Sign {
+        /// Wallet id to sign PSBT from
+        wallet_id: model::ContractId,
+
+        /// PSBT data in Bech32 encoding
+        psbt: String,
+    },
+
+    /// Finalizes fully-signed PSBT and publishes transaction to bitcoin
+    /// network, updating PSBT data stored in wallet `wallet_id`
+    Publish {
+        /// Wallet id to sign PSBT from
+        wallet_id: model::ContractId,
+
+        /// PSBT data in Bech32 encoding
+        psbt: String,
+    },
 }
 
 #[derive(Clap, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Debug, Display)]

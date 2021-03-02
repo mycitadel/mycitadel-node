@@ -141,6 +141,30 @@ _arguments "${_arguments_options[@]}" \
 ':wallet-id -- Wallet id for the operation:' \
 && ret=0
 ;;
+(sign)
+_arguments "${_arguments_options[@]}" \
+'*-v[Set verbosity level]' \
+'*--verbose[Set verbosity level]' \
+'-h[Prints help information]' \
+'--help[Prints help information]' \
+'-V[Prints version information]' \
+'--version[Prints version information]' \
+':wallet-id -- Wallet id to sign PSBT from:' \
+':psbt -- PSBT data in Bech32 encoding:' \
+&& ret=0
+;;
+(publish)
+_arguments "${_arguments_options[@]}" \
+'*-v[Set verbosity level]' \
+'*--verbose[Set verbosity level]' \
+'-h[Prints help information]' \
+'--help[Prints help information]' \
+'-V[Prints version information]' \
+'--version[Prints version information]' \
+':wallet-id -- Wallet id to sign PSBT from:' \
+':psbt -- PSBT data in Bech32 encoding:' \
+&& ret=0
+;;
         esac
     ;;
 esac
@@ -548,12 +572,26 @@ _mycitadel-cli__invoice__pay_commands() {
     )
     _describe -t commands 'mycitadel-cli invoice pay commands' commands "$@"
 }
+(( $+functions[_mycitadel-cli__wallet__publish_commands] )) ||
+_mycitadel-cli__wallet__publish_commands() {
+    local commands; commands=(
+        
+    )
+    _describe -t commands 'mycitadel-cli wallet publish commands' commands "$@"
+}
 (( $+functions[_mycitadel-cli__wallet__rename_commands] )) ||
 _mycitadel-cli__wallet__rename_commands() {
     local commands; commands=(
         
     )
     _describe -t commands 'mycitadel-cli wallet rename commands' commands "$@"
+}
+(( $+functions[_mycitadel-cli__wallet__sign_commands] )) ||
+_mycitadel-cli__wallet__sign_commands() {
+    local commands; commands=(
+        
+    )
+    _describe -t commands 'mycitadel-cli wallet sign commands' commands "$@"
 }
 (( $+functions[_mycitadel-cli__wallet__create__single-sig_commands] )) ||
 _mycitadel-cli__wallet__create__single-sig_commands() {
@@ -570,6 +608,8 @@ _mycitadel-cli__wallet_commands() {
 "rename:Change a name of a wallet" \
 "delete:Delete existing wallet contract" \
 "balance:Returns detailed wallet balance information" \
+"sign:Signs given PSBT with keys controlled by a wallet master extended keys" \
+"publish:Finalizes fully-signed PSBT and publishes transaction to bitcoin network, updating PSBT data stored in wallet `wallet_id`" \
     )
     _describe -t commands 'mycitadel-cli wallet commands' commands "$@"
 }

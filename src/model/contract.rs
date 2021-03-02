@@ -25,11 +25,12 @@ use lnpbp::client_side_validation::{
 use lnpbp::seals::{OutpointHash, OutpointReveal};
 use lnpbp::Chain;
 use strict_encoding::StrictEncode;
-use wallet::bip32::UnhardenedIndex;
+use wallet::bip32::{PubkeyChain, UnhardenedIndex};
 use wallet::{Slice32, TimeHeight};
 
 use super::{ContractId, Operation, Policy, PolicyType, State};
 use crate::model::AddressDerivation;
+use miniscript::ForEachKey;
 
 #[serde_as]
 #[derive(
@@ -134,6 +135,20 @@ impl Contract {
 
     pub fn policy_type(&self) -> PolicyType {
         self.policy.policy_type()
+    }
+
+    pub fn pubkeychains(&self) -> Vec<PubkeyChain> {
+        let mut pubkeychains = vec![];
+        self.policy.to_descriptor().for_each_key(|key| {
+            match key {
+                miniscript::ForEach::Key(pubkeychain) => {
+                    pubkeychains.push(pubkeychain.clone())
+                }
+                miniscript::ForEach::Hash(_) => unreachable!(),
+            };
+            true
+        });
+        pubkeychains
     }
 
     pub fn derive_address(

@@ -14,7 +14,6 @@
 
 use libc::c_char;
 use rand::RngCore;
-use std::convert::TryFrom;
 use std::ffi::{CStr, CString};
 use std::ops::Try;
 use std::slice;
@@ -27,8 +26,8 @@ use bitcoin::util::bip32::{
 };
 use bitcoin::Network;
 use wallet::bip32::{
-    BranchStep, ChildIndex, HardenedIndex, HardenedNormalSplit, PubkeyChain,
-    TerminalStep, XpubRef,
+    BranchStep, ChildIndex, HardenedNormalSplit, PubkeyChain, TerminalStep,
+    XpubRef,
 };
 use wallet::{psbt::Signer, Psbt};
 
@@ -442,12 +441,7 @@ pub extern "C" fn bip32_pubkey_chain_create(
         }
     }
 
-    let mut source_path: Vec<ChildNumber> = hardened.into();
-    let branch_index = source_path
-        .pop()
-        .map(HardenedIndex::try_from)
-        .transpose()?
-        .ok_or(bip32::Error::InvalidDerivationPathFormat)?;
+    let source_path: Vec<ChildNumber> = hardened.into();
     let mut terminal_path: Vec<TerminalStep> = unhardened
         .into_iter()
         .map(|idx| {
@@ -460,7 +454,6 @@ pub extern "C" fn bip32_pubkey_chain_create(
         seed_based: true,
         master: XpubRef::Fingerprint(master_xpub.fingerprint()),
         source_path: source_path.into_iter().map(BranchStep::from).collect(),
-        branch_index,
         branch_xpub: xpub,
         revocation_seal: None,
         terminal_path,

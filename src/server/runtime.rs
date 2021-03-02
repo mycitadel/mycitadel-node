@@ -206,6 +206,13 @@ impl Runtime {
                     .map_err(Error::from)
             }
 
+            Request::ContractDetails(contract_id) => self
+                .storage
+                .contract_ref(contract_id)
+                .map(Contract::clone)
+                .map(Reply::Contract)
+                .map_err(Error::from),
+
             Request::ListContracts => self
                 .storage
                 .contracts()
@@ -613,11 +620,13 @@ impl Runtime {
                     // TODO: cache transactions
                     input.non_witness_utxo = self.electrum.transaction_get(&txin.previous_output.txid).ok();
                     input.bip32_derivation = policy.bip32_derivations(utxo.derivation_index);
-                    let script = policy.derive_descriptor(utxo.derivation_index, false).as_ref().map(Descriptor::script_pubkey);
-                    if policy.has_witness() {
-                        input.witness_script = script;
-                    } else {
-                        input.redeem_script = script;
+                    let script = policy.derive_descriptor(utxo.derivation_index, false).as_ref().map(Descriptor::explicit_script);
+                    if policy.is_scripted() {
+                        if policy.has_witness() {
+                            input.witness_script = script;
+                        } else {
+                            input.redeem_script = script;
+                        }
                     }
                     if let Some((tweak, pubkey)) = utxo.tweak {
                         input.p2c_tweak_add(pubkey, tweak);

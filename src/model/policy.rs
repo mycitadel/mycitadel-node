@@ -143,6 +143,13 @@ impl Policy {
         }
     }
 
+    pub fn is_scripted(&self) -> bool {
+        match self {
+            Policy::Current(ContractDescriptor::SingleSig { .. }) => false,
+            _ => true,
+        }
+    }
+
     pub fn has_witness(&self) -> bool {
         match self {
             Policy::Instant { .. } => true,

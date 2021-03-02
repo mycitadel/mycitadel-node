@@ -26,20 +26,20 @@ use crate::{cache, storage};
 #[display(doc_comments)]
 #[non_exhaustive]
 pub enum Error {
-    /// generic I/O error: {0:?}
+    /// generic I/O error - {0:?}
     #[from(io::Error)]
     Io(IoError),
 
-    /// RPC error: {0}
+    /// RPC error - {0}
     #[cfg(any(feature = "node", feature = "client"))]
     #[from]
     Rpc(rpc::Error),
 
-    /// general networking error: {0}
+    /// general networking error = {0}
     #[from]
     Networking(presentation::Error),
 
-    /// transport-level interface error: {0}
+    /// transport-level interface error - {0}
     #[cfg(any(feature = "node", feature = "client"))]
     #[from]
     Transport(transport::Error),
@@ -48,21 +48,21 @@ pub enum Error {
     #[cfg(any(feature = "node", feature = "client"))]
     NotSupported(TypeId),
 
-    /// RGB node error: {0}
+    /// RGB node error - {0}
     #[cfg(any(feature = "server", feature = "embedded"))]
     #[from(rgb_node::i9n::Error)]
     RgbNode,
 
-    /// electrum server error: {0}
+    /// electrum server error - {0}
     #[from(electrum_client::Error)]
     Electrum,
 
-    /// storage error: {0}
+    /// storage failure - {0}
     #[cfg(any(feature = "server", feature = "embedded"))]
     #[from]
     StorageDriver(storage::Error),
 
-    /// cache error: {0}
+    /// cache failure - {0}
     #[cfg(any(feature = "server", feature = "embedded"))]
     #[from]
     CacheDriver(cache::Error),
@@ -73,21 +73,28 @@ pub enum Error {
     #[display(inner)]
     ServerFailure(rpc::Failure),
 
-    /// Internal cache inconsistency; you need to refresh balances and try
+    /// internal cache inconsistency; you need to refresh balances and try
     /// again
     CacheInconsistency,
 
-    /// Error in strict data encoding: {0}
-    /// Make sure that the storage is not broken.
+    /// strict data encoding data failure - {0}
     #[from]
     StrictEncoding(strict_encoding::Error),
 
-    /// Bech32 encoding error: {0}
+    /// in bitcoin consensus-encoded data failure
+    #[from(bitcoin::consensus::encode::Error)]
+    ConsensisEncoding,
+
+    /// base64 encoding failure - {0}
+    #[from]
+    Base64(base64::DecodeError),
+
+    /// bech32 encoding failure - {0}
     #[from]
     #[from(bech32::Error)]
     Bech32(lnpbp::bech32::Error),
 
-    /// error initializing embedded node
+    /// embedded node initialization failure
     EmbeddedNodeInitError,
 
     /// unexpected RPC API message; please check that the client version

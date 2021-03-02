@@ -30,10 +30,14 @@ pub enum Request {
     ListContracts,
 
     #[api(type = 0x0101)]
+    #[display("contract_details({0})")]
+    ContractDetails(ContractId),
+
+    #[api(type = 0x0102)]
     #[display(inner)]
     SyncContract(SyncContractRequest),
 
-    #[api(type = 0x0102)]
+    #[api(type = 0x0103)]
     #[display("contract_unspent({0})")]
     ContractUnspent(ContractId),
 

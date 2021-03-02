@@ -97,6 +97,13 @@ impl Client {
         }))
     }
 
+    pub fn contract_details(
+        &mut self,
+        contract_id: ContractId,
+    ) -> Result<Reply, Error> {
+        self.request(Request::ContractDetails(contract_id))
+    }
+
     pub fn contract_rename(
         &mut self,
         contract_id: ContractId,

@@ -13,13 +13,18 @@
 
 use colored::Colorize;
 use std::collections::HashMap;
-use std::fs;
 use std::str::FromStr;
+use std::{fs, io};
 
+use bitcoin::consensus::{deserialize, serialize};
+use bitcoin::util::bip32::ExtendedPrivKey;
 use invoice::Invoice;
 use microservices::shell::Exec;
 use rgb::{Consignment, Validity};
+use slip132::FromSlip132;
 use strict_encoding::StrictEncode;
+use wallet::bip32::PubkeyChain;
+use wallet::psbt::{Psbt, Signer};
 
 use super::util;
 use super::{
@@ -29,6 +34,7 @@ use super::{
 use crate::client::InvoiceType;
 use crate::rpc::Reply;
 use crate::{Client, Error};
+use microservices::rpc::Failure;
 
 const LOOKUP_DEPTH_DEFAULT: u8 = 20;
 
@@ -158,6 +164,60 @@ impl Exec for WalletCommand {
                     _ => Err(Error::UnexpectedApi),
                 })
                 .map(|unspent| unspent.output_print(format)),
+            WalletCommand::Sign { wallet_id, psbt } => {
+                let mut psbt: Psbt = deserialize(&base64::decode(&psbt)?)?;
+                let contract = client
+                    .contract_details(wallet_id)?
+                    .report_error("retrieving wallet details")
+                    .and_then(|reply| match reply {
+                        Reply::Contract(contract) => Ok(contract),
+                        _ => Err(Error::UnexpectedApi),
+                    })?;
+                let reader = io::stdin();
+                eprintln!("Please provide extended private keys for the following master fingerprints:");
+                for fingerprint in contract
+                    .pubkeychains()
+                    .iter()
+                    .map(PubkeyChain::master_fingerprint)
+                {
+                    let xpriv = loop {
+                        match (|| -> Result<Option<ExtendedPrivKey>, slip132::Error> {
+                            let mut xpriv = String::default();
+                            eprint!("{}", format!("{}: ", fingerprint).green());
+                            reader.read_line(&mut xpriv).expect("Error reading data from command line");
+                            let xpriv = xpriv.trim();
+                            if xpriv.is_empty() {
+                                return Ok(None);
+                            }
+                            Ok(Some(ExtendedPrivKey::from_slip132_str(xpriv)?))
+                        })() {
+                            Ok(xpriv) => break xpriv,
+                            Err(err) => eprintln!(
+                                "{} {}",
+                                "Error:".bright_red(),
+                                err.to_string().to_lowercase().red()
+                            ),
+                        }
+                    };
+                    if let Some(xpriv) = xpriv {
+                        let signatures =
+                            psbt.sign(xpriv, true).map_err(|err| {
+                                Error::ServerFailure(Failure {
+                                    code: 0,
+                                    info: err.to_string(),
+                                })
+                            })?;
+                        eprintln!("Created {} signatures", signatures);
+                    }
+                }
+                eprintln!("{} ", "Signed PSBT:".bright_yellow());
+                println!("{}", base64::encode(serialize(&psbt)));
+                Ok(())
+            }
+            WalletCommand::Publish { wallet_id, psbt } => {
+                let psbt: Psbt = deserialize(&base64::decode(&psbt)?)?;
+                Ok(())
+            }
         }
     }
 }
