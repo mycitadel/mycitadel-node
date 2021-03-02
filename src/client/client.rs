@@ -33,6 +33,8 @@ use super::Config;
 use crate::model::ContractId;
 use crate::rpc::{message, Reply, Request};
 use crate::Error;
+use bitcoin::Txid;
+use wallet::Psbt;
 
 #[derive(Copy, Clone, Ord, PartialOrd, Eq, PartialEq, Hash, Debug)]
 #[repr(u8)]
@@ -343,6 +345,15 @@ impl Client {
             transfer_info,
         }))? {
             Reply::PreparedPayment(payment_info) => Ok(payment_info),
+            Reply::Failure(failure) => Err(failure.into()),
+            _ => Err(Error::UnexpectedApi),
+        }
+    }
+
+    pub fn finalize_publish_psbt(&mut self, psbt: Psbt) -> Result<Txid, Error> {
+        let txid = psbt.global.unsigned_tx.txid();
+        match self.request(Request::FinalizeTransfer(psbt))? {
+            Reply::Success => Ok(txid),
             Reply::Failure(failure) => Err(failure.into()),
             _ => Err(Error::UnexpectedApi),
         }

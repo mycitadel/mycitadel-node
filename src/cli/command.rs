@@ -216,6 +216,9 @@ impl Exec for WalletCommand {
             }
             WalletCommand::Publish { wallet_id, psbt } => {
                 let psbt: Psbt = deserialize(&base64::decode(&psbt)?)?;
+                let txid = client.finalize_publish_psbt(psbt)?;
+                eprintln!("Published transaction with id ");
+                println!("{}", txid.to_string().green());
                 Ok(())
             }
         }

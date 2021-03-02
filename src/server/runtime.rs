@@ -720,16 +720,29 @@ impl Runtime {
             },
 
             Request::FinalizeTransfer(mut psbt) => {
-                match miniscript::psbt::finalize(&mut psbt, &wallet::SECP256K1) {
-                    Ok(_) => {
+                debug!("Finalizing the provided PSBT");
+                match miniscript::psbt::finalize(&mut psbt, &wallet::SECP256K1)
+                    .and_then(|_| miniscript::psbt::extract(&psbt, &wallet::SECP256K1)) {
+                    Ok(tx) => {
                         // TODO: Update saved PSBT
+                        trace!("Finalized PSBT: {:#?}", psbt);
+                        debug!("Publishing transaction to bitcoin network via Electrum server");
+                        trace!("{:#?}", tx);
                         self.electrum
-                            .transaction_broadcast(&psbt.global.unsigned_tx)
+                            .transaction_broadcast(&tx)
                             .map(|_| Reply::Success)
+                            .map_err(|err| {
+                                error!("Electrum server error: {:?}", err);
+                                err
+                            })
                             .map_err(Error::from)
                     }
-                    Err(_) => {
-                        Ok(Reply::PsbtUnsigned)
+                    Err(err) => {
+                        error!("Error finalizing PSBT: {}", err);
+                        Ok(Reply::Failure(Failure {
+                            code: 0,
+                            info: err.to_string()
+                        }))
                     }
                 }
             }

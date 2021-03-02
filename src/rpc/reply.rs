@@ -72,10 +72,6 @@ pub enum Reply {
     #[serde(skip)]
     PreparedPayment(PreparedTransfer),
 
-    #[api(type = 0x0341)]
-    #[display("unsigned()")]
-    PsbtUnsigned,
-
     #[api(type = 0x0351)]
     #[display("validation({0})")]
     #[serde(skip)]
@@ -144,7 +140,6 @@ impl Reply {
             Reply::Asset(data) => serde_json::to_string(data),
             Reply::Assets(data) => serde_json::to_string(data),
             Reply::Identities(data) => serde_json::to_string(data),
-            Reply::PsbtUnsigned => Ok(s!("{}")),
         }
     }
 }

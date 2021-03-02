@@ -53,7 +53,7 @@ pub enum Error {
     #[from(rgb_node::i9n::Error)]
     RgbNode,
 
-    /// electrum server error - {0}
+    /// electrum server error
     #[from(electrum_client::Error)]
     Electrum,
 
