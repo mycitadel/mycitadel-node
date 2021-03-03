@@ -16,6 +16,7 @@ use serde::Serialize;
 use std::convert::TryFrom;
 use std::str::FromStr;
 
+use invoice::Invoice;
 use rgb::bech32::Error;
 use rgb::Bech32;
 use rgb20::Asset;
@@ -140,6 +141,30 @@ impl From<Error> for bech32_info_t {
     }
 }
 
+impl From<lnpbp::bech32::Error> for bech32_info_t {
+    fn from(err: lnpbp::bech32::Error) -> Self {
+        let status = match err {
+            lnpbp::bech32::Error::Bech32Error(
+                bech32::Error::InvalidChecksum,
+            ) => BECH32_ERR_CHECKSUM,
+            lnpbp::bech32::Error::Bech32Error(
+                bech32::Error::MissingSeparator,
+            ) => BECH32_ERR_HRP,
+            lnpbp::bech32::Error::Bech32Error(_) => BECH32_ERR_ENCODING,
+            _ => BECH32_ERR_PAYLOAD,
+        };
+        Self {
+            status,
+            category: BECH32_UNKNOWN,
+            bech32m: false,
+            details: err
+                .to_string()
+                .try_into_raw()
+                .unwrap_or("Unknown error".as_ptr() as *const c_char),
+        }
+    }
+}
+
 #[no_mangle]
 pub extern "C" fn lnpbp_bech32_release(info: bech32_info_t) {
     (info.details as *mut c_char).try_into_string();
@@ -157,6 +182,15 @@ pub extern "C" fn lnpbp_bech32_info(bech_str: *const c_char) -> bech32_info_t {
                 .unwrap_or_else(|_| {
                     bech32_info_t::with_value(BECH32_RGB_GENESIS, &genesis)
                 }),
+            Ok(Bech32::Other(hrp, _)) if &hrp == "i" => {
+                match Invoice::from_str(s) {
+                    Ok(invoice) => bech32_info_t::with_value(
+                        BECH32_LNPBP_INVOICE,
+                        &invoice,
+                    ),
+                    Err(err) => bech32_info_t::from(err),
+                }
+            }
             Ok(_) => bech32_info_t::unsuported(),
             Err(err) => bech32_info_t::from(err),
         })

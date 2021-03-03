@@ -35,8 +35,11 @@
 		57C7C1225119439EBBC6071A /* Vault.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57C7C777A9E533309028B722 /* Vault.swift */; };
 		57C7C14728FF9AB302E0E622 /* RPC.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57C7CAB2255EF461D06FBDDB /* RPC.swift */; };
 		57C7C38235B643DEACA1BFA7 /* Signer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57C7C1B65E25053DA1E4017C /* Signer.swift */; };
+		57C7C397723B8FEF749DFAF7 /* Invoice.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57C7C9E3AAEA2638DA7557A5 /* Invoice.swift */; };
 		57C7C3A2486A41278F4ED667 /* RPC.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57C7CAB2255EF461D06FBDDB /* RPC.swift */; };
 		57C7C3DDA30D07DB05BC3D75 /* Bitcoin.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57C7CD9E08CCCC838A9E8A29 /* Bitcoin.swift */; };
+		57C7C88DBEFFFA8BEA775392 /* Invoice.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57C7C9E3AAEA2638DA7557A5 /* Invoice.swift */; };
+		57C7C972934E02212EC856B0 /* Invoice.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57C7C9E3AAEA2638DA7557A5 /* Invoice.swift */; };
 		57C7C9C1E5E34147BEC7D81D /* Vault.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57C7C777A9E533309028B722 /* Vault.swift */; };
 		57C7CBFA394A69AB468B3D1C /* Signer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57C7C1B65E25053DA1E4017C /* Signer.swift */; };
 		57C7CC0AF0BD862C9CD81D3D /* Assets.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57C7CD23C103A8CD23E4762D /* Assets.swift */; };
@@ -74,6 +77,7 @@
 		305DB58125EAFC2400DD6D3F /* libmycitadel.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libmycitadel.a; path = ../../target/release/libmycitadel.a; sourceTree = "<group>"; };
 		57C7C1B65E25053DA1E4017C /* Signer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Signer.swift; sourceTree = "<group>"; };
 		57C7C777A9E533309028B722 /* Vault.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Vault.swift; sourceTree = "<group>"; };
+		57C7C9E3AAEA2638DA7557A5 /* Invoice.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Invoice.swift; sourceTree = "<group>"; };
 		57C7CAB2255EF461D06FBDDB /* RPC.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RPC.swift; sourceTree = "<group>"; };
 		57C7CD23C103A8CD23E4762D /* Assets.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Assets.swift; sourceTree = "<group>"; };
 		57C7CD9E08CCCC838A9E8A29 /* Bitcoin.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Bitcoin.swift; sourceTree = "<group>"; };
@@ -155,6 +159,7 @@
 				57C7C1B65E25053DA1E4017C /* Signer.swift */,
 				57C7C777A9E533309028B722 /* Vault.swift */,
 				57C7CAB2255EF461D06FBDDB /* RPC.swift */,
+				57C7C9E3AAEA2638DA7557A5 /* Invoice.swift */,
 			);
 			path = MyCitadelKit;
 			sourceTree = "<group>";
@@ -359,6 +364,7 @@
 				3014052F25EAF7D800F4AA07 /* Bech32.swift in Sources */,
 				3014052B25EAF7D600F4AA07 /* CAPI.swift in Sources */,
 				3014053325EAF7DB00F4AA07 /* Assets.swift in Sources */,
+				57C7C397723B8FEF749DFAF7 /* Invoice.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -373,6 +379,7 @@
 				57C7C38235B643DEACA1BFA7 /* Signer.swift in Sources */,
 				57C7C9C1E5E34147BEC7D81D /* Vault.swift in Sources */,
 				57C7C3A2486A41278F4ED667 /* RPC.swift in Sources */,
+				57C7C88DBEFFFA8BEA775392 /* Invoice.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -387,6 +394,7 @@
 				57C7CBFA394A69AB468B3D1C /* Signer.swift in Sources */,
 				57C7C1225119439EBBC6071A /* Vault.swift in Sources */,
 				57C7C14728FF9AB302E0E622 /* RPC.swift in Sources */,
+				57C7C972934E02212EC856B0 /* Invoice.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -11,12 +11,12 @@ open class Bech32Info {
     public enum Details {
         case unknown
         case url
-        case bcAddress
-        case bolt11Invoice
+        case bcAddress(Invoice)
+        case bolt11Invoice(Invoice)
         case lnpbpId
         case lnpbpData
         case lnpbpZData
-        case lnbpInvoice
+        case lnbpInvoice(Invoice)
         case rgbSchemaId
         case rgbContractId
         case rgbSchema
@@ -30,9 +30,9 @@ open class Bech32Info {
                 return "Unknown"
             case .url:
                 return "URL"
-            case .bcAddress:
+            case .bcAddress(_):
                 return "Bitcoin address"
-            case .bolt11Invoice:
+            case .bolt11Invoice(_):
                 return "LN BOLT11 invoice"
             case .lnpbpId:
                 return "LNPBP-39 id"
@@ -40,7 +40,7 @@ open class Bech32Info {
                 return "LNPBP-39 data"
             case .lnpbpZData:
                 return "LNPBP-39 compressed data"
-            case .lnbpInvoice:
+            case .lnbpInvoice(_):
                 return "LNPBP-38 invoice"
             case .rgbSchemaId:
                 return "RGB Schema Id"
@@ -82,14 +82,19 @@ open class Bech32Info {
 
         isBech32m = info.bech32m
 
-        let jsonData = Data(String(cString: info.details).utf8)
+        let jsonString = String(cString: info.details)
+        let jsonData = Data(jsonString.utf8)
         let decoder = JSONDecoder();
+        print("Parsing JSON Bech32 data: \(jsonString)")
 
         do {
             switch info.category {
             case BECH32_RGB20_ASSET:
                 let assetData = try decoder.decode(RGB20Json.self, from: jsonData)
                 details = Details.rgb20Asset(RGB20Asset(withAssetData: assetData, citadelVault: CitadelVault.embedded))
+            case BECH32_LNPBP_INVOICE:
+                let invoice = try decoder.decode(Invoice.self, from: jsonData)
+                details = Details.lnbpInvoice(invoice)
             default: details = Details.unknown
             }
 
@@ -99,6 +104,7 @@ open class Bech32Info {
             details = .unknown
             parseStatus = .invalidJSON
             parseReport = "Unable to recognize details from the provided JSON data"
+            print("Bech32 parse error \(error.localizedDescription)")
         }
     }
 }
