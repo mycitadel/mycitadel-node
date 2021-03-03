@@ -343,6 +343,7 @@ impl Client {
                 info: s!("Amount must be specified for invoices which does not provide default amount value")
             }))?,
             transfer_info,
+            invoice
         }))? {
             Reply::PreparedPayment(payment_info) => Ok(payment_info),
             Reply::Failure(failure) => Err(failure.into()),

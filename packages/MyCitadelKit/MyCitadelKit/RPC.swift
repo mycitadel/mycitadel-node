@@ -59,7 +59,7 @@ struct RGB20Json: Codable {
     let ticker: String
     let name: String
     let description: String?
-    let fractionalBits: UInt8
+    let decimalPrecision: UInt8
     let date: String
     let knownCirculating: UInt64
     let issueLimit: UInt64?

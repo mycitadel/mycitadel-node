@@ -238,7 +238,7 @@ public class RGB20Asset: Asset, ObservableObject {
         ticker = asset.ticker
         name = asset.name
         ricardianContract = asset.description
-        decimalPrecision = asset.fractionalBits
+        decimalPrecision = asset.decimalPrecision
         genesisTimetamp = 0 // asset.date
         knownIssued = asset.knownCirculating
         maxIssued = asset.issueLimit ?? UInt64.max

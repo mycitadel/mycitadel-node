@@ -393,7 +393,7 @@ impl OutputFormat for rgb20::Asset {
                 .to_string(),
             self.name().to_owned(),
             self.id().to_string().as_str().bright_white().to_string(),
-            self.fractional_bits().to_string(),
+            self.decimal_precision().to_string(),
             self.date().to_string(),
             self.accounting_supply(rgb20::SupplyMeasure::KnownCirculating)
                 .to_string(),

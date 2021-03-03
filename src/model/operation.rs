@@ -20,15 +20,13 @@ use rgb::Consignment;
 use wallet::bip32::UnhardenedIndex;
 use wallet::Psbt;
 
+#[serde_as]
 #[derive(
     Serialize,
     Deserialize,
     Clone,
-    Ord,
-    PartialOrd,
     Eq,
     PartialEq,
-    Hash,
     Debug,
     StrictEncode,
     StrictDecode,
@@ -36,15 +34,20 @@ use wallet::Psbt;
 pub enum PaymentDirecton {
     Incoming {
         giveaway: Option<u64>,
+        #[serde_as(as = "HashSet<DisplayFromStr>")]
+        input_derivation_indexes: HashSet<UnhardenedIndex>,
     },
 
     Outcoming {
         published: bool,
         asset_change: u64,
         bitcoin_change: u64,
+        change_outputs: HashSet<u16>,
         giveaway: Option<u64>,
         amount: u64,
-        fee: u64,
+        paid_bitcoin_fee: u64,
+        #[serde_as(as = "HashSet<DisplayFromStr>")]
+        output_derivation_indexes: HashSet<UnhardenedIndex>,
         invoice: Invoice,
     },
 }
@@ -63,11 +66,9 @@ pub struct Operation {
     #[serde_as(as = "Option<DisplayFromStr>")]
     pub asset_id: Option<rgb::ContractId>,
     pub balance_before: u64,
-    pub tx_volume: u64,
+    pub bitcoin_volume: u64,
+    pub asset_volume: u64,
     pub tx_fee: u64,
-
-    #[serde_as(as = "HashSet<DisplayFromStr>")]
-    pub derivation_indexes: HashSet<UnhardenedIndex>,
 
     pub psbt: Psbt, // Even if we have only tx data, we wrap them in PSBT
     pub consignment: Option<Consignment>,

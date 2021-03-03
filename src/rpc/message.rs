@@ -251,6 +251,7 @@ pub struct ComposeTransferRequest {
     pub bitcoin_fee: u64,
     pub amount: u64,
     pub transfer_info: TransferInfo,
+    pub invoice: Invoice,
 }
 
 #[derive(Clone, PartialEq, Debug, Display, StrictEncode, StrictDecode)]
