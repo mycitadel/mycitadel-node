@@ -166,8 +166,21 @@ impl Contract {
             .map(|tweak| tweak.script.clone())
     }
 
+    // TODO: This must be private and must be used by storage driver only
     pub(crate) fn add_p2c_tweak(&mut self, tweak: TweakedOutput) {
         self.data.p2c_tweaks.insert(tweak);
+    }
+
+    // TODO: This must be private and must be used by storage driver only
+    pub(crate) fn add_operation(&mut self, operation: Operation) {
+        self.data
+            .operations
+            .insert(operation.psbt.global.unsigned_tx.txid(), operation);
+    }
+
+    // TODO: This must be private and must be used by storage driver only
+    pub(crate) fn history(&self) -> Vec<&Operation> {
+        self.data.operations.values().collect()
     }
 
     // TODO: This must be private and must be used by storage driver only

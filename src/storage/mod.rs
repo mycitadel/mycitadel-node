@@ -21,9 +21,10 @@ pub use file::{FileConfig, FileDriver};
 
 use invoice::Invoice;
 use lnpbp::seals::OutpointReveal;
-use wallet::Psbt;
 
-use crate::model::{self, Contract, ContractId, Policy, TweakedOutput};
+use crate::model::{
+    self, Contract, ContractId, Operation, Policy, TweakedOutput,
+};
 use crate::rpc::message::{IdentityInfo, SignerAccountInfo};
 
 pub trait Driver {
@@ -57,9 +58,13 @@ pub trait Driver {
     fn register_operation(
         &mut self,
         contract_id: ContractId,
-        invoice: Invoice,
-        psbt: Psbt,
+        operation: Operation,
     ) -> Result<(), Error>;
+
+    fn history(
+        &self,
+        contract_id: ContractId,
+    ) -> Result<Vec<&Operation>, Error>;
 
     fn signers(&self) -> Result<Vec<SignerAccountInfo>, Error>;
     fn add_signer(
