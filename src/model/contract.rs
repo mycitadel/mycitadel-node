@@ -17,20 +17,20 @@ use std::collections::{BTreeMap, BTreeSet};
 use std::io;
 use std::time::{SystemTime, UNIX_EPOCH};
 
-use bitcoin::{OutPoint, PublicKey, Script};
+use bitcoin::{OutPoint, PublicKey, Script, Txid};
 use invoice::Invoice;
 use lnpbp::client_side_validation::{
     CommitConceal, CommitEncode, ConsensusCommit,
 };
 use lnpbp::seals::{OutpointHash, OutpointReveal};
 use lnpbp::Chain;
+use miniscript::ForEachKey;
 use strict_encoding::StrictEncode;
 use wallet::bip32::{PubkeyChain, UnhardenedIndex};
-use wallet::{Slice32, TimeHeight};
+use wallet::Slice32;
 
 use super::{ContractId, Operation, Policy, PolicyType, State};
 use crate::model::AddressDerivation;
-use miniscript::ForEachKey;
 
 #[serde_as]
 #[derive(
@@ -100,7 +100,7 @@ pub struct ContractData {
     p2c_tweaks: BTreeSet<TweakedOutput>,
 
     #[serde_as(as = "Vec<(DisplayFromStr, _)>")]
-    operations: BTreeMap<TimeHeight, Operation>,
+    operations: BTreeMap<Txid, Operation>,
 }
 
 impl ConsensusCommit for Contract {

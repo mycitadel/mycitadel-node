@@ -23,7 +23,7 @@ use lnpbp::strict_encoding::{StrictDecode, StrictEncode};
 use microservices::FileFormat;
 
 use super::{Driver, Error};
-use crate::model::{Contract, ContractId, Policy, TweakedOutput, Wallet};
+use crate::model::{Citadel, Contract, ContractId, Policy, TweakedOutput};
 use crate::rpc::message::{IdentityInfo, SignerAccountInfo};
 use crate::server::opts::MYCITADEL_STORAGE_FILE;
 use bitcoin::util::psbt::PartiallySignedTransaction;
@@ -32,7 +32,7 @@ use bitcoin::util::psbt::PartiallySignedTransaction;
 pub struct FileDriver {
     fd: fs::File,
     config: FileConfig,
-    data: Wallet,
+    data: Citadel,
 }
 
 #[derive(
@@ -96,7 +96,7 @@ impl FileDriver {
         self.fd.seek(io::SeekFrom::Start(0))?;
         trace!("Parsing data (expected format {})", self.config.format);
         self.data = match self.config.format {
-            FileFormat::StrictEncode => Wallet::strict_decode(&mut self.fd)?,
+            FileFormat::StrictEncode => Citadel::strict_decode(&mut self.fd)?,
             FileFormat::Yaml => serde_yaml::from_reader(&mut self.fd)?,
             FileFormat::Toml => {
                 let mut data: Vec<u8> = vec![];

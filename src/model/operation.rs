@@ -13,84 +13,12 @@
 
 use chrono::NaiveDateTime;
 use serde_with::DisplayFromStr;
-use std::collections::BTreeMap;
-use std::str::FromStr;
+use std::collections::HashSet;
 
-use bitcoin::{OutPoint, PublicKey, Transaction, Txid};
-use rgb::AtomicValue;
+use invoice::Invoice;
+use rgb::Consignment;
 use wallet::bip32::UnhardenedIndex;
-use wallet::blockchain::ParseError;
-use wallet::{AddressPayload, Psbt, Slice32, TimeHeight};
-
-pub type Allocations =
-    BTreeMap<OutPoint, BTreeMap<rgb::ContractId, AtomicValue>>;
-
-#[derive(
-    Clone,
-    Ord,
-    PartialOrd,
-    Eq,
-    PartialEq,
-    Hash,
-    Debug,
-    Display,
-    StrictEncode,
-    StrictDecode,
-)]
-#[display(inner)]
-pub enum PaymentConfirmation {
-    Txid(Txid),
-}
-
-impl FromStr for PaymentConfirmation {
-    type Err = ParseError;
-
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
-        Ok(PaymentConfirmation::Txid(s.parse()?))
-    }
-}
-
-#[serde_as]
-#[derive(
-    Serialize,
-    Deserialize,
-    Getters,
-    Clone,
-    Ord,
-    PartialOrd,
-    Eq,
-    PartialEq,
-    Hash,
-    Debug,
-    Display,
-    StrictEncode,
-    StrictDecode,
-)]
-#[display("{confirmation}@{paid}")]
-pub struct PaymentSlip {
-    #[serde_as(as = "DisplayFromStr")]
-    paid: TimeHeight,
-
-    #[serde_as(as = "DisplayFromStr")]
-    confirmation: PaymentConfirmation,
-}
-
-impl FromStr for PaymentSlip {
-    type Err = ParseError;
-
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
-        let mut data = s.split(&[':', '@'][..]);
-        let me = Self {
-            paid: data.next().ok_or(ParseError)?.parse()?,
-            confirmation: data.next().ok_or(ParseError)?.parse()?,
-        };
-        if data.next().is_some() {
-            Err(ParseError)
-        } else {
-            Ok(me)
-        }
-    }
-}
+use wallet::Psbt;
 
 #[derive(
     Serialize,
@@ -102,16 +30,23 @@ impl FromStr for PaymentSlip {
     PartialEq,
     Hash,
     Debug,
-    Display,
     StrictEncode,
     StrictDecode,
 )]
 pub enum PaymentDirecton {
-    #[display("+", alt = "->")]
-    Incoming,
+    Incoming {
+        giveaway: Option<u64>,
+    },
 
-    #[display("-", alt = "<-")]
-    Outcoming,
+    Outcoming {
+        published: bool,
+        asset_change: u64,
+        bitcoin_change: u64,
+        giveaway: Option<u64>,
+        amount: u64,
+        fee: u64,
+        invoice: Invoice,
+    },
 }
 
 #[serde_as]
@@ -120,136 +55,25 @@ pub enum PaymentDirecton {
 )]
 pub struct Operation {
     pub direction: PaymentDirecton,
-
     #[serde_as(as = "chrono::DateTime<chrono::Utc>>")]
     pub created_at: NaiveDateTime,
 
+    pub height: i64,
+
     #[serde_as(as = "Option<DisplayFromStr>")]
-    pub mined_at: Option<TimeHeight>,
+    pub asset_id: Option<rgb::ContractId>,
+    pub balance_before: u64,
+    pub tx_volume: u64,
+    pub tx_fee: u64,
 
-    /// We cache txid to save computing time
-    #[serde_as(as = "DisplayFromStr")]
-    pub txid: Txid,
+    #[serde_as(as = "HashSet<DisplayFromStr>")]
+    pub derivation_indexes: HashSet<UnhardenedIndex>,
 
-    /// Sum of all external outputs minus external inputs
-    #[serde_as(as = "DisplayFromStr")]
-    pub transferred_amount: bitcoin::Amount,
+    pub psbt: Psbt, // Even if we have only tx data, we wrap them in PSBT
+    pub consignment: Option<Consignment>,
 
     #[serde_as(as = "Option<_>")]
-    pub details: Option<String>,
-
-    pub invoice: String,
-
-    pub psbt: Psbt,
+    pub notes: Option<String>,
 }
 
-impl Operation {
-    pub fn outgoing(psbt: Psbt) -> Self {
-        unimplemented!()
-    }
-
-    pub fn incoming(tx: Transaction, mined_at: Option<TimeHeight>) -> Self {
-        unimplemented!()
-    }
-}
-
-#[serde_as]
-#[derive(
-    Serialize,
-    Deserialize,
-    Copy,
-    Clone,
-    Ord,
-    PartialOrd,
-    Eq,
-    PartialEq,
-    Hash,
-    Debug,
-    Display,
-    StrictEncode,
-    StrictDecode,
-)]
-#[display("{value}@{height}>{offset}>{txid}:{vout}%{derivation_index}")]
-#[repr(C)]
-pub struct Utxo {
-    /// Amount (in native atomic asset amount) of unspent asset
-    pub value: u64,
-
-    /// Height of the block where transaction is mined.
-    /// Set to 0 for transactions in the mempool
-    pub height: u32,
-
-    /// Offset of the transaction within the block
-    pub offset: u16,
-
-    /// Outpoint transaction id
-    pub txid: Txid,
-
-    /// Transaction output containing asset
-    pub vout: u16,
-
-    /// Index used by the description in deriving script from the transaction
-    /// output
-    pub derivation_index: UnhardenedIndex,
-
-    /// Tweak (if any) applied to the public key and the index of the public
-    /// key which receives tweak
-    #[serde_as(as = "Option<(DisplayFromStr, _)>")]
-    pub tweak: Option<(Slice32, PublicKey)>,
-
-    /// Address controlling the output
-    #[serde_as(as = "Option<DisplayFromStr>")]
-    pub address: Option<AddressPayload>,
-}
-
-impl Utxo {
-    pub fn outpoint(&self) -> OutPoint {
-        OutPoint {
-            txid: self.txid,
-            vout: self.vout as u32,
-        }
-    }
-}
-
-impl FromStr for Utxo {
-    type Err = ParseError;
-
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
-        let mut split = s.split(&['@', '>', '%', '=', ':'][..]);
-        match (
-            split.next(),
-            split.next(),
-            split.next(),
-            split.next(),
-            split.next(),
-            split.next(),
-            split.next(),
-            split.next(),
-        ) {
-            (
-                Some(value),
-                Some(height),
-                Some(offset),
-                Some(txid),
-                Some(vout),
-                Some(index),
-                address,
-                None,
-            ) => Ok(Utxo {
-                value: value.parse()?,
-                height: height.parse()?,
-                offset: offset.parse()?,
-                vout: vout.parse()?,
-                txid: txid.parse()?,
-                derivation_index: index.parse().map_err(|_| ParseError)?,
-                tweak: None,
-                address: address
-                    .map(AddressPayload::from_str)
-                    .transpose()
-                    .ok()
-                    .flatten(),
-            }),
-            _ => Err(ParseError),
-        }
-    }
-}
+impl Operation {}

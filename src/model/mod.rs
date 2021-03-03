@@ -12,44 +12,19 @@
 // If not, see <https://www.gnu.org/licenses/agpl-3.0-standalone.html>.
 
 mod address;
+mod citadel;
 mod contract;
 mod ids;
 mod operation;
 mod policy;
 mod state;
+mod utxo;
 
 pub use address::AddressDerivation;
-pub use contract::*;
-pub use ids::*;
-pub use operation::*;
-pub use policy::*;
-pub use state::*;
-
-// -----------------------------------------------------------------------------
-
-use serde_with::DisplayFromStr;
-use std::collections::BTreeMap;
-
-use crate::rpc::message::IdentityInfo;
-
-#[serde_as]
-#[derive(
-    Serialize,
-    Deserialize,
-    Clone,
-    PartialEq,
-    Debug,
-    Default,
-    StrictEncode,
-    StrictDecode,
-)]
-pub struct Wallet {
-    #[serde_as(as = "BTreeMap<DisplayFromStr, _>")]
-    pub contracts: BTreeMap<ContractId, Contract>,
-
-    #[serde_as(as = "BTreeMap<DisplayFromStr, _>")]
-    pub identities: BTreeMap<rgb::ContractId, IdentityInfo>,
-
-    #[serde_as(as = "BTreeMap<DisplayFromStr, _>")]
-    pub assets: BTreeMap<rgb::ContractId, rgb20::Asset>,
-}
+pub use citadel::Citadel;
+pub use contract::{Contract, ContractData, TweakedOutput};
+pub use ids::ContractId;
+pub use operation::{Operation, PaymentDirecton};
+pub use policy::{ChannelDescriptor, Policy, PolicyType};
+pub use state::State;
+pub use utxo::{Allocations, Utxo};
