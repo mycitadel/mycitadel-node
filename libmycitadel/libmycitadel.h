@@ -243,6 +243,9 @@ struct prepared_transfer_t mycitadel_invoice_pay(struct mycitadel_client_t *clie
                                                  uint64_t fee,
                                                  uint64_t giveaway);
 
+const char *mycitadel_psbt_publish(struct mycitadel_client_t *client,
+                                   const char *psbt);
+
 const char *mycitadel_invoice_accept(struct mycitadel_client_t *client,
                                      const char *contract_id);
 

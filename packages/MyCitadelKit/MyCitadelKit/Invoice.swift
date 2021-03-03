@@ -36,3 +36,8 @@ public struct Invoice: Codable {
         case amountString = "amount", assetId = "asset", beneficiary, merchant
     }
 }
+
+public struct PaymentResult {
+    public let txid: String
+    public let consignment: String?
+}

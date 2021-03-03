@@ -205,6 +205,29 @@ extension CitadelVault: SignerAPI {
 
         return pubkeyChain
     }
+
+    internal func sign(psbt: String) throws -> String {
+        guard var master = try self.readKeychain(attrName: SecurityItemNames.masterXpriv.rawValue) else {
+            print("Unable to find master extended private key")
+            throw SignerError(localizedDescription: "Unable to find master extended private key")
+        }
+        defer {
+            master.safelyWipe()
+        }
+
+        let signature_result = psbt_sign(psbt, master, false);
+        defer {
+            result_destroy(signature_result)
+        }
+        if !is_success(signature_result) {
+            let failure = String(cString: signature_result.details.error);
+            print("PSBT signature creation failed: \(failure)")
+            throw SignerError(localizedDescription: failure)
+        }
+        let signedPsbt = String(cString: signature_result.details.data)
+        print("Created signed PSBT: \(signedPsbt)")
+        return signedPsbt
+    }
 }
 
 extension String {

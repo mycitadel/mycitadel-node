@@ -174,4 +174,32 @@ extension CitadelVault: CitadelRPC {
         try vault.mark(invoice: invoice, used: used)
     }
      */
+
+    internal func pay(from contractId: String, invoice: String, fee: UInt64, giveaway: UInt64? = nil) throws -> Transfer {
+        let transfer = mycitadel_invoice_pay(rpcClient, contractId, invoice, fee, giveaway ?? 0)
+        if !transfer.success {
+            guard let err = self.lastError() else {
+                throw CitadelError("MyCitadel C API is broken")
+            }
+            throw err
+        }
+        let psbt = String(cString: transfer.psbt_base64)
+        release_string(UnsafeMutablePointer(mutating: transfer.psbt_base64))
+
+        let consignment: String?
+        if transfer.consignment_bech32 != nil {
+            consignment = String(cString: transfer.consignment_bech32)
+            release_string(UnsafeMutablePointer(mutating: transfer.psbt_base64))
+        } else {
+            consignment = nil
+        }
+
+        return Transfer(psbt: psbt, consignment: consignment)
+    }
+
+    internal func publish(psbt: String) throws -> String {
+        let txid = mycitadel_psbt_publish(rpcClient, psbt)
+        return try processResponseToString(txid)
+
+    }
 }

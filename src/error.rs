@@ -89,7 +89,8 @@ pub enum Error {
     #[from]
     Base64(base64::DecodeError),
 
-    /// bech32 encoding failure - {0}
+    /// Bech32 encoding failure
+    #[display(inner)]
     #[from]
     #[from(bech32::Error)]
     Bech32(lnpbp::bech32::Error),

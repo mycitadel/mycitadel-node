@@ -65,10 +65,19 @@ struct RGB20Json: Codable {
     let issueLimit: UInt64?
 }
 
+struct Transfer {
+    let psbt: String
+    let consignment: String?
+}
+
 internal protocol CitadelRPC {
     func create(singleSig derivation: String, name: String, descriptorType: DescriptorType) throws -> ContractJson
     func listContracts() throws -> [ContractJson]
     func balance(walletId: String) throws -> [String: [UTXOJson]]
     func listAssets() throws -> [RGB20Json]
     func importRGB(genesisBech32 genesis: String) throws -> RGB20Json
+    func address(forContractId contractId: String, useLegacySegWit legacy: Bool) throws -> AddressDerivation
+    func invoice(usingFormat format: InvoiceType, receiveTo contractId: String, nominatedIn assetId: String?, value: UInt64?, useLegacySegWit legacy: Bool) throws -> String
+    func pay(from: String, invoice: String, fee: UInt64, giveaway: UInt64?) throws -> Transfer
+    func publish(psbt: String) throws -> String
 }

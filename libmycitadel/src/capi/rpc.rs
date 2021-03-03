@@ -14,6 +14,7 @@ use std::path::PathBuf;
 use std::ptr;
 use std::str::FromStr;
 
+use bitcoin::consensus::deserialize;
 use bitcoin::Address;
 use internet2::ZmqSocketAddr;
 use invoice::{Beneficiary, Invoice};
@@ -21,6 +22,7 @@ use lnpbp::Chain;
 use microservices::rpc::Failure;
 use mycitadel::Client;
 use wallet::bip32::PubkeyChain;
+use wallet::Psbt;
 
 use super::{descriptor_type, invoice_type};
 use crate::capi::prepared_transfer_t;
@@ -371,6 +373,48 @@ pub extern "C" fn mycitadel_invoice_pay(
         .and_then(|reply| reply.map_err(|err| client.set_error(err)).ok())
         .map(prepared_transfer_t::from)
         .unwrap_or(prepared_transfer_t::failure())
+}
+
+#[no_mangle]
+pub extern "C" fn mycitadel_psbt_publish(
+    client: *mut mycitadel_client_t,
+    psbt: *const c_char,
+) -> *const c_char {
+    let client = mycitadel_client_t::from_raw(client);
+
+    let psbt = match client.parse_string(psbt, "PSBT").ok() {
+        None => return ptr::null(),
+        Some(v) => v,
+    };
+    let psbt = match base64::decode(psbt) {
+        Err(err) => {
+            client.set_error_details(ERRNO_PARSE, err);
+            return ptr::null();
+        }
+        Ok(v) => v,
+    };
+    let psbt: Psbt = match deserialize(&psbt) {
+        Err(err) => {
+            client.set_error_details(ERRNO_PARSE, err);
+            return ptr::null();
+        }
+        Ok(v) => v,
+    };
+
+    if let Some(txid) = client
+        .try_as_opaque()
+        .map(|opaque| opaque.finalize_publish_psbt(psbt))
+        .transpose()
+        .map_err(|_| ())
+        .and_then(|res| res.ok_or(()))
+        .ok()
+        .and_then(|txid| txid.to_string().try_into_raw())
+    {
+        client.set_success();
+        return txid;
+    }
+
+    return ptr::null();
 }
 
 #[no_mangle]

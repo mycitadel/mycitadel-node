@@ -191,6 +191,14 @@ public class WalletContract {
         try vault.mark(invoice: invoice, used: used)
     }
      */
+
+    public func pay(invoice: String, fee: UInt64, giveaway: UInt64? = nil) throws -> PaymentResult {
+        let transfer = try vault.pay(from: id, invoice: invoice, fee: fee, giveaway: giveaway)
+        let signedPsbt = try vault.sign(psbt: transfer.psbt)
+        let txid = try vault.publish(psbt: signedPsbt)
+
+        return PaymentResult(txid: txid, consignment: transfer.consignment)
+    }
 }
 
 public struct Balance {

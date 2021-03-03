@@ -74,7 +74,7 @@ impl mycitadel_client_t {
         status
     }
 
-    fn set_success(&mut self) {
+    pub(crate) fn set_success(&mut self) {
         self.err_no = SUCCESS;
         self.drop_message();
     }
