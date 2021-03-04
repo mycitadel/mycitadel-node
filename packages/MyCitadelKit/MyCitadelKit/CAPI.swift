@@ -189,7 +189,7 @@ extension CitadelVault: CitadelRPC {
         let consignment: String?
         if transfer.consignment_bech32 != nil {
             consignment = String(cString: transfer.consignment_bech32)
-            release_string(UnsafeMutablePointer(mutating: transfer.psbt_base64))
+            release_string(UnsafeMutablePointer(mutating: transfer.consignment_bech32))
         } else {
             consignment = nil
         }
@@ -200,6 +200,10 @@ extension CitadelVault: CitadelRPC {
     internal func publish(psbt: String) throws -> String {
         let txid = mycitadel_psbt_publish(rpcClient, psbt)
         return try processResponseToString(txid)
+    }
 
+    internal func accept(consignment: String) throws -> String {
+        let status = mycitadel_invoice_accept(rpcClient, consignment)
+        return try processResponseToString(status)
     }
 }

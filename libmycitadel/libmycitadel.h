@@ -247,7 +247,7 @@ const char *mycitadel_psbt_publish(struct mycitadel_client_t *client,
                                    const char *psbt);
 
 const char *mycitadel_invoice_accept(struct mycitadel_client_t *client,
-                                     const char *contract_id);
+                                     const char *consignment);
 
 const char *mycitadel_asset_list(struct mycitadel_client_t *client);
 

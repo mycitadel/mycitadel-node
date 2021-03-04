@@ -199,6 +199,10 @@ public class WalletContract {
 
         return PaymentResult(txid: txid, consignment: transfer.consignment)
     }
+
+    public func accept(consignment: String) throws -> String {
+        try vault.accept(consignment: consignment)
+    }
 }
 
 public struct Balance {

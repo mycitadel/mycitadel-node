@@ -80,4 +80,5 @@ internal protocol CitadelRPC {
     func invoice(usingFormat format: InvoiceType, receiveTo contractId: String, nominatedIn assetId: String?, value: UInt64?, useLegacySegWit legacy: Bool) throws -> String
     func pay(from: String, invoice: String, fee: UInt64, giveaway: UInt64?) throws -> Transfer
     func publish(psbt: String) throws -> String
+    func accept(consignment: String) throws -> String
 }

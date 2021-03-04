@@ -25,7 +25,7 @@ public struct Invoice: Codable {
         }
     }
     public var asset: Asset? {
-        CitadelVault.embedded.assets[assetId ?? CitadelVault.embedded.network.nativeAssetId()]
+        assetId != nil ? CitadelVault.embedded.assets[assetId!] : CitadelVault.embedded.nativeAsset
     }
 
     public init(beneficiary: String) {

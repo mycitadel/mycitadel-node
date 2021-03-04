@@ -21,6 +21,7 @@ use invoice::{Beneficiary, Invoice};
 use lnpbp::Chain;
 use microservices::rpc::Failure;
 use mycitadel::Client;
+use rgb::Consignment;
 use wallet::bip32::PubkeyChain;
 use wallet::Psbt;
 
@@ -420,20 +421,37 @@ pub extern "C" fn mycitadel_psbt_publish(
 #[no_mangle]
 pub extern "C" fn mycitadel_invoice_accept(
     client: *mut mycitadel_client_t,
-    contract_id: *const c_char,
+    consignment: *const c_char,
 ) -> *const c_char {
     let client = mycitadel_client_t::from_raw(client);
 
-    let contract_id = match client.parse_contract_id(contract_id).ok() {
+    let consignment = match client.parse_string(consignment, "consignment").ok()
+    {
         None => return ptr::null(),
         Some(v) => v,
     };
+    let consignment = match Consignment::from_str(&consignment) {
+        Err(err) => {
+            client.set_error_details(ERRNO_PARSE, err);
+            return ptr::null();
+        }
+        Ok(v) => v,
+    };
 
-    client
+    if let Some(status) = client
         .try_as_opaque()
-        .map(|opaque| opaque.invoice_list(contract_id))
-        .map(|response| client.process_response(response))
-        .unwrap_or(ptr::null())
+        .map(|opaque| opaque.invoice_accept(consignment))
+        .transpose()
+        .map_err(|_| ())
+        .and_then(|res| res.ok_or(()))
+        .ok()
+        .and_then(|status| status.to_string().try_into_raw())
+    {
+        client.set_success();
+        return status;
+    }
+
+    return ptr::null();
 }
 
 #[no_mangle]
