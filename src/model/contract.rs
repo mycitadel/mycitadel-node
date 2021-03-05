@@ -44,7 +44,7 @@ use crate::model::AddressDerivation;
     StrictEncode,
     StrictDecode,
 )]
-#[display("{policy}#{id}")]
+#[display("{policy}")]
 pub struct Contract {
     /// Unique contract id used to identify contract across different
     /// application instances. Created as a taproot-style bitcoin tagged
@@ -55,6 +55,7 @@ pub struct Contract {
     /// The id is kept pre-computed: the contract policy can't be changed after
     /// the creation, so there is no need to perform expensive commitment
     /// process each time we need contract id
+    // TODO: Consider using descriptor checksum instead
     #[serde_as(as = "DisplayFromStr")]
     id: ContractId,
 
@@ -70,6 +71,49 @@ pub struct Contract {
 
     #[serde(flatten)]
     data: ContractData,
+}
+
+#[serde_as]
+#[derive(
+    Serialize,
+    Deserialize,
+    Getters,
+    Clone,
+    PartialEq,
+    Eq,
+    PartialOrd,
+    Ord,
+    Hash,
+    Debug,
+    StrictEncode,
+    StrictDecode,
+)]
+#[serde(rename_all = "camelCase")]
+pub struct ContractMeta {
+    #[serde_as(as = "DisplayFromStr")]
+    id: ContractId,
+
+    name: String,
+
+    #[serde_as(as = "DisplayFromStr")]
+    chain: Chain,
+
+    policy: Policy,
+
+    #[serde_as(as = "chrono::DateTime<chrono::Utc>")]
+    created_at: NaiveDateTime,
+}
+
+impl From<Contract> for ContractMeta {
+    fn from(contract: Contract) -> Self {
+        ContractMeta {
+            id: contract.id,
+            name: contract.name,
+            chain: contract.chain,
+            policy: contract.policy,
+            created_at: contract.created_at,
+        }
+    }
 }
 
 #[serde_as]

@@ -23,7 +23,7 @@ use invoice::Invoice;
 use wallet::bip32::UnhardenedIndex;
 
 use super::Formatting;
-use crate::model::{AddressDerivation, Contract, Utxo};
+use crate::model::{AddressDerivation, ContractMeta, Utxo};
 
 pub trait OutputCompact {
     fn output_compact(&self) -> String;
@@ -237,13 +237,13 @@ where
 
 // MARK: Contract --------------------------------------------------------------
 
-impl OutputCompact for Contract {
+impl OutputCompact for ContractMeta {
     fn output_compact(&self) -> String {
         format!("{}", self.policy())
     }
 }
 
-impl OutputFormat for Contract {
+impl OutputFormat for ContractMeta {
     fn output_headers() -> Vec<String> {
         vec![s!("ID"), s!("Policy"), s!("Name"), s!("Created")]
     }

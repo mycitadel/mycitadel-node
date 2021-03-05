@@ -21,7 +21,7 @@ use lnpbp::seals::OutpointReveal;
 use microservices::{rpc, rpc_connection};
 use wallet::bip32::UnhardenedIndex;
 
-use crate::model::{AddressDerivation, Contract, Utxo};
+use crate::model::{AddressDerivation, Contract, ContractMeta, Utxo};
 use crate::rpc::message::{IdentityInfo, PreparedTransfer};
 use crate::Error;
 
@@ -39,7 +39,7 @@ pub enum Reply {
 
     #[api(type = 0x0200)]
     #[display("contracts(...)")]
-    Contracts(Vec<Contract>),
+    Contracts(Vec<ContractMeta>),
 
     #[api(type = 0x0201)]
     #[display("contracts(...)")]

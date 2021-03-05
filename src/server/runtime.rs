@@ -43,7 +43,8 @@ use wallet::{psbt, AddressPayload, Psbt, Slice32};
 use super::Config;
 use crate::cache::{self, Driver as CacheDriver};
 use crate::model::{
-    Contract, Operation, PaymentDirecton, Policy, TweakedOutput, Utxo,
+    Contract, ContractMeta, Operation, PaymentDirecton, Policy, TweakedOutput,
+    Utxo,
 };
 use crate::rpc::{message, Reply, Request};
 use crate::storage::{self, Driver as StorageDriver};
@@ -219,6 +220,7 @@ impl Runtime {
             Request::ListContracts => self
                 .storage
                 .contracts()
+                .map(|vec| vec.into_iter().map(ContractMeta::from).collect::<Vec<_>>())
                 .map(Reply::Contracts)
                 .map_err(Error::from),
 
