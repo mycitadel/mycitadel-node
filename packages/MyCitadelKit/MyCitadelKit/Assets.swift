@@ -101,7 +101,7 @@ public extension Asset {
     }
 }
 
-public class NativeAsset: Asset, ObservableObject {
+public class NativeAsset: Asset, Identifiable, ObservableObject {
     internal let vault: CitadelVault
 
     public let isNative: Bool = true
@@ -173,7 +173,17 @@ public class NativeAsset: Asset, ObservableObject {
     }
 }
 
-public class RGB20Asset: Asset, ObservableObject {
+extension NativeAsset: Hashable {
+    public static func ==(lhs: NativeAsset, rhs: NativeAsset) -> Bool {
+        lhs.id == rhs.id
+    }
+
+    public func hash(into hasher: inout Hasher) {
+        hasher.combine(id)
+    }
+}
+
+public class RGB20Asset: Asset, Identifiable, ObservableObject {
     internal let vault: CitadelVault
 
     public let isNative: Bool = false
@@ -258,6 +268,16 @@ public class RGB20Asset: Asset, ObservableObject {
         isIssueLimitReached = false
 
         authenticity = AssetAuthenticity(issuer: nil, status: .unverified, url: nil, signature: nil)
+    }
+}
+
+extension RGB20Asset: Hashable {
+    public static func ==(lhs: RGB20Asset, rhs: RGB20Asset) -> Bool {
+        lhs.id == rhs.id
+    }
+
+    public func hash(into hasher: inout Hasher) {
+        hasher.combine(id)
     }
 }
 

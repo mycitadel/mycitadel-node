@@ -47,11 +47,18 @@ extension Policy: Codable {
     }
 }
 
+struct ContractDataJson: Codable {
+    let blindingFactors: [String: OutPoint]
+    let sentInvoices: [String]
+    let unpaidInvoices: [String: Date]
+    let p2cTweaks: [TweakedOutpoint]
+}
+
 struct UTXOJson: Codable {
     let height: Int32
     let offset: UInt32
     let txid: String
-    let vout: UInt32
+    let vout: UInt16
     let value: UInt64
     let derivationIndex: UInt32
     let address: String?
@@ -82,9 +89,11 @@ internal protocol CitadelRPC {
     func create(singleSig derivation: String, name: String, descriptorType: DescriptorType) throws -> ContractJson
     func listContracts() throws -> [ContractJson]
     func balance(walletId: String) throws -> [String: [UTXOJson]]
+    func operations(walletId: String) throws -> [String]
     func listAssets() throws -> [RGB20Json]
     func importRGB(genesisBech32 genesis: String) throws -> RGB20Json
-    func address(forContractId contractId: String, useLegacySegWit legacy: Bool) throws -> AddressDerivation
+    func nextAddress(forContractId contractId: String, useLegacySegWit legacy: Bool) throws -> AddressDerivation
+    func usedAddresses(forContractId contractId: String) throws -> [AddressDerivation]
     func invoice(usingFormat format: InvoiceType, receiveTo contractId: String, nominatedIn assetId: String?, value: UInt64?, useLegacySegWit legacy: Bool) throws -> String
     func pay(from: String, invoice: String, fee: UInt64, giveaway: UInt64?) throws -> Transfer
     func publish(psbt: String) throws -> String

@@ -138,6 +138,11 @@ extension CitadelVault: CitadelRPC {
         return try JSONDecoder().decode([ContractJson].self, from: self.processResponse(response))
     }
 
+    internal func operations(walletId: String) throws -> [String] {
+        // TODO: Implement
+        []
+    }
+
     internal func balance(walletId: String) throws -> [String: [UTXOJson]] {
         print("Requesting balance for \(walletId)")
         let response = mycitadel_contract_balance(rpcClient, walletId, true, 20)
@@ -155,9 +160,15 @@ extension CitadelVault: CitadelRPC {
         return try JSONDecoder().decode(RGB20Json.self, from: self.processResponse(response))
     }
 
-    public func address(forContractId contractId: String, useLegacySegWit legacy: Bool = false) throws -> AddressDerivation {
+    public func nextAddress(forContractId contractId: String, useLegacySegWit legacy: Bool = false) throws -> AddressDerivation {
         let response = mycitadel_address_create(rpcClient, contractId, false, legacy)
         return try JSONDecoder().decode(AddressDerivation.self, from: self.processResponse(response))
+    }
+
+    internal func usedAddresses(forContractId contractId: String) throws -> [AddressDerivation] {
+        let response = mycitadel_address_list(rpcClient, contractId, false, 0)
+        return try JSONDecoder().decode([String: UInt32].self, from: self.processResponse(response))
+                .map { (address, index) in AddressDerivation(address: address, derivation: [index]) }
     }
 
     internal func invoice(usingFormat format: InvoiceType, receiveTo contractId: String, nominatedIn assetId: String?, value: UInt64?, useLegacySegWit legacy: Bool = false) throws -> String {

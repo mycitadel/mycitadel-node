@@ -169,12 +169,31 @@ public enum WitnessVersion {
     case taproot
 }
 
-public struct AddressDerivation: Codable {
+public struct AddressDerivation: Codable, Identifiable, Equatable {
+    public var id: String { address }
     public let address: String
     public let derivation: [UInt32]
+
+    public var path: String {
+        derivation.map { "\($0)" }.joined(separator: "/")
+    }
 }
 
-public struct OutPoint: Codable {
+public struct OutPoint: Codable, Identifiable, Hashable, Equatable {
+    public var id: String {
+        "\(txid):\(vout)"
+    }
     public let txid: String
     public let vout: UInt16
+}
+
+public struct TweakedOutpoint: Codable, Identifiable, Equatable {
+    public var id: String {
+        outpoint.id
+    }
+    public let outpoint: OutPoint
+    public let script: String
+    public let tweak: String
+    public let pubkey: String
+    public let derivationIndex: UInt32
 }
