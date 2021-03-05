@@ -26,7 +26,7 @@ use lnpbp::client_side_validation::CommitConceal;
 use microservices::rpc::Failure;
 use rgb::{AtomicValue, Consignment, Genesis};
 use wallet::bip32::{PubkeyChain, UnhardenedIndex};
-use wallet::descriptor::{self, OuterCategory};
+use wallet::descriptor::{self, ContentType};
 use wallet::script::PubkeyScript;
 
 use super::Config;
@@ -90,7 +90,7 @@ impl Client {
         &mut self,
         name: impl ToString,
         pubkey_chain: PubkeyChain,
-        category: OuterCategory,
+        category: ContentType,
     ) -> Result<Reply, Error> {
         self.request(Request::CreateSingleSig(message::SingleSigInfo {
             name: name.to_string(),

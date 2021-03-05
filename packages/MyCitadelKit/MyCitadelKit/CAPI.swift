@@ -207,3 +207,20 @@ extension CitadelVault: CitadelRPC {
         return try processResponseToString(status)
     }
 }
+
+extension WalletContract {
+    internal func parseDescriptor() throws -> DescriptorInfo {
+        let info = lnpbp_descriptor_parse(policy.descriptor)
+        let jsonString = String(cString: info.details.data)
+        result_destroy(info)
+        let jsonData = Data(jsonString.utf8)
+        let decoder = JSONDecoder();
+        print("Parsing JSON descriptor data: \(jsonString)")
+        do {
+            return try decoder.decode(DescriptorInfo.self, from: jsonData)
+        } catch {
+            print("Error parsing descriptor: \(error.localizedDescription)")
+            throw error
+        }
+    }
+}

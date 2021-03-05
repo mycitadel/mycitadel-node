@@ -8,12 +8,15 @@
 // any warranty.
 
 mod bech32;
+mod descriptor;
 mod rpc;
 pub mod signer;
 mod types;
 mod util;
 
 pub use self::bech32::*;
+pub use descriptor::*;
 pub use rpc::*;
+pub use signer::string_result_t;
 pub use types::*;
 pub use util::*;

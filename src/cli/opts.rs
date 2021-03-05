@@ -537,15 +537,15 @@ pub struct DescriptorOpts {
 }
 
 impl DescriptorOpts {
-    pub fn descriptor_category(self) -> descriptor::OuterCategory {
+    pub fn descriptor_category(self) -> descriptor::ContentType {
         if self.bare {
-            descriptor::OuterCategory::Bare
+            descriptor::ContentType::Bare
         } else if self.legacy {
-            descriptor::OuterCategory::Hashed
+            descriptor::ContentType::Hashed
         } else if self.taproot {
-            descriptor::OuterCategory::Taproot
+            descriptor::ContentType::Taproot
         } else {
-            descriptor::OuterCategory::SegWit
+            descriptor::ContentType::SegWit
         }
     }
 }

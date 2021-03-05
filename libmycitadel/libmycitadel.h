@@ -102,6 +102,14 @@ typedef enum descriptor_type {
 typedef enum err_type {
         ERR_TYPE_SUCCESS = 0,
         /**
+         * general parse error
+         */
+        ERR_TYPE_PARSE_ERROR,
+        /**
+         * JSON encoding error
+         */
+        ERR_TYPE_ENCODING_ERROR,
+        /**
          * got a null pointer as one of the function arguments
          */
         ERR_TYPE_NULL_POINTER,
@@ -156,6 +164,16 @@ typedef struct bech32_info_t {
         const char *details;
 } bech32_info_t;
 
+typedef union result_details_t {
+        const char *data;
+        const char *error;
+} result_details_t;
+
+typedef struct string_result_t {
+        enum err_type code;
+        union result_details_t details;
+} string_result_t;
+
 typedef struct mycitadel_client_t {
         void *opaque;
         const char *message;
@@ -168,16 +186,6 @@ typedef struct prepared_transfer_t {
         const char *psbt_base64;
 } prepared_transfer_t;
 
-typedef union result_details_t {
-        const char *data;
-        const char *error;
-} result_details_t;
-
-typedef struct string_result_t {
-        enum err_type code;
-        union result_details_t details;
-} string_result_t;
-
 #ifdef __cplusplus
 extern "C" {
 #endif // __cplusplus
@@ -185,6 +193,8 @@ extern "C" {
 void lnpbp_bech32_release(struct bech32_info_t info);
 
 struct bech32_info_t lnpbp_bech32_info(const char *bech_str);
+
+struct string_result_t lnpbp_descriptor_parse(const char *descriptor);
 
 struct mycitadel_client_t *mycitadel_run_embedded(const char *chain,
                                                   const char *data_dir,

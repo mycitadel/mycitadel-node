@@ -32,18 +32,24 @@
 		304DE97325C8C1F1008FE0A4 /* Bech32.swift in Sources */ = {isa = PBXBuildFile; fileRef = 304DE97125C8C1F0008FE0A4 /* Bech32.swift */; };
 		305DB58225EAFC2400DD6D3F /* libmycitadel.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 305DB58125EAFC2400DD6D3F /* libmycitadel.a */; };
 		57C7C00FE0A1ECD984D19C56 /* Bitcoin.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57C7CD9E08CCCC838A9E8A29 /* Bitcoin.swift */; };
+		57C7C107D27C10FAC44B6662 /* Wallet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57C7CF262D6A1ACCE1D68B50 /* Wallet.swift */; };
 		57C7C1225119439EBBC6071A /* Vault.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57C7C777A9E533309028B722 /* Vault.swift */; };
 		57C7C14728FF9AB302E0E622 /* RPC.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57C7CAB2255EF461D06FBDDB /* RPC.swift */; };
 		57C7C38235B643DEACA1BFA7 /* Signer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57C7C1B65E25053DA1E4017C /* Signer.swift */; };
 		57C7C397723B8FEF749DFAF7 /* Invoice.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57C7C9E3AAEA2638DA7557A5 /* Invoice.swift */; };
 		57C7C3A2486A41278F4ED667 /* RPC.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57C7CAB2255EF461D06FBDDB /* RPC.swift */; };
 		57C7C3DDA30D07DB05BC3D75 /* Bitcoin.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57C7CD9E08CCCC838A9E8A29 /* Bitcoin.swift */; };
+		57C7C7FDDEAA2FC88BD3ACB9 /* Descriptor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57C7C633CB66C5E578B696B0 /* Descriptor.swift */; };
+		57C7C889BD90845A8BCCEA59 /* Descriptor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57C7C633CB66C5E578B696B0 /* Descriptor.swift */; };
 		57C7C88DBEFFFA8BEA775392 /* Invoice.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57C7C9E3AAEA2638DA7557A5 /* Invoice.swift */; };
+		57C7C9354CB7D3EEDE8EF3AF /* Descriptor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57C7C633CB66C5E578B696B0 /* Descriptor.swift */; };
 		57C7C972934E02212EC856B0 /* Invoice.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57C7C9E3AAEA2638DA7557A5 /* Invoice.swift */; };
 		57C7C9C1E5E34147BEC7D81D /* Vault.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57C7C777A9E533309028B722 /* Vault.swift */; };
+		57C7CB6D7DAE03198B49C4DD /* Wallet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57C7CF262D6A1ACCE1D68B50 /* Wallet.swift */; };
 		57C7CBFA394A69AB468B3D1C /* Signer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57C7C1B65E25053DA1E4017C /* Signer.swift */; };
 		57C7CC0AF0BD862C9CD81D3D /* Assets.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57C7CD23C103A8CD23E4762D /* Assets.swift */; };
 		57C7CF2A1EAD8DD103E53E8B /* Assets.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57C7CD23C103A8CD23E4762D /* Assets.swift */; };
+		57C7CFFB96153FD6728E6B0B /* Wallet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57C7CF262D6A1ACCE1D68B50 /* Wallet.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -76,11 +82,13 @@
 		304DE97125C8C1F0008FE0A4 /* Bech32.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Bech32.swift; sourceTree = "<group>"; };
 		305DB58125EAFC2400DD6D3F /* libmycitadel.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libmycitadel.a; path = ../../target/release/libmycitadel.a; sourceTree = "<group>"; };
 		57C7C1B65E25053DA1E4017C /* Signer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Signer.swift; sourceTree = "<group>"; };
+		57C7C633CB66C5E578B696B0 /* Descriptor.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Descriptor.swift; sourceTree = "<group>"; };
 		57C7C777A9E533309028B722 /* Vault.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Vault.swift; sourceTree = "<group>"; };
 		57C7C9E3AAEA2638DA7557A5 /* Invoice.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Invoice.swift; sourceTree = "<group>"; };
 		57C7CAB2255EF461D06FBDDB /* RPC.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RPC.swift; sourceTree = "<group>"; };
 		57C7CD23C103A8CD23E4762D /* Assets.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Assets.swift; sourceTree = "<group>"; };
 		57C7CD9E08CCCC838A9E8A29 /* Bitcoin.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Bitcoin.swift; sourceTree = "<group>"; };
+		57C7CF262D6A1ACCE1D68B50 /* Wallet.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Wallet.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -160,6 +168,8 @@
 				57C7C777A9E533309028B722 /* Vault.swift */,
 				57C7CAB2255EF461D06FBDDB /* RPC.swift */,
 				57C7C9E3AAEA2638DA7557A5 /* Invoice.swift */,
+				57C7CF262D6A1ACCE1D68B50 /* Wallet.swift */,
+				57C7C633CB66C5E578B696B0 /* Descriptor.swift */,
 			);
 			path = MyCitadelKit;
 			sourceTree = "<group>";
@@ -365,6 +375,8 @@
 				3014052B25EAF7D600F4AA07 /* CAPI.swift in Sources */,
 				3014053325EAF7DB00F4AA07 /* Assets.swift in Sources */,
 				57C7C397723B8FEF749DFAF7 /* Invoice.swift in Sources */,
+				57C7CB6D7DAE03198B49C4DD /* Wallet.swift in Sources */,
+				57C7C9354CB7D3EEDE8EF3AF /* Descriptor.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -380,6 +392,8 @@
 				57C7C9C1E5E34147BEC7D81D /* Vault.swift in Sources */,
 				57C7C3A2486A41278F4ED667 /* RPC.swift in Sources */,
 				57C7C88DBEFFFA8BEA775392 /* Invoice.swift in Sources */,
+				57C7CFFB96153FD6728E6B0B /* Wallet.swift in Sources */,
+				57C7C7FDDEAA2FC88BD3ACB9 /* Descriptor.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -395,6 +409,8 @@
 				57C7C1225119439EBBC6071A /* Vault.swift in Sources */,
 				57C7C14728FF9AB302E0E622 /* RPC.swift in Sources */,
 				57C7C972934E02212EC856B0 /* Invoice.swift in Sources */,
+				57C7C107D27C10FAC44B6662 /* Wallet.swift in Sources */,
+				57C7C889BD90845A8BCCEA59 /* Descriptor.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

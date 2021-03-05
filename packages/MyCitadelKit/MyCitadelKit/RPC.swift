@@ -15,6 +15,14 @@ public enum Policy {
     case current(String)
 }
 
+extension Policy {
+    var descriptor: String {
+        switch self {
+        case .current(let descriptor): return descriptor
+        }
+    }
+}
+
 extension Policy: Codable {
     enum CodingKeys: CodingKey {
         case current

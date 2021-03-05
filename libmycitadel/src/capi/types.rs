@@ -29,13 +29,13 @@ pub enum descriptor_type {
     TAPROOT,
 }
 
-impl From<descriptor_type> for descriptor::OuterCategory {
+impl From<descriptor_type> for descriptor::ContentType {
     fn from(t: descriptor_type) -> Self {
         match t {
-            descriptor_type::BARE => descriptor::OuterCategory::Bare,
-            descriptor_type::HASHED => descriptor::OuterCategory::Hashed,
-            descriptor_type::SEGWIT => descriptor::OuterCategory::SegWit,
-            descriptor_type::TAPROOT => descriptor::OuterCategory::Taproot,
+            descriptor_type::BARE => descriptor::ContentType::Bare,
+            descriptor_type::HASHED => descriptor::ContentType::Hashed,
+            descriptor_type::SEGWIT => descriptor::ContentType::SegWit,
+            descriptor_type::TAPROOT => descriptor::ContentType::Taproot,
         }
     }
 }

@@ -81,6 +81,14 @@ pub enum err_type {
     #[display("")]
     success = 0,
 
+    /// general parse error
+    #[from(miniscript::Error)]
+    parse_error,
+
+    /// JSON encoding error
+    #[from(serde_json::Error)]
+    encoding_error,
+
     /// got a null pointer as one of the function arguments
     null_pointer,
 

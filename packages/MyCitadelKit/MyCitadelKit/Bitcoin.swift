@@ -173,3 +173,8 @@ public struct AddressDerivation: Codable {
     public let address: String
     public let derivation: [UInt32]
 }
+
+public struct OutPoint: Codable {
+    public let txid: String
+    public let vout: UInt16
+}

@@ -41,3 +41,17 @@ public struct PaymentResult {
     public let txid: String
     public let consignment: String?
 }
+
+public enum InvoiceType {
+    case addressUtxo
+    case descriptor
+    case psbt
+
+    public func cType() -> invoice_type {
+        switch self {
+        case .addressUtxo: return INVOICE_TYPE_ADDRESS_UTXO
+        case .descriptor: return INVOICE_TYPE_DESCRIPTOR
+        case .psbt: return INVOICE_TYPE_PSBT
+        }
+    }
+}

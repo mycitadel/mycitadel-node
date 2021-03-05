@@ -47,7 +47,7 @@ pub struct SingleSigInfo {
     #[serde_as(as = "DisplayFromStr")]
     pub pubkey_chain: PubkeyChain,
     #[serde_as(as = "DisplayFromStr")]
-    pub category: descriptor::OuterCategory,
+    pub category: descriptor::ContentType,
 }
 
 #[derive(

@@ -24,6 +24,8 @@
 extern crate amplify;
 #[macro_use]
 extern crate amplify_derive;
+#[macro_use]
+extern crate serde_with;
 
 pub mod capi;
 mod client;
