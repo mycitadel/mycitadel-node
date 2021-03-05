@@ -49,7 +49,7 @@ checksum = "c9cc50fd13f783af1129d1c7bdaa9a54a56cf9bd7697ee3609497bf7968daff3"
 dependencies = [
  "proc-macro2 1.0.24",
  "quote 1.0.9",
- "syn 1.0.60",
+ "syn 1.0.61",
 ]
 
 [[package]]
@@ -59,7 +59,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "9076b2ac55f9451a0b7f36921d1c7d3a4c8822c3cbf6ecb5eece6fab90c7fc22"
 dependencies = [
  "proc-macro2 1.0.24",
- "syn 1.0.60",
+ "syn 1.0.61",
 ]
 
 [[package]]
@@ -297,7 +297,7 @@ dependencies = [
  "quote 1.0.9",
  "serde 1.0.123",
  "serde_json",
- "syn 1.0.60",
+ "syn 1.0.61",
  "tempfile",
  "toml 0.5.8",
 ]
@@ -410,7 +410,7 @@ dependencies = [
  "proc-macro-error",
  "proc-macro2 1.0.24",
  "quote 1.0.9",
- "syn 1.0.60",
+ "syn 1.0.61",
 ]
 
 [[package]]
@@ -575,7 +575,7 @@ dependencies = [
  "proc-macro2 1.0.24",
  "quote 1.0.9",
  "strsim 0.9.3",
- "syn 1.0.60",
+ "syn 1.0.61",
 ]
 
 [[package]]
@@ -586,7 +586,7 @@ checksum = "d9b5a2f4ac4969822c62224815d069952656cadc7084fdca9751e6d959189b72"
 dependencies = [
  "darling_core",
  "quote 1.0.9",
- "syn 1.0.60",
+ "syn 1.0.61",
 ]
 
 [[package]]
@@ -615,8 +615,8 @@ dependencies = [
 
 [[package]]
 name = "descriptor-wallet"
-version = "0.4.0-beta"
-source = "git+https://github.com/LNP-BP/descriptor-wallet#257c56f0d626bbdf46a4d789e8620785e73193f9"
+version = "0.4.0-rc.1"
+source = "git+https://github.com/LNP-BP/descriptor-wallet#f7b0c4f22ddc56fd5b8030bc920048a58d050c8c"
 dependencies = [
  "amplify",
  "amplify_derive",
@@ -624,7 +624,6 @@ dependencies = [
  "chrono",
  "electrum-client",
  "lazy_static",
- "lightning_encoding",
  "miniscript",
  "regex",
  "serde 1.0.123",
@@ -635,9 +634,9 @@ dependencies = [
 
 [[package]]
 name = "diesel"
-version = "1.4.5"
+version = "1.4.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3e2de9deab977a153492a1468d1b1c0662c1cf39e5ea87d0c060ecd59ef18d8c"
+checksum = "047bfc4d5c3bd2ef6ca6f981941046113524b9a9f9a7cbdfdd7ff40f58e6f542"
 dependencies = [
  "bigdecimal",
  "byteorder",
@@ -658,7 +657,7 @@ checksum = "45f5098f628d02a7a0f68ddba586fb61e80edec3bdc1be3b921f4ceec60858d3"
 dependencies = [
  "proc-macro2 1.0.24",
  "quote 1.0.9",
- "syn 1.0.60",
+ "syn 1.0.61",
 ]
 
 [[package]]
@@ -992,7 +991,7 @@ dependencies = [
  "amplify",
  "proc-macro2 1.0.24",
  "quote 1.0.9",
- "syn 1.0.60",
+ "syn 1.0.61",
 ]
 
 [[package]]
@@ -1118,12 +1117,13 @@ dependencies = [
 
 [[package]]
 name = "lightning_encoding"
-version = "0.4.0-alpha.2+1"
-source = "git+https://github.com/LNP-BP/lnp-core#8771e3fc0d31bce5193b3817b91efcba0e788139"
+version = "0.4.0-beta"
+source = "git+https://github.com/LNP-BP/lnp-core#16e95f066b1573111736835d327ee8b91d6593da"
 dependencies = [
  "amplify",
  "amplify_derive",
  "bitcoin",
+ "descriptor-wallet",
  "lightning_encoding_derive",
  "strict_encoding",
 ]
@@ -1131,13 +1131,13 @@ dependencies = [
 [[package]]
 name = "lightning_encoding_derive"
 version = "0.4.0-alpha.1"
-source = "git+https://github.com/LNP-BP/lnp-core#8771e3fc0d31bce5193b3817b91efcba0e788139"
+source = "git+https://github.com/LNP-BP/lnp-core#16e95f066b1573111736835d327ee8b91d6593da"
 dependencies = [
  "amplify",
  "amplify_derive_helpers",
  "proc-macro2 1.0.24",
  "quote 1.0.9",
- "syn 1.0.60",
+ "syn 1.0.61",
 ]
 
 [[package]]
@@ -1159,7 +1159,7 @@ checksum = "7fb9b38af92608140b86b693604b9ffcc5824240a484d1ecd4795bacb2fe88f3"
 [[package]]
 name = "lnp-core"
 version = "0.4.0-alpha.1"
-source = "git+https://github.com/LNP-BP/lnp-core#8771e3fc0d31bce5193b3817b91efcba0e788139"
+source = "git+https://github.com/LNP-BP/lnp-core#16e95f066b1573111736835d327ee8b91d6593da"
 dependencies = [
  "amplify",
  "amplify_derive",
@@ -1398,7 +1398,7 @@ checksum = "876a53fff98e03a936a674b29568b0e605f06b29372c2489ff4de23f1949743d"
 dependencies = [
  "proc-macro2 1.0.24",
  "quote 1.0.9",
- "syn 1.0.60",
+ "syn 1.0.61",
 ]
 
 [[package]]
@@ -1551,7 +1551,7 @@ dependencies = [
  "proc-macro-error-attr",
  "proc-macro2 1.0.24",
  "quote 1.0.9",
- "syn 1.0.60",
+ "syn 1.0.61",
  "version_check",
 ]
 
@@ -2091,7 +2091,7 @@ checksum = "9391c295d64fc0abb2c556bad848f33cb8296276b1ad2677d1ae1ace4f258f31"
 dependencies = [
  "proc-macro2 1.0.24",
  "quote 1.0.9",
- "syn 1.0.60",
+ "syn 1.0.61",
 ]
 
 [[package]]
@@ -2145,7 +2145,7 @@ dependencies = [
  "darling",
  "proc-macro2 1.0.24",
  "quote 1.0.9",
- "syn 1.0.60",
+ "syn 1.0.61",
 ]
 
 [[package]]
@@ -2291,7 +2291,7 @@ dependencies = [
  "amplify",
  "proc-macro2 1.0.24",
  "quote 1.0.9",
- "syn 1.0.60",
+ "syn 1.0.61",
 ]
 
 [[package]]
@@ -2347,9 +2347,9 @@ dependencies = [
 
 [[package]]
 name = "syn"
-version = "1.0.60"
+version = "1.0.61"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c700597eca8a5a762beb35753ef6b94df201c81cca676604f547495a0d7f0081"
+checksum = "ed22b90a0e734a23a7610f4283ac9e5acfb96cbb30dfefa540d66f866f1c09c5"
 dependencies = [
  "proc-macro2 1.0.24",
  "quote 1.0.9",
@@ -2376,7 +2376,7 @@ checksum = "b834f2d66f734cb897113e34aaff2f1ab4719ca946f9a7358dba8f8064148701"
 dependencies = [
  "proc-macro2 1.0.24",
  "quote 1.0.9",
- "syn 1.0.60",
+ "syn 1.0.61",
  "unicode-xid 0.2.1",
 ]
 
@@ -2642,7 +2642,7 @@ dependencies = [
  "log",
  "proc-macro2 1.0.24",
  "quote 1.0.9",
- "syn 1.0.60",
+ "syn 1.0.61",
  "wasm-bindgen-shared",
 ]
 
@@ -2664,7 +2664,7 @@ checksum = "cc053ec74d454df287b9374ee8abb36ffd5acb95ba87da3ba5b7d3fe20eb401e"
 dependencies = [
  "proc-macro2 1.0.24",
  "quote 1.0.9",
- "syn 1.0.60",
+ "syn 1.0.61",
  "wasm-bindgen-backend",
  "wasm-bindgen-shared",
 ]
@@ -2804,7 +2804,7 @@ checksum = "c3f369ddb18862aba61aa49bf31e74d29f0f162dec753063200e1dc084345d16"
 dependencies = [
  "proc-macro2 1.0.24",
  "quote 1.0.9",
- "syn 1.0.60",
+ "syn 1.0.61",
  "synstructure 0.12.4",
 ]
 

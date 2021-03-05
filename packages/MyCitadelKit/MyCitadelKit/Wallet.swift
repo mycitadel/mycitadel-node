@@ -22,7 +22,7 @@ public class WalletContract {
         try? self.sync()
     }
 
-    public lazy var descriptorInfo: DescriptorInfo = try! parseDescriptor()
+    public private(set) lazy var descriptorInfo: DescriptorInfo = try! parseDescriptor()
 
     public var availableAssetIds: [String] {
         Array(allBalances.keys)
@@ -32,13 +32,17 @@ public class WalletContract {
         availableAssetIds.map { vault.assets[$0]! }
     }
 
+    public var outpoints: [OutPoint] {
+        balance()?.unspentAllocations.map { $0.outpoint } ?? []
+    }
+
     public var allBalances: [String: Balance] {
         var balances: [String: Balance] = [:]
         vault.balances.filter { $0.walletId == id }.forEach { balances[$0.assetId] = $0 }
         return balances
     }
 
-    public func balance(of assetId: String?) -> Balance? {
+    public func balance(of assetId: String? = nil) -> Balance? {
         let assetId = assetId ?? vault.network.nativeAssetId()
         guard let asset = vault.assets[assetId] else { return nil }
         let allocations = vault.balances.filter { $0.walletId == id && $0.assetId == assetId }.flatMap { $0.unspentAllocations }
@@ -82,9 +86,11 @@ public class WalletContract {
         try vault.nextAddress(forContractId: id, useLegacySegWit: legacy)
     }
 
-    public var usedAddresses: [AddressDerivation] {
-        (try? vault.usedAddresses(forContractId: id)) ?? []
+    public func refreshAddresses() throws {
+        usedAddresses = (try? vault.usedAddresses(forContractId: id)) ?? usedAddresses
     }
+
+    public private(set) lazy var usedAddresses: [AddressDerivation] = (try? vault.usedAddresses(forContractId: id)) ?? []
 
     public func addressBitcoins(_ address: String) -> Double {
         addressAllocations(address).bitcoinBalance(network: vault.network)
@@ -169,8 +175,23 @@ extension Array where Element == Allocation {
             sum = sum + allocation.amount
         }
     }
+
+    public func bitcoinBalance(forOutpoint outpoint: OutPoint, network: BitcoinNetwork) -> Double {
+        self.filter { $0.assetId == network.nativeAssetId() && $0.outpoint == outpoint }
+                .reduce(into: 0) { (sum: inout Double, allocation: Allocation) in
+            sum = sum + allocation.amount
+        }
+    }
+
     public func satoshisBalance(network: BitcoinNetwork) -> UInt64 {
         self.filter { $0.assetId == network.nativeAssetId() }.reduce(into: 0) { (sum: inout UInt64, allocation: Allocation) in
+            sum = sum + allocation.valueInAtoms
+        }
+    }
+
+    public func satoshisBalance(forOutpoint outpoint: OutPoint, network: BitcoinNetwork) -> UInt64 {
+        self.filter { $0.assetId == network.nativeAssetId() && $0.outpoint == outpoint }
+                .reduce(into: 0) { (sum: inout UInt64, allocation: Allocation) in
             sum = sum + allocation.valueInAtoms
         }
     }

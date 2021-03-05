@@ -13,6 +13,7 @@
 
 use chrono::{NaiveDateTime, Utc};
 use std::collections::{BTreeMap, BTreeSet};
+use std::convert::TryInto;
 
 use bitcoin::secp256k1::rand::{rngs::ThreadRng, RngCore};
 use bitcoin::{OutPoint, PublicKey, Script, Transaction, TxIn, TxOut, Txid};
@@ -306,7 +307,7 @@ impl Runtime {
                                         vout,
                                         derivation_index,
                                         tweak: tweak.map(|tweak| (tweak.tweak, tweak.pubkey)),
-                                        address: AddressPayload::from_script(&script)
+                                        address: contract.chain().try_into().ok().and_then(|network| AddressPayload::from_script(&script, network))
                                     });
                                 }
                             },
