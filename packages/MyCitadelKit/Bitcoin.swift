@@ -200,6 +200,22 @@ public enum AddressNetwork: Codable, Equatable {
     }
 }
 
+public enum AddressEncoding: Equatable {
+    case base58
+    case bech32
+    case bech32m
+}
+
+public extension AddressEncoding {
+    var name: String {
+        switch self {
+        case .base58: return "Base58"
+        case .bech32: return "Bech32"
+        case .bech32m: return "Bech32m"
+        }
+    }
+}
+
 public enum AddressFormat: RawRepresentable, Codable, Equatable {
     case P2PKH
     case P2SH
@@ -211,20 +227,18 @@ public enum AddressFormat: RawRepresentable, Codable, Equatable {
     public typealias RawValue = String
 
     public init?(rawValue: String) {
-        var rawValue = rawValue
-        if rawValue.hasPrefix("P2W") {
-            rawValue.removeFirst(3)
-            guard let ver = UInt8(rawValue) else { return nil }
-            self = .future(ver)
-            return
-        }
         switch rawValue {
         case "P2PKH": self = .P2PKH
         case "P2SH": self = .P2SH
         case "P2WPKH": self = .P2WPKH
         case "P2WSH": self = .P2WSH
         case "P2TR": self = .P2TR
-        default: return nil
+        case var value where value.hasPrefix("P2W"):
+            value.removeFirst(3)
+            guard let ver = UInt8(value) else { return nil }
+            self = .future(ver)
+        default:
+            return nil
         }
     }
 
@@ -266,21 +280,66 @@ public extension AddressFormat {
         case .future(let ver): return .future(ver)
         }
     }
+
+    var isBech32: Bool {
+        witnessVersion != .none
+    }
+
+    var encoding: AddressEncoding {
+        switch self {
+        case .P2TR: return .bech32m
+        case .future(_): return .bech32m
+        case .P2WPKH, .P2WSH: return .bech32
+        default: return .base58
+        }
+    }
 }
 
 public struct AddressInfo: Codable, Identifiable, Equatable {
     public var id: String { address }
 
     public let address: String
+    public let isBIP21: Bool
     public let network: AddressNetwork
-    public let payload: String
-    public let value: UInt64?
-    public let label: String?
-    public let message: String?
     public let format: AddressFormat
+    public let payload: String
+    public var value: UInt64?
+    private var labelUrlEncoded: String?
+    private var messageUrlEncoded: String?
+
+    public var label: String? {
+        get {
+            labelUrlEncoded?.removingPercentEncoding
+        }
+        set {
+            labelUrlEncoded = newValue?.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? nil
+        }
+    }
+
+    public var message: String? {
+        get {
+            messageUrlEncoded?.removingPercentEncoding
+        }
+        set {
+            messageUrlEncoded = newValue?.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? nil
+        }
+    }
 
     public var witnessVer: WitnessVersion {
         format.witnessVersion
+    }
+
+    public var encoding: AddressEncoding {
+        format.encoding
+    }
+
+    public var amount: Double? {
+        guard let value = value else { return nil }
+        return Double(value) / 100_000_000.0
+    }
+
+    private enum CodingKeys: String, CodingKey {
+        case address, isBIP21, network, format, payload, value, labelUrlEncoded = "label", messageUrlEncoded = "message"
     }
 }
 

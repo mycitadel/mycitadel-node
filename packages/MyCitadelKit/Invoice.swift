@@ -4,11 +4,21 @@
 
 import Foundation
 
+public struct InvoiceDetails: Identifiable, Codable {
+    public var id: String {
+        commitment
+    }
+    public let commitment: String
+    public let source: URL
+}
+
 public struct Invoice: Codable {
     public var amountString: String = "any"
     public var assetId: String? = nil
     public let beneficiary: String
     public var merchant: String? = nil
+    public var purpose: String? = nil
+    public var details: InvoiceDetails? = nil
 
     public var amountInAtoms: UInt64? {
         if amountString == "any" {
@@ -33,7 +43,7 @@ public struct Invoice: Codable {
     }
 
     private enum CodingKeys: String, CodingKey {
-        case amountString = "amount", assetId = "asset", beneficiary, merchant
+        case amountString = "amount", assetId = "asset", beneficiary, merchant, purpose, details
     }
 }
 

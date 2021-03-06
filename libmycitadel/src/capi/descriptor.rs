@@ -147,6 +147,8 @@ impl From<PubkeyChain> for PubkeyChainInfo {
 pub struct AddressInfo {
     #[serde_as(as = "DisplayFromStr")]
     pub address: Address,
+    #[serde(rename = "isBIP21")]
+    pub is_bip21: bool,
     #[serde_as(as = "DisplayFromStr")]
     pub network: AddressNetwork,
     pub payload: String,
@@ -177,6 +179,7 @@ impl From<Address> for AddressInfo {
 
         AddressInfo {
             network: address.clone().into(),
+            is_bip21: false,
             address,
             payload,
             value: None,
@@ -195,8 +198,7 @@ impl FromStr for AddressInfo {
         if let Ok(address) = Address::from_str(s) {
             return Ok(address.into());
         }
-        let s = s.to_lowercase();
-        if !s.starts_with("bitcoin:") {
+        if !s.to_lowercase().starts_with("bitcoin:") {
             return Err(());
         }
         let s = &s[8..];
@@ -208,6 +210,7 @@ impl FromStr for AddressInfo {
         };
         let mut info = AddressInfo::from(address);
         if let Some(params) = split.next() {
+            info.is_bip21 = true;
             for arg in params.split('&') {
                 let mut split = arg.split('=');
                 match (split.next(), split.next(), split.next()) {
@@ -240,8 +243,8 @@ pub extern "C" fn lnpbp_address_parse(
         Err(err_type::null_pointer)?
     }
     let address = unsafe { CStr::from_ptr(address).to_str()? };
-    let address = Address::from_str(address)?;
-    let info = AddressInfo::from(address);
+    let info =
+        AddressInfo::from_str(address).map_err(|_| err_type::parse_error)?;
     let json = serde_json::to_string(&info)?;
     string_result_t::success(&json)
 }
