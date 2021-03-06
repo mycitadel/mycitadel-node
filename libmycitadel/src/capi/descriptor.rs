@@ -18,16 +18,20 @@ use std::convert::{TryFrom, TryInto};
 use std::ffi::CStr;
 use std::str::FromStr;
 
+use bitcoin::hashes::hex::ToHex;
+use bitcoin::util::address::{Address, Payload};
 use bitcoin::util::bip32::{ExtendedPubKey, Fingerprint};
 use bitcoin::{OutPoint, XpubIdentifier};
 use miniscript::descriptor::{Descriptor, DescriptorType, ShInner, WshInner};
 use miniscript::{ForEach, ForEachKey};
 use wallet::bip32::{BranchStep, PubkeyChain, TerminalStep, XpubRef};
-use wallet::descriptor;
+use wallet::descriptor::FullType;
+use wallet::{
+    descriptor, AddressFormat, AddressNetwork, AddressPayload, WitnessVersion,
+};
 
 use super::signer::err_type;
 use super::string_result_t;
-use wallet::descriptor::FullType;
 
 #[serde_as]
 #[derive(
@@ -135,6 +139,111 @@ impl From<PubkeyChain> for PubkeyChainInfo {
             terminal_path: pubkey_chain.terminal_path,
         }
     }
+}
+
+#[serde_as]
+#[derive(Clone, Ord, PartialOrd, Eq, PartialEq, Hash, Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct AddressInfo {
+    #[serde_as(as = "DisplayFromStr")]
+    pub address: Address,
+    #[serde_as(as = "DisplayFromStr")]
+    pub network: AddressNetwork,
+    pub payload: String,
+    #[serde_as(as = "Option<_>")]
+    pub value: Option<u64>,
+    #[serde_as(as = "Option<_>")]
+    pub label: Option<String>,
+    #[serde_as(as = "Option<_>")]
+    pub message: Option<String>,
+    #[serde_as(as = "DisplayFromStr")]
+    pub format: AddressFormat,
+    #[serde_as(as = "Option<DisplayFromStr>")]
+    pub witness_ver: Option<WitnessVersion>,
+}
+
+impl From<Address> for AddressInfo {
+    fn from(address: Address) -> Self {
+        let format = AddressFormat::from(address.clone());
+        let payload = AddressPayload::try_from(address.payload.clone())
+            .as_ref()
+            .map(AddressPayload::to_string)
+            .unwrap_or(match &address.payload {
+                Payload::WitnessProgram { version, program } => {
+                    format!("wp{}:{}", version.to_u8(), program.to_hex())
+                }
+                _ => unreachable!(),
+            });
+
+        AddressInfo {
+            network: address.clone().into(),
+            address,
+            payload,
+            value: None,
+            label: None,
+            message: None,
+            format,
+            witness_ver: format.witness_version(),
+        }
+    }
+}
+
+impl FromStr for AddressInfo {
+    type Err = ();
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        if let Ok(address) = Address::from_str(s) {
+            return Ok(address.into());
+        }
+        let s = s.to_lowercase();
+        if !s.starts_with("bitcoin:") {
+            return Err(());
+        }
+        let s = &s[8..];
+        let mut split = s.split('?');
+        let address = if let Some(addr) = split.next() {
+            Address::from_str(addr).map_err(|_| ())?
+        } else {
+            return Err(());
+        };
+        let mut info = AddressInfo::from(address);
+        if let Some(params) = split.next() {
+            for arg in params.split('&') {
+                let mut split = arg.split('=');
+                match (split.next(), split.next(), split.next()) {
+                    (Some("amount"), Some(value), None) => {
+                        let amount: f64 = value.parse().map_err(|_| ())?;
+                        info.value = Some((amount * 100_000_000.0) as u64);
+                    }
+                    (Some("label"), Some(value), None) => {
+                        info.label = Some(value.to_owned())
+                    }
+                    (Some("message"), Some(value), None) => {
+                        info.message = Some(value.to_owned())
+                    }
+                    (Some("label"), ..)
+                    | (Some("message"), ..)
+                    | (Some("amount"), ..) => return Err(()),
+                    _ => (),
+                }
+            }
+        }
+        Ok(info)
+    }
+}
+
+#[no_mangle]
+pub extern "C" fn lnpbp_address_parse(
+    address: *const c_char,
+) -> string_result_t {
+    if address.is_null() {
+        Err(err_type::null_pointer)?
+    }
+    let address = unsafe { CStr::from_ptr(address).to_str()? };
+    let address = Address::from_str(address)?;
+    let info = AddressInfo::from(address);
+    let json = serde_json::to_string(&info)?;
+    string_result_t::success(&json)
 }
 
 #[no_mangle]

@@ -39,7 +39,7 @@ use wallet::bip32::{ChildIndex, UnhardenedIndex};
 use wallet::descriptor::ContractDescriptor;
 use wallet::psbt::{ProprietaryKey, ProprietaryWalletInput};
 use wallet::script::PubkeyScript;
-use wallet::{psbt, AddressPayload, Psbt, Slice32};
+use wallet::{psbt, AddressCompat, Psbt, Slice32};
 
 use super::Config;
 use crate::cache::{self, Driver as CacheDriver};
@@ -307,7 +307,7 @@ impl Runtime {
                                         vout,
                                         derivation_index,
                                         tweak: tweak.map(|tweak| (tweak.tweak, tweak.pubkey)),
-                                        address: contract.chain().try_into().ok().and_then(|network| AddressPayload::from_script(&script, network))
+                                        address: contract.chain().try_into().ok().and_then(|network| AddressCompat::from_script(&script, network))
                                     });
                                 }
                             },

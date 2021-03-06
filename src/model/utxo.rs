@@ -19,7 +19,7 @@ use bitcoin::{OutPoint, PublicKey, Txid};
 use rgb::AtomicValue;
 use wallet::bip32::UnhardenedIndex;
 use wallet::blockchain::ParseError;
-use wallet::{AddressPayload, Slice32};
+use wallet::{AddressCompat, Slice32};
 
 pub type Allocations =
     BTreeMap<OutPoint, BTreeMap<rgb::ContractId, AtomicValue>>;
@@ -70,7 +70,7 @@ pub struct Utxo {
 
     /// Address controlling the output
     #[serde_as(as = "Option<DisplayFromStr>")]
-    pub address: Option<AddressPayload>,
+    pub address: Option<AddressCompat>,
 }
 
 impl Utxo {
@@ -115,7 +115,7 @@ impl FromStr for Utxo {
                 derivation_index: index.parse().map_err(|_| ParseError)?,
                 tweak: None,
                 address: address
-                    .map(AddressPayload::from_str)
+                    .map(AddressCompat::from_str)
                     .transpose()
                     .ok()
                     .flatten(),

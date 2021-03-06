@@ -194,6 +194,8 @@ void lnpbp_bech32_release(struct bech32_info_t info);
 
 struct bech32_info_t lnpbp_bech32_info(const char *bech_str);
 
+struct string_result_t lnpbp_address_parse(const char *address);
+
 struct string_result_t lnpbp_descriptor_parse(const char *descriptor);
 
 struct mycitadel_client_t *mycitadel_run_embedded(const char *chain,

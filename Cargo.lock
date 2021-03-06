@@ -616,7 +616,7 @@ dependencies = [
 [[package]]
 name = "descriptor-wallet"
 version = "0.4.0-rc.1"
-source = "git+https://github.com/LNP-BP/descriptor-wallet#f7b0c4f22ddc56fd5b8030bc920048a58d050c8c"
+source = "git+https://github.com/LNP-BP/descriptor-wallet#b331dd080ff2d71b700932203119aa1b72770790"
 dependencies = [
  "amplify",
  "amplify_derive",
@@ -955,9 +955,9 @@ dependencies = [
 
 [[package]]
 name = "indexmap"
-version = "1.6.1"
+version = "1.6.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4fb1fa934250de4de8aef298d81c729a7d33d8c239daa3a7575e6b92bfc7313b"
+checksum = "824845a0bf897a9042383849b02c1bc219c2383772efcd5c6f9766fa4b81aef3"
 dependencies = [
  "autocfg 1.0.1",
  "hashbrown",
@@ -1066,9 +1066,9 @@ dependencies = [
 
 [[package]]
 name = "libc"
-version = "0.2.87"
+version = "0.2.88"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "265d751d31d6780a3f956bb5b8022feba2d94eeee5a84ba64f4212eedca42213"
+checksum = "03b07a082330a35e43f63177cc01689da34fbffa0105e1246cf0311472cac73a"
 
 [[package]]
 name = "libmycitadel"

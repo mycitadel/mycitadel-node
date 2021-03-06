@@ -142,11 +142,11 @@ public enum DescriptorType {
     }
 
     public func usesSchnorr() -> Bool {
-        return self == .taproot
+        self == .taproot
     }
 
     public func usesSegWit() -> Bool {
-        return self == .segwit
+        self == .segwit
     }
 
     public func createPubkeyChain(network: BitcoinNetwork, rgb: Bool, multisig: Bool, scope: UInt32?) -> String {
@@ -154,19 +154,134 @@ public enum DescriptorType {
         let id = UInt32.random(in: 0...boundary)
         let scope = UInt32.random(in: 0...boundary);
         return rgb
-                ? "m/827166'/\(self.usesSchnorr() ? "340" : "0")'/\(network.derivationIndex())'/\(id)'/\(scope)'/0/*"
-                : self.usesSchnorr()
+                ? "m/827166'/\(usesSchnorr() ? "340" : "0")'/\(network.derivationIndex())'/\(id)'/\(scope)'/0/*"
+                : usesSchnorr()
                 ? "m/\(multisig ? 345 : 344)'/0'/\(scope)/0/*"
-                : self.usesSegWit()
+                : usesSegWit()
                 ? "m/\(multisig ? 84 : 84)'/0'/\(scope)/0/*"
                 : "m/\(multisig ? 45 : 44)'/0'/\(scope)/0/*"
     }
 }
 
-public enum WitnessVersion {
+public enum WitnessVersion: Equatable {
     case none
     case segwit
     case taproot
+    case future(UInt8)
+}
+
+public enum AddressNetwork: Codable, Equatable {
+    case mainnet
+    case testnet
+    case regtest
+
+    enum CodingError: Error {
+        case unknownValue
+    }
+
+    public init(from decoder: Decoder) throws {
+        guard let value = try? decoder.singleValueContainer().decode(String.self)
+                else { throw CodingError.unknownValue }
+        switch value {
+        case "mainnet": self = .mainnet
+        case "testnet": self = .testnet
+        case "regtest": self = .regtest
+        default: throw CodingError.unknownValue
+        }
+    }
+
+    public func encode(to encoder: Encoder) throws {
+        var container = encoder.singleValueContainer();
+        switch self {
+        case .mainnet: try container.encode("mainnet")
+        case .testnet: try container.encode("testnet")
+        case .regtest: try container.encode("regtest")
+        }
+    }
+}
+
+public enum AddressFormat: RawRepresentable, Codable, Equatable {
+    case P2PKH
+    case P2SH
+    case P2WPKH
+    case P2WSH
+    case P2TR
+    case future(UInt8)
+
+    public typealias RawValue = String
+
+    public init?(rawValue: String) {
+        var rawValue = rawValue
+        if rawValue.hasPrefix("P2W") {
+            rawValue.removeFirst(3)
+            guard let ver = UInt8(rawValue) else { return nil }
+            self = .future(ver)
+            return
+        }
+        switch rawValue {
+        case "P2PKH": self = .P2PKH
+        case "P2SH": self = .P2SH
+        case "P2WPKH": self = .P2WPKH
+        case "P2WSH": self = .P2WSH
+        case "P2TR": self = .P2TR
+        default: return nil
+        }
+    }
+
+    public var rawValue: String {
+        switch self {
+        case .P2PKH: return "P2PKH"
+        case .P2SH: return "P2SH"
+        case .P2WPKH: return "P2WPKH"
+        case .P2WSH: return "P2WSH"
+        case .P2TR: return "P2TR"
+        case .future(let ver): return "P2W\(ver)"
+        }
+    }
+
+    enum CodingError: Error {
+        case unknownValue
+    }
+
+    public init(from decoder: Decoder) throws {
+        guard let value = try? decoder.singleValueContainer().decode(String.self)
+                else { throw CodingError.unknownValue }
+        guard let raw = AddressFormat(rawValue: value)
+                else { throw CodingError.unknownValue }
+        self = raw
+    }
+
+    public func encode(to encoder: Encoder) throws {
+        var container = encoder.singleValueContainer();
+        try container.encode(rawValue)
+    }
+}
+
+public extension AddressFormat {
+    var witnessVersion: WitnessVersion {
+        switch self {
+        case .P2PKH, .P2SH: return .none
+        case .P2WPKH, .P2WSH: return .segwit
+        case .P2TR: return .taproot
+        case .future(let ver): return .future(ver)
+        }
+    }
+}
+
+public struct AddressInfo: Codable, Identifiable, Equatable {
+    public var id: String { address }
+
+    public let address: String
+    public let network: AddressNetwork
+    public let payload: String
+    public let value: UInt64?
+    public let label: String?
+    public let message: String?
+    public let format: AddressFormat
+
+    public var witnessVer: WitnessVersion {
+        format.witnessVersion
+    }
 }
 
 public struct AddressDerivation: Codable, Identifiable, Equatable {

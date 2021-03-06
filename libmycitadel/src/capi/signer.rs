@@ -21,6 +21,7 @@ use std::str::{FromStr, Utf8Error};
 
 use bip39::Mnemonic;
 use bitcoin::consensus::{deserialize, serialize};
+use bitcoin::util::address;
 use bitcoin::util::bip32::{
     self, ChildNumber, DerivationPath, Error, ExtendedPrivKey, ExtendedPubKey,
 };
@@ -83,6 +84,7 @@ pub enum err_type {
 
     /// general parse error
     #[from(miniscript::Error)]
+    #[from(address::Error)]
     parse_error,
 
     /// JSON encoding error

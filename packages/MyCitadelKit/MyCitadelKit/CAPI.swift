@@ -222,8 +222,15 @@ extension CitadelVault: CitadelRPC {
 extension WalletContract {
     internal func parseDescriptor() throws -> DescriptorInfo {
         let info = lnpbp_descriptor_parse(policy.descriptor)
+        defer {
+            result_destroy(info)
+        }
+        if !is_success(info) {
+            let errorMessage = String(cString: info.details.error)
+            print("Error parsing address: \(errorMessage)")
+            throw CitadelError(errorMessage)
+        }
         let jsonString = String(cString: info.details.data)
-        result_destroy(info)
         let jsonData = Data(jsonString.utf8)
         let decoder = JSONDecoder();
         print("Parsing JSON descriptor data: \(jsonString)")
