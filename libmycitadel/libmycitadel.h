@@ -255,6 +255,7 @@ const char *mycitadel_address_pay(struct mycitadel_client_t *client,
 struct prepared_transfer_t mycitadel_invoice_pay(struct mycitadel_client_t *client,
                                                  const char *contract_id,
                                                  const char *invoice,
+                                                 uint64_t amount,
                                                  uint64_t fee,
                                                  uint64_t giveaway);
 

@@ -346,6 +346,7 @@ pub extern "C" fn mycitadel_address_pay(
         client,
         ptr::null(),
         invoice.as_ptr() as *const c_char,
+        amount,
         fee,
         0,
     )
@@ -357,6 +358,7 @@ pub extern "C" fn mycitadel_invoice_pay(
     client: *mut mycitadel_client_t,
     contract_id: *const c_char,
     invoice: *const c_char,
+    amount: u64,
     fee: u64,
     giveaway: u64,
 ) -> prepared_transfer_t {
@@ -389,7 +391,7 @@ pub extern "C" fn mycitadel_invoice_pay(
         inner.invoice_pay(
             contract_id,
             invoice,
-            None,
+            if amount > 0 { Some(amount) } else { None },
             fee,
             if giveaway > 0 { Some(giveaway) } else { None },
         )

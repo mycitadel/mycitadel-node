@@ -123,8 +123,8 @@ public class WalletContract: Identifiable {
     }
      */
 
-    public func pay(invoice: String, fee: UInt64, giveaway: UInt64? = nil) throws -> PaymentResult {
-        let transfer = try vault.pay(from: id, invoice: invoice, fee: fee, giveaway: giveaway)
+    public func pay(invoice: String, value: UInt64? = nil, fee: UInt64, giveaway: UInt64? = nil) throws -> PaymentResult {
+        let transfer = try vault.pay(from: id, invoice: invoice, value: value, fee: fee, giveaway: giveaway)
         let signedPsbt = try vault.sign(psbt: transfer.psbt)
         let txid = try vault.publish(psbt: signedPsbt)
 

@@ -523,7 +523,7 @@ impl Runtime {
                             if transfer_info.is_rgb() {
                                 ""
                             } else {
-                                " on bitcoin outputs which does not have RGB assets on them"
+                                " on bitcoin outputs which do not have RGB assets on them"
                             }
                         )
                     }))?;

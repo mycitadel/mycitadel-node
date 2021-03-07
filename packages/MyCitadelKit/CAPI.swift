@@ -206,8 +206,8 @@ extension CitadelVault {
     }
      */
 
-    internal func pay(from contractId: String, invoice: String, fee: UInt64, giveaway: UInt64? = nil) throws -> Transfer {
-        let transfer = mycitadel_invoice_pay(rpcClient, contractId, invoice, fee, giveaway ?? 0)
+    internal func pay(from contractId: String, invoice: String, value: UInt64? = nil, fee: UInt64, giveaway: UInt64? = nil) throws -> Transfer {
+        let transfer = mycitadel_invoice_pay(rpcClient, contractId, invoice, value ?? 0, fee, giveaway ?? 0)
         if !transfer.success {
             guard let err = self.lastError() else {
                 throw CitadelError("MyCitadel C API is broken")

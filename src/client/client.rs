@@ -340,7 +340,7 @@ impl Client {
             bitcoin_fee: fee,
             asset_value: invoice.amount().atomic_value().or(amount).ok_or(Error::ServerFailure(Failure {
                 code: 0,
-                info: s!("Amount must be specified for invoices which does not provide default amount value")
+                info: s!("Amount must be specified for invoices if they do not provide default amount value")
             }))?,
             transfer_info,
             invoice
