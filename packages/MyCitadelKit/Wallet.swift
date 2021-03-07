@@ -248,8 +248,7 @@ public struct OutcomingTransfer: Codable {
 
     private enum CodingKeys: String, CodingKey {
         case published, assetChange = "asset_change", bitcoinChange = "bitcoin_change", changeOutputs = "change_outputs",
-             giveaway = "giveaway", paidBitcoinFee = "paid_bitcoin_fee",
-             outputDerivationIndexes = "output_derivation_indexes", invoice = "invoice"
+             giveaway, paidBitcoinFee = "paid_bitcoin_fee", outputDerivationIndexes = "output_derivation_indexes", invoice
     }
 }
 
@@ -272,7 +271,7 @@ public enum TransferDirection: Codable {
         } else {
             throw DecodingError.typeMismatch(
                     IncomingTransfer.self,
-                    DecodingError.Context(codingPath: [CodingKeys.incoming], debugDescription: "IncomingTransfer value expected")
+                    DecodingError.Context(codingPath: [CodingKeys.incoming], debugDescription: "incoming or outcoming transfer value expected")
             )
         }
     }
@@ -294,19 +293,29 @@ public struct TransferOperation: Codable, Identifiable {
     }
 
     public let direction: TransferDirection
-    public let createdAt: Date
+    public let createdAt: String
     public let height: Int64
     public let assetId: String?
     public let balanceBefore: UInt64
     public let bitcoinVolume: UInt64
-    public let assetVolume: UInt64
+    public let volume: UInt64
+    public let bitcoinValue: UInt64
+    public let value: UInt64
     public let txFee: UInt64
     public let txid: String
     public let psbt: String
     public let consignment: String?
     public var notes: String?
-    public let value: UInt64
-    public let bitcoinValue: UInt64
+
+    static private var dateDecoder: JSONDecoder = {
+        let decoder = JSONDecoder()
+        decoder.dateDecodingStrategy = .iso8601
+        return decoder
+    }()
+    public var date: Date? {
+        guard let data = createdAt.data(using: .utf8) else { return nil }
+        return try? Self.dateDecoder.decode(Date.self, from: data)
+    }
 
     public var isOutcoming: Bool {
         if case .outcoming(_) = direction { return true } else { return false }
@@ -318,7 +327,7 @@ public struct TransferOperation: Codable, Identifiable {
 
     private enum CodingKeys: String, CodingKey {
         case direction, createdAt = "created_at", height, assetId = "asset_id", balanceBefore = "balance_before",
-             bitcoinVolume = "bitcoin_volume", assetVolume = "asset_volume", txFee = "tx_fee",
+             bitcoinVolume = "bitcoin_volume", volume = "asset_volume", txFee = "tx_fee",
              txid, psbt, consignment, notes, value = "asset_value", bitcoinValue = "bitcoin_value"
     }
 }

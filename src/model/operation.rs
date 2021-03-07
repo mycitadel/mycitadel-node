@@ -39,7 +39,7 @@ use wallet::Psbt;
 pub enum PaymentDirecton {
     Incoming {
         giveaway: Option<u64>,
-        #[serde_as(as = "HashSet<DisplayFromStr>")]
+        #[serde_as(as = "HashSet<_>")]
         input_derivation_indexes: HashSet<UnhardenedIndex>,
     },
 
@@ -50,7 +50,7 @@ pub enum PaymentDirecton {
         change_outputs: HashSet<u16>,
         giveaway: Option<u64>,
         paid_bitcoin_fee: u64,
-        #[serde_as(as = "HashSet<DisplayFromStr>")]
+        #[serde_as(as = "HashSet<_>")]
         output_derivation_indexes: HashSet<UnhardenedIndex>,
         #[serde_as(as = "DisplayFromStr")]
         invoice: Invoice,
