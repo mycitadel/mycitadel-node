@@ -18,7 +18,6 @@
 		3014053725EAF7DD00F4AA07 /* Bitcoin.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57C7CD9E08CCCC838A9E8A29 /* Bitcoin.swift */; };
 		3014053B25EAF7E000F4AA07 /* Signer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57C7C1B65E25053DA1E4017C /* Signer.swift */; };
 		3014053F25EAF7E300F4AA07 /* Vault.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57C7C777A9E533309028B722 /* Vault.swift */; };
-		3014054325EAF7E600F4AA07 /* RPC.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57C7CAB2255EF461D06FBDDB /* RPC.swift */; };
 		3015233025E5C58D00069C06 /* Combine.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3015232F25E5C58D00069C06 /* Combine.framework */; };
 		3037C6D625F3A58600048CDD /* Parser.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3037C6D525F3A58600048CDD /* Parser.swift */; };
 		3037C6D725F3A58600048CDD /* Parser.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3037C6D525F3A58600048CDD /* Parser.swift */; };
@@ -33,10 +32,8 @@
 		57C7C00FE0A1ECD984D19C56 /* Bitcoin.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57C7CD9E08CCCC838A9E8A29 /* Bitcoin.swift */; };
 		57C7C107D27C10FAC44B6662 /* Wallet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57C7CF262D6A1ACCE1D68B50 /* Wallet.swift */; };
 		57C7C1225119439EBBC6071A /* Vault.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57C7C777A9E533309028B722 /* Vault.swift */; };
-		57C7C14728FF9AB302E0E622 /* RPC.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57C7CAB2255EF461D06FBDDB /* RPC.swift */; };
 		57C7C38235B643DEACA1BFA7 /* Signer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57C7C1B65E25053DA1E4017C /* Signer.swift */; };
 		57C7C397723B8FEF749DFAF7 /* Invoice.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57C7C9E3AAEA2638DA7557A5 /* Invoice.swift */; };
-		57C7C3A2486A41278F4ED667 /* RPC.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57C7CAB2255EF461D06FBDDB /* RPC.swift */; };
 		57C7C3DDA30D07DB05BC3D75 /* Bitcoin.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57C7CD9E08CCCC838A9E8A29 /* Bitcoin.swift */; };
 		57C7C7FDDEAA2FC88BD3ACB9 /* Descriptor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57C7C633CB66C5E578B696B0 /* Descriptor.swift */; };
 		57C7C889BD90845A8BCCEA59 /* Descriptor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57C7C633CB66C5E578B696B0 /* Descriptor.swift */; };
@@ -84,7 +81,6 @@
 		57C7C633CB66C5E578B696B0 /* Descriptor.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Descriptor.swift; sourceTree = "<group>"; };
 		57C7C777A9E533309028B722 /* Vault.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Vault.swift; sourceTree = "<group>"; };
 		57C7C9E3AAEA2638DA7557A5 /* Invoice.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Invoice.swift; sourceTree = "<group>"; };
-		57C7CAB2255EF461D06FBDDB /* RPC.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RPC.swift; sourceTree = "<group>"; };
 		57C7CD23C103A8CD23E4762D /* Assets.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Assets.swift; sourceTree = "<group>"; };
 		57C7CD9E08CCCC838A9E8A29 /* Bitcoin.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Bitcoin.swift; sourceTree = "<group>"; };
 		57C7CF262D6A1ACCE1D68B50 /* Wallet.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Wallet.swift; sourceTree = "<group>"; };
@@ -143,7 +139,6 @@
 				57C7CD9E08CCCC838A9E8A29 /* Bitcoin.swift */,
 				57C7C1B65E25053DA1E4017C /* Signer.swift */,
 				57C7C777A9E533309028B722 /* Vault.swift */,
-				57C7CAB2255EF461D06FBDDB /* RPC.swift */,
 				57C7C9E3AAEA2638DA7557A5 /* Invoice.swift */,
 				57C7CF262D6A1ACCE1D68B50 /* Wallet.swift */,
 				57C7C633CB66C5E578B696B0 /* Descriptor.swift */,
@@ -367,7 +362,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				3014053F25EAF7E300F4AA07 /* Vault.swift in Sources */,
-				3014054325EAF7E600F4AA07 /* RPC.swift in Sources */,
 				3037C6D725F3A58600048CDD /* Parser.swift in Sources */,
 				3014053B25EAF7E000F4AA07 /* Signer.swift in Sources */,
 				3014053725EAF7DD00F4AA07 /* Bitcoin.swift in Sources */,
@@ -389,7 +383,6 @@
 				57C7C00FE0A1ECD984D19C56 /* Bitcoin.swift in Sources */,
 				57C7C38235B643DEACA1BFA7 /* Signer.swift in Sources */,
 				57C7C9C1E5E34147BEC7D81D /* Vault.swift in Sources */,
-				57C7C3A2486A41278F4ED667 /* RPC.swift in Sources */,
 				57C7C88DBEFFFA8BEA775392 /* Invoice.swift in Sources */,
 				57C7CFFB96153FD6728E6B0B /* Wallet.swift in Sources */,
 				57C7C7FDDEAA2FC88BD3ACB9 /* Descriptor.swift in Sources */,
@@ -405,7 +398,6 @@
 				57C7C3DDA30D07DB05BC3D75 /* Bitcoin.swift in Sources */,
 				57C7CBFA394A69AB468B3D1C /* Signer.swift in Sources */,
 				57C7C1225119439EBBC6071A /* Vault.swift in Sources */,
-				57C7C14728FF9AB302E0E622 /* RPC.swift in Sources */,
 				57C7C972934E02212EC856B0 /* Invoice.swift in Sources */,
 				57C7C107D27C10FAC44B6662 /* Wallet.swift in Sources */,
 				57C7C889BD90845A8BCCEA59 /* Descriptor.swift in Sources */,

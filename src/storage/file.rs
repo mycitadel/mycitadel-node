@@ -247,7 +247,7 @@ impl Driver for FileDriver {
     fn history(
         &self,
         contract_id: ContractId,
-    ) -> Result<Vec<&Operation>, Error> {
+    ) -> Result<Vec<Operation>, Error> {
         let contract = self
             .data
             .contracts

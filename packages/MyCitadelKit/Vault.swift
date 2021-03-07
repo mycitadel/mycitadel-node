@@ -17,6 +17,94 @@ extension InternalDataInconsistency: Error {
     }
 }
 
+public struct CitadelError: Error {
+    let errNo: Int
+    let message: String
+
+    init(errNo: Int, message: String) {
+        self.errNo = errNo
+        self.message = message
+    }
+
+    init(_ message: String) {
+        self.errNo = 1000
+        self.message = message
+    }
+}
+
+extension CitadelError: CustomStringConvertible {
+    public var description: String {
+        self.message
+    }
+}
+
+extension CitadelError: LocalizedError {
+    public var errorDescription: String? {
+        self.message
+    }
+}
+
+open class CitadelVault {
+    private static var node: CitadelVault? = nil
+    public static var embedded: CitadelVault! {
+        CitadelVault.node
+    }
+
+    public static func runEmbeddedNode(
+            connectingNetwork network: BitcoinNetwork,
+            rgbNode: String? = nil,
+            lnpNode: String? = nil,
+            electrumServer: String = "pandora.network:60001"
+    ) throws {
+        try Self.node = CitadelVault(withEmbeddedNodeConnectingNetwork: network,
+                rgbNode: rgbNode, lnpNode: lnpNode, electrumServer: electrumServer)
+    }
+
+    internal private(set) var rpcClient: UnsafeMutablePointer<mycitadel_client_t>!
+
+    let dataDir: String
+    public let network: BitcoinNetwork
+    public var nativeAsset: NativeAsset {
+        assets[network.nativeAssetId()] as! NativeAsset
+    }
+    @Published
+    public var blockchainState = BlockchainState()
+    @Published
+    public var mempoolState = MempoolState()
+    @Published
+    public var contracts: [WalletContract] = []
+    @Published
+    public var assets: [String: Asset] = [:]
+    @Published
+    public var balances: [Balance] = []
+
+    public init(
+            connectingCitadelNode citadelNode: String,
+            electrumServer: String = "pandora.network:60001",
+            onNetwork network: BitcoinNetwork
+    ) {
+        // TODO: Implement connected mode
+        fatalError("Connected mode is not yet implemented")
+    }
+
+    public init(
+            withEmbeddedNodeConnectingNetwork network: BitcoinNetwork,
+            rgbNode: String? = nil,
+            lnpNode: String? = nil,
+            electrumServer: String = "pandora.network:60001"
+    ) throws {
+        self.network = network
+        dataDir = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!.appendingPathComponent(network.rawValue).path
+        rpcClient = mycitadel_run_embedded(network.rawValue, self.dataDir, electrumServer)
+        assets[network.nativeAssetId()] = NativeAsset(withCitadelVault: self)
+    }
+
+    deinit {
+        // TODO: Teardown client
+        // mycitadel_shutdown(self.client)
+    }
+}
+
 public protocol VaultAPI: ObservableObject {
     var network: BitcoinNetwork { get }
     var blockchainState: BlockchainState { get }

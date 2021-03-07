@@ -209,6 +209,9 @@ const char *mycitadel_single_sig_create(struct mycitadel_client_t *client,
                                         const char *keychain,
                                         enum descriptor_type category);
 
+const char *mycitadel_contract_operations(struct mycitadel_client_t *client,
+                                          const char *contract_id);
+
 const char *mycitadel_contract_rename(struct mycitadel_client_t *client,
                                       const char *contract_id,
                                       const char *new_name);

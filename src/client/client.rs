@@ -99,11 +99,11 @@ impl Client {
         }))
     }
 
-    pub fn contract_details(
+    pub fn contract_operations(
         &mut self,
         contract_id: ContractId,
     ) -> Result<Reply, Error> {
-        self.request(Request::ContractDetails(contract_id))
+        self.request(Request::ContractOperations(contract_id))
     }
 
     pub fn contract_rename(
@@ -338,7 +338,7 @@ impl Client {
         match self.request(Request::ComposeTransfer(message::ComposeTransferRequest {
             pay_from: contract_id,
             bitcoin_fee: fee,
-            amount: invoice.amount().atomic_value().or(amount).ok_or(Error::ServerFailure(Failure {
+            asset_value: invoice.amount().atomic_value().or(amount).ok_or(Error::ServerFailure(Failure {
                 code: 0,
                 info: s!("Amount must be specified for invoices which does not provide default amount value")
             }))?,

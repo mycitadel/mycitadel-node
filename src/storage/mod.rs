@@ -61,10 +61,8 @@ pub trait Driver {
         operation: Operation,
     ) -> Result<(), Error>;
 
-    fn history(
-        &self,
-        contract_id: ContractId,
-    ) -> Result<Vec<&Operation>, Error>;
+    fn history(&self, contract_id: ContractId)
+        -> Result<Vec<Operation>, Error>;
 
     fn signers(&self) -> Result<Vec<SignerAccountInfo>, Error>;
     fn add_signer(

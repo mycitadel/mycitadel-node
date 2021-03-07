@@ -120,6 +120,25 @@ pub extern "C" fn mycitadel_single_sig_create(
 }
 
 #[no_mangle]
+pub extern "C" fn mycitadel_contract_operations(
+    client: *mut mycitadel_client_t,
+    contract_id: *const c_char,
+) -> *const c_char {
+    let client = mycitadel_client_t::from_raw(client);
+
+    let contract_id = match client.parse_contract_id(contract_id).ok() {
+        None => return ptr::null(),
+        Some(v) => v,
+    };
+
+    client
+        .try_as_opaque()
+        .map(|opaque| opaque.contract_operations(contract_id))
+        .map(|response| client.process_response(response))
+        .unwrap_or(ptr::null())
+}
+
+#[no_mangle]
 pub extern "C" fn mycitadel_contract_rename(
     client: *mut mycitadel_client_t,
     contract_id: *const c_char,

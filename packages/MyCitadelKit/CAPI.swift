@@ -9,93 +9,88 @@ import os
 import Foundation
 import Combine
 
-public struct CitadelError: Error {
-    let errNo: Int
-    let message: String
+struct ContractJson: Codable {
+    let id: String
+    let name: String
+    let chain: BitcoinNetwork
+    let policy: Policy
+}
 
-    init(errNo: Int, message: String) {
-        self.errNo = errNo
-        self.message = message
-    }
-    
-    init(_ message: String) {
-        self.errNo = 1000
-        self.message = message
+public enum Policy {
+    case current(String)
+}
+
+extension Policy {
+    var descriptor: String {
+        switch self {
+        case .current(let descriptor): return descriptor
+        }
     }
 }
 
-extension CitadelError: CustomStringConvertible {
-    public var description: String {
-        self.message
+extension Policy: Codable {
+    enum CodingKeys: CodingKey {
+        case current
+    }
+
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        if container.contains(.current) {
+            let value = try container.decode(String.self, forKey: .current)
+            self = .current(value)
+        } else {
+            throw DecodingError.typeMismatch(String.self, DecodingError.Context(codingPath: [CodingKeys.current], debugDescription: "string value expected"))
+        }
+    }
+
+    public func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        switch self {
+        case .current(let value):
+            try container.encode(value, forKey: .current)
+        }
     }
 }
 
-extension CitadelError: LocalizedError {
-    public var errorDescription: String? {
-        self.message
+struct ContractDataJson: Codable {
+    let blindingFactors: [String: OutPoint]
+    let sentInvoices: [String]
+    let unpaidInvoices: [String: Date]
+    let p2cTweaks: [TweakedOutpoint]
+}
+
+struct UTXOJson: Codable {
+    let height: Int32
+    let offset: UInt32
+    let txid: String
+    let vout: UInt16
+    let value: UInt64
+    let derivationIndex: UInt32
+    let address: String?
+
+    private enum CodingKeys: String, CodingKey {
+        case height, offset, txid, vout, value, derivationIndex = "derivation_index", address
     }
 }
 
-open class CitadelVault {
-    private static var node: CitadelVault? = nil
-    public static var embedded: CitadelVault! {
-        CitadelVault.node
-    }
+struct RGB20Json: Codable {
+    let genesis: String
+    let id: String
+    let ticker: String
+    let name: String
+    let description: String?
+    let decimalPrecision: UInt8
+    let date: String
+    let knownCirculating: UInt64
+    let issueLimit: UInt64?
+}
 
-    public static func runEmbeddedNode(
-            connectingNetwork network: BitcoinNetwork,
-            rgbNode: String? = nil,
-            lnpNode: String? = nil,
-            electrumServer: String = "pandora.network:60001"
-    ) throws {
-        try Self.node = CitadelVault(withEmbeddedNodeConnectingNetwork: network,
-                rgbNode: rgbNode, lnpNode: lnpNode, electrumServer: electrumServer)
-    }
+struct Transfer {
+    let psbt: String
+    let consignment: String?
+}
 
-    private var rpcClient: UnsafeMutablePointer<mycitadel_client_t>!
-
-    let dataDir: String
-    public let network: BitcoinNetwork
-    public var nativeAsset: NativeAsset {
-        assets[network.nativeAssetId()] as! NativeAsset
-    }
-    @Published
-    public var blockchainState = BlockchainState()
-    @Published
-    public var mempoolState = MempoolState()
-    @Published
-    public var contracts: [WalletContract] = []
-    @Published
-    public var assets: [String: Asset] = [:]
-    @Published
-    public var balances: [Balance] = []
-
-    public init(
-            connectingCitadelNode citadelNode: String,
-            electrumServer: String = "pandora.network:60001",
-            onNetwork network: BitcoinNetwork
-    ) {
-        // TODO: Implement connected mode
-        fatalError("Connected mode is not yet implemented")
-    }
-
-    public init(
-            withEmbeddedNodeConnectingNetwork network: BitcoinNetwork,
-            rgbNode: String? = nil,
-            lnpNode: String? = nil,
-            electrumServer: String = "pandora.network:60001"
-    ) throws {
-        self.network = network
-        dataDir = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!.appendingPathComponent(network.rawValue).path
-        rpcClient = mycitadel_run_embedded(network.rawValue, self.dataDir, electrumServer)
-        assets[network.nativeAssetId()] = NativeAsset(withCitadelVault: self)
-    }
-
-    deinit {
-        // TODO: Teardown client
-        // mycitadel_shutdown(self.client)
-    }
-
+extension CitadelVault {
     public func lastError() -> CitadelError? {
         if mycitadel_has_err(rpcClient) {
             return CitadelError(errNo: Int(rpcClient.pointee.err_no), message: String(cString: rpcClient.pointee.message))
@@ -124,7 +119,31 @@ open class CitadelVault {
     }
 }
 
-extension CitadelVault: CitadelRPC {
+extension WalletContract {
+    internal func parseDescriptor() throws -> DescriptorInfo {
+        let info = lnpbp_descriptor_parse(policy.descriptor)
+        defer {
+            result_destroy(info)
+        }
+        if !is_success(info) {
+            let errorMessage = String(cString: info.details.error)
+            print("Error parsing address: \(errorMessage)")
+            throw CitadelError(errorMessage)
+        }
+        let jsonString = String(cString: info.details.data)
+        let jsonData = Data(jsonString.utf8)
+        let decoder = JSONDecoder();
+        print("Parsing JSON descriptor data: \(jsonString)")
+        do {
+            return try decoder.decode(DescriptorInfo.self, from: jsonData)
+        } catch {
+            print("Error parsing descriptor: \(error.localizedDescription)")
+            throw error
+        }
+    }
+}
+
+extension CitadelVault {
     internal func create(singleSig derivation: String, name: String, descriptorType: DescriptorType) throws -> ContractJson {
         try self.createSeed()
         let pubkeyChain = try self.createScopedChain(derivation: derivation)
@@ -138,9 +157,10 @@ extension CitadelVault: CitadelRPC {
         return try JSONDecoder().decode([ContractJson].self, from: self.processResponse(response))
     }
 
-    internal func operations(walletId: String) throws -> [String] {
-        // TODO: Implement
-        []
+    internal func operations(walletId: String) throws -> [TransferOperation] {
+        print("Listing operations")
+        let response = mycitadel_contract_operations(rpcClient, walletId)
+        return try JSONDecoder().decode([TransferOperation].self, from: self.processResponse(response))
     }
 
     internal func balance(walletId: String) throws -> [String: [UTXOJson]] {
@@ -216,29 +236,5 @@ extension CitadelVault: CitadelRPC {
     internal func accept(consignment: String) throws -> String {
         let status = mycitadel_invoice_accept(rpcClient, consignment)
         return try processResponseToString(status)
-    }
-}
-
-extension WalletContract {
-    internal func parseDescriptor() throws -> DescriptorInfo {
-        let info = lnpbp_descriptor_parse(policy.descriptor)
-        defer {
-            result_destroy(info)
-        }
-        if !is_success(info) {
-            let errorMessage = String(cString: info.details.error)
-            print("Error parsing address: \(errorMessage)")
-            throw CitadelError(errorMessage)
-        }
-        let jsonString = String(cString: info.details.data)
-        let jsonData = Data(jsonString.utf8)
-        let decoder = JSONDecoder();
-        print("Parsing JSON descriptor data: \(jsonString)")
-        do {
-            return try decoder.decode(DescriptorInfo.self, from: jsonData)
-        } catch {
-            print("Error parsing descriptor: \(error.localizedDescription)")
-            throw error
-        }
     }
 }

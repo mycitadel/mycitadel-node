@@ -120,11 +120,13 @@ public enum BranchStep: Codable {
     }
 
     public func encode(to encoder: Encoder) throws {
-        var container = encoder.singleValueContainer();
         switch self {
-        case .hardened(let index):
-            try container.encode("\(index)'")
+        case .hardened(let index, let xpubRef):
+            var container = encoder.container(keyedBy: NestedKeys.self);
+            try container.encode(index, forKey: .index)
+            try container.encode(xpubRef, forKey: .xpubRef)
         case .unhardened(let index):
+            var container = encoder.singleValueContainer();
             try container.encode("\(index)")
         }
     }

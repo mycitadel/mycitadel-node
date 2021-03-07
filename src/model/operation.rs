@@ -14,7 +14,11 @@
 use chrono::NaiveDateTime;
 use serde_with::DisplayFromStr;
 use std::collections::HashSet;
+use std::fmt::{self, Display, Formatter};
+use std::str::FromStr;
 
+use bitcoin::consensus::{deserialize, serialize};
+use bitcoin::Txid;
 use invoice::Invoice;
 use rgb::Consignment;
 use wallet::bip32::UnhardenedIndex;
@@ -31,6 +35,7 @@ use wallet::Psbt;
     StrictEncode,
     StrictDecode,
 )]
+#[serde(rename_all = "lowercase")]
 pub enum PaymentDirecton {
     Incoming {
         giveaway: Option<u64>,
@@ -44,12 +49,31 @@ pub enum PaymentDirecton {
         bitcoin_change: u64,
         change_outputs: HashSet<u16>,
         giveaway: Option<u64>,
-        amount: u64,
         paid_bitcoin_fee: u64,
         #[serde_as(as = "HashSet<DisplayFromStr>")]
         output_derivation_indexes: HashSet<UnhardenedIndex>,
+        #[serde_as(as = "DisplayFromStr")]
         invoice: Invoice,
     },
+}
+
+#[derive(Debug, Clone, PartialEq, StrictEncode, StrictDecode)]
+pub struct PsbtWrapper(pub Psbt);
+
+impl Display for PsbtWrapper {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        f.write_str(&base64::encode(serialize(&self.0)))
+    }
+}
+
+impl FromStr for PsbtWrapper {
+    type Err = bitcoin::consensus::encode::Error;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        Ok(Self(deserialize(
+            &base64::decode(&s).map_err(|_| Self::Err::NonMinimalVarInt)?,
+        )?))
+    }
 }
 
 #[serde_as]
@@ -68,9 +92,16 @@ pub struct Operation {
     pub balance_before: u64,
     pub bitcoin_volume: u64,
     pub asset_volume: u64,
+    pub bitcoin_value: u64,
+    pub asset_value: u64,
     pub tx_fee: u64,
 
-    pub psbt: Psbt, // Even if we have only tx data, we wrap them in PSBT
+    pub txid: Txid, // White this can be retrieved from PSBT,
+    // we still cache them since we extensively use them as IDs
+    #[serde_as(as = "DisplayFromStr")]
+    pub psbt: PsbtWrapper, /* Even if we have only tx data, we wrap them in
+                            * PSBT */
+    #[serde_as(as = "Option<DisplayFromStr>")]
     pub consignment: Option<Consignment>,
 
     #[serde_as(as = "Option<_>")]

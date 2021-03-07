@@ -33,6 +33,7 @@ use super::{
     WalletCommand, WalletCreateCommand, WalletOpts,
 };
 use crate::client::InvoiceType;
+use crate::model::SpendingPolicy;
 use crate::rpc::{message, Reply};
 use crate::{Client, Error};
 
@@ -167,7 +168,7 @@ impl Exec for WalletCommand {
             WalletCommand::Sign { wallet_id, psbt } => {
                 let mut psbt: Psbt = deserialize(&base64::decode(&psbt)?)?;
                 let contract = client
-                    .contract_details(wallet_id)?
+                    .contract_operations(wallet_id)?
                     .report_error("retrieving wallet details")
                     .and_then(|reply| match reply {
                         Reply::Contract(contract) => Ok(contract),

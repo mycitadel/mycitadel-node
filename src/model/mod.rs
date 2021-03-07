@@ -22,9 +22,11 @@ mod utxo;
 
 pub use address::AddressDerivation;
 pub use citadel::Citadel;
-pub use contract::{Contract, ContractData, ContractMeta, TweakedOutput};
+pub use contract::{
+    Contract, ContractData, ContractMeta, SpendingPolicy, TweakedOutput,
+};
 pub use ids::ContractId;
-pub use operation::{Operation, PaymentDirecton};
+pub use operation::{Operation, PaymentDirecton, PsbtWrapper};
 pub use policy::{ChannelDescriptor, Policy, PolicyType};
 pub use state::State;
 pub use utxo::{Allocations, Utxo};

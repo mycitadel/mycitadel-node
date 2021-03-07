@@ -21,7 +21,7 @@ use lnpbp::seals::OutpointReveal;
 use microservices::{rpc, rpc_connection};
 use wallet::bip32::UnhardenedIndex;
 
-use crate::model::{AddressDerivation, Contract, ContractMeta, Utxo};
+use crate::model::{AddressDerivation, ContractMeta, Operation, Utxo};
 use crate::rpc::message::{IdentityInfo, PreparedTransfer};
 use crate::Error;
 
@@ -42,13 +42,17 @@ pub enum Reply {
     Contracts(Vec<ContractMeta>),
 
     #[api(type = 0x0201)]
-    #[display("contracts(...)")]
-    Contract(Contract),
+    #[display("contract(...)")]
+    Contract(ContractMeta),
 
     #[serde(with = "As::<BTreeMap<DisplayFromStr, Vec<DisplayFromStr>>>")]
     #[api(type = 0x0202)]
     #[display("contract_unspent(...)")]
     ContractUnspent(BTreeMap<rgb::ContractId, Vec<Utxo>>),
+
+    #[api(type = 0x0210)]
+    #[display("operations(...)")]
+    Operations(Vec<Operation>),
 
     #[api(type = 0x0310)]
     #[display("addresses(...)")]
@@ -131,6 +135,7 @@ impl Reply {
             Reply::Contracts(data) => serde_json::to_string(data),
             Reply::Contract(data) => serde_json::to_string(data),
             Reply::ContractUnspent(data) => serde_json::to_string(data),
+            Reply::Operations(data) => serde_json::to_string(data),
             Reply::Addresses(data) => serde_json::to_string(data),
             Reply::AddressDerivation(data) => serde_json::to_string(data),
             Reply::BlindUtxo(data) => serde_json::to_string(data),

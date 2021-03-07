@@ -244,12 +244,12 @@ impl TransferInfo {
     StrictDecode,
 )]
 #[display(
-    "compose_payment(from: {pay_from}, amount: {amount}, fee: {bitcoin_fee}, ...)"
+    "compose_payment(from: {pay_from}, {asset_value}, fee: {bitcoin_fee}, {invoice})"
 )]
 pub struct ComposeTransferRequest {
     pub pay_from: model::ContractId,
     pub bitcoin_fee: u64,
-    pub amount: u64,
+    pub asset_value: u64,
     pub transfer_info: TransferInfo,
     pub invoice: Invoice,
 }

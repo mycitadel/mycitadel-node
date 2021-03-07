@@ -17,7 +17,7 @@ use std::collections::{BTreeMap, BTreeSet};
 use std::io;
 use std::time::{SystemTime, UNIX_EPOCH};
 
-use bitcoin::{OutPoint, PublicKey, Script, Txid};
+use bitcoin::{OutPoint, PublicKey, Script};
 use invoice::Invoice;
 use lnpbp::client_side_validation::{
     CommitConceal, CommitEncode, ConsensusCommit,
@@ -143,8 +143,8 @@ pub struct ContractData {
 
     p2c_tweaks: BTreeSet<TweakedOutput>,
 
-    #[serde_as(as = "Vec<(DisplayFromStr, _)>")]
-    operations: BTreeMap<Txid, Operation>,
+    #[serde_as(as = "Vec<_>")]
+    operations: Vec<Operation>,
 }
 
 impl ConsensusCommit for Contract {
@@ -156,6 +156,53 @@ impl CommitEncode for Contract {
         self.policy
             .strict_encode(e)
             .expect("Memory encoders does not fail")
+    }
+}
+pub trait SpendingPolicy {
+    fn policy(&self) -> &Policy;
+    fn chain(&self) -> &Chain;
+
+    fn policy_type(&self) -> PolicyType {
+        self.policy().policy_type()
+    }
+
+    fn pubkeychains(&self) -> Vec<PubkeyChain> {
+        let mut pubkeychains = vec![];
+        self.policy().to_descriptor().for_each_key(|key| {
+            match key {
+                miniscript::ForEach::Key(pubkeychain) => {
+                    pubkeychains.push(pubkeychain.clone())
+                }
+                miniscript::ForEach::Hash(_) => unreachable!(),
+            };
+            true
+        });
+        pubkeychains
+    }
+
+    fn derive_address(
+        &self,
+        index: UnhardenedIndex,
+        legacy: bool,
+    ) -> Option<AddressDerivation> {
+        self.policy().derive_address(index, self.chain(), legacy)
+    }
+}
+
+impl SpendingPolicy for Contract {
+    fn policy(&self) -> &Policy {
+        &self.policy
+    }
+    fn chain(&self) -> &Chain {
+        &self.chain
+    }
+}
+impl SpendingPolicy for ContractMeta {
+    fn policy(&self) -> &Policy {
+        &self.policy
+    }
+    fn chain(&self) -> &Chain {
+        &self.chain
     }
 }
 
@@ -177,32 +224,6 @@ impl Contract {
         }
     }
 
-    pub fn policy_type(&self) -> PolicyType {
-        self.policy.policy_type()
-    }
-
-    pub fn pubkeychains(&self) -> Vec<PubkeyChain> {
-        let mut pubkeychains = vec![];
-        self.policy.to_descriptor().for_each_key(|key| {
-            match key {
-                miniscript::ForEach::Key(pubkeychain) => {
-                    pubkeychains.push(pubkeychain.clone())
-                }
-                miniscript::ForEach::Hash(_) => unreachable!(),
-            };
-            true
-        });
-        pubkeychains
-    }
-
-    pub fn derive_address(
-        &self,
-        index: UnhardenedIndex,
-        legacy: bool,
-    ) -> Option<AddressDerivation> {
-        self.policy.derive_address(index, &self.chain, legacy)
-    }
-
     pub fn tweaked_script_iter(&self) -> impl Iterator<Item = Script> + '_ {
         self.data
             .p2c_tweaks
@@ -217,14 +238,13 @@ impl Contract {
 
     // TODO: This must be private and must be used by storage driver only
     pub(crate) fn add_operation(&mut self, operation: Operation) {
-        self.data
-            .operations
-            .insert(operation.psbt.global.unsigned_tx.txid(), operation);
+        self.data.operations.push(operation);
     }
 
     // TODO: This must be private and must be used by storage driver only
-    pub(crate) fn history(&self) -> Vec<&Operation> {
-        self.data.operations.values().collect()
+    //       also it should return iterator
+    pub(crate) fn history(&self) -> Vec<Operation> {
+        self.data.operations.iter().cloned().collect()
     }
 
     // TODO: This must be private and must be used by storage driver only

@@ -12,13 +12,15 @@ public class WalletContract: Identifiable {
     public let chain: BitcoinNetwork
     public let policy: Policy
 
+    public lazy var operations: [TransferOperation] = (try? syncOperations()) ?? []
+
     init(withContractData contractData: ContractJson, citadelVault: CitadelVault) {
-        self.vault = citadelVault
-        self.id = contractData.id
-        self.name = contractData.name
-        self.chain = contractData.chain
-        self.policy = contractData.policy
-        try? self.sync()
+        vault = citadelVault
+        id = contractData.id
+        name = contractData.name
+        chain = contractData.chain
+        policy = contractData.policy
+        try? sync()
     }
 
     public private(set) lazy var descriptorInfo: DescriptorInfo = try! parseDescriptor()
@@ -61,7 +63,7 @@ public class WalletContract: Identifiable {
     }
 
     public func sync() throws {
-        let balanceData = try vault.balance(walletId: self.id)
+        let balanceData = try vault.balance(walletId: id)
         try balanceData.forEach { (assetId, utxoSet) in
             var assetId = assetId
             if assetId == BitcoinNetwork.rgbAssetId {
@@ -79,6 +81,10 @@ public class WalletContract: Identifiable {
             )
             vault.balances.append(balance)
         }
+    }
+
+    public func syncOperations() throws -> [TransferOperation] {
+        try vault.operations(walletId: id)
     }
 
     public func nextAddress(legacySegWit legacy: Bool = false) throws -> AddressDerivation {
@@ -139,10 +145,10 @@ public struct Balance {
 
     internal init(withAsset asset: Asset, walletId: String, unspent: [Allocation]) {
         self.walletId = walletId
-        self.assetId = asset.id
-        self.totalInAtoms = unspent.reduce(into: 0) { sum, u in sum += u.valueInAtoms }
-        self.total = asset.amount(fromAtoms: self.totalInAtoms)
-        self.unspentAllocations = unspent
+        assetId = asset.id
+        totalInAtoms = unspent.reduce(into: 0) { sum, u in sum += u.valueInAtoms }
+        total = asset.amount(fromAtoms: totalInAtoms)
+        unspentAllocations = unspent
     }
 }
 
@@ -159,37 +165,37 @@ public struct Allocation {
     }
 
     internal init(withAsset asset: Asset, utxo: UTXOJson) {
-        self.assetId = asset.id
-        self.txid = utxo.txid
-        self.vout = utxo.vout
-        self.valueInAtoms = utxo.value
-        self.amount = asset.amount(fromAtoms: utxo.value)
-        self.address = utxo.address
+        assetId = asset.id
+        txid = utxo.txid
+        vout = utxo.vout
+        valueInAtoms = utxo.value
+        amount = asset.amount(fromAtoms: utxo.value)
+        address = utxo.address
     }
 }
 
 extension Array where Element == Allocation {
     public func bitcoinBalance(network: BitcoinNetwork) -> Double {
-        self.filter { $0.assetId == network.nativeAssetId() }.reduce(into: 0) { (sum: inout Double, allocation: Allocation) in
+        filter { $0.assetId == network.nativeAssetId() }.reduce(into: 0) { (sum: inout Double, allocation: Allocation) in
             sum = sum + allocation.amount
         }
     }
 
     public func bitcoinBalance(forOutpoint outpoint: OutPoint, network: BitcoinNetwork) -> Double {
-        self.filter { $0.assetId == network.nativeAssetId() && $0.outpoint == outpoint }
+        filter { $0.assetId == network.nativeAssetId() && $0.outpoint == outpoint }
                 .reduce(into: 0) { (sum: inout Double, allocation: Allocation) in
             sum = sum + allocation.amount
         }
     }
 
     public func satoshisBalance(network: BitcoinNetwork) -> UInt64 {
-        self.filter { $0.assetId == network.nativeAssetId() }.reduce(into: 0) { (sum: inout UInt64, allocation: Allocation) in
+        filter { $0.assetId == network.nativeAssetId() }.reduce(into: 0) { (sum: inout UInt64, allocation: Allocation) in
             sum = sum + allocation.valueInAtoms
         }
     }
 
     public func satoshisBalance(forOutpoint outpoint: OutPoint, network: BitcoinNetwork) -> UInt64 {
-        self.filter { $0.assetId == network.nativeAssetId() && $0.outpoint == outpoint }
+        filter { $0.assetId == network.nativeAssetId() && $0.outpoint == outpoint }
                 .reduce(into: 0) { (sum: inout UInt64, allocation: Allocation) in
             sum = sum + allocation.valueInAtoms
         }
@@ -202,7 +208,7 @@ extension Array where Element == Allocation {
     }
 
     public func assetBalances(forOutpoint outpoint: OutPoint) -> [String: Double] {
-        self.filter { $0.outpoint == outpoint }
+        filter { $0.outpoint == outpoint }
                 .reduce(into: [:]) { (result: inout [String: Double], allocation: Allocation) in
             result[allocation.assetId] = (result[allocation.assetId] ?? 0) + allocation.amount
         }
@@ -220,3 +226,99 @@ extension Array where Element == Allocation {
     public let assetName: String
     public let fractionDigits: UInt8
  */
+
+public struct IncomingTransfer: Codable {
+    public let giveaway: UInt64
+    public let inputDerivationIndexes: [UInt32]
+
+    private enum CodingKeys: String, CodingKey {
+        case giveaway, inputDerivationIndexes = "input_derivation_indexes"
+    }
+}
+
+public struct OutcomingTransfer: Codable {
+    public let published: Bool
+    public let assetChange: UInt64
+    public let bitcoinChange: UInt64
+    public let changeOutputs: [UInt16]
+    public let giveaway: UInt64?
+    public let paidBitcoinFee: UInt64
+    public let outputDerivationIndexes: [UInt32]
+    public let invoice: String
+
+    private enum CodingKeys: String, CodingKey {
+        case published, assetChange = "asset_change", bitcoinChange = "bitcoin_change", changeOutputs = "change_outputs",
+             giveaway = "giveaway", paidBitcoinFee = "paid_bitcoin_fee",
+             outputDerivationIndexes = "output_derivation_indexes", invoice = "invoice"
+    }
+}
+
+public enum TransferDirection: Codable {
+    case incoming(IncomingTransfer)
+    case outcoming(OutcomingTransfer)
+
+    enum CodingKeys: CodingKey {
+        case incoming, outcoming
+    }
+
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        if container.contains(.incoming) {
+            let value = try container.decode(IncomingTransfer.self, forKey: .incoming)
+            self = .incoming(value)
+        } else if container.contains(.outcoming) {
+            let value = try container.decode(OutcomingTransfer.self, forKey: .outcoming)
+            self = .outcoming(value)
+        } else {
+            throw DecodingError.typeMismatch(
+                    IncomingTransfer.self,
+                    DecodingError.Context(codingPath: [CodingKeys.incoming], debugDescription: "IncomingTransfer value expected")
+            )
+        }
+    }
+
+    public func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        switch self {
+        case .incoming(let value):
+            try container.encode(value, forKey: .incoming)
+        case .outcoming(let value):
+            try container.encode(value, forKey: .outcoming)
+        }
+    }
+}
+
+public struct TransferOperation: Codable, Identifiable {
+    public var id: String {
+        txid
+    }
+
+    public let direction: TransferDirection
+    public let createdAt: Date
+    public let height: Int64
+    public let assetId: String?
+    public let balanceBefore: UInt64
+    public let bitcoinVolume: UInt64
+    public let assetVolume: UInt64
+    public let txFee: UInt64
+    public let txid: String
+    public let psbt: String
+    public let consignment: String?
+    public var notes: String?
+    public let value: UInt64
+    public let bitcoinValue: UInt64
+
+    public var isOutcoming: Bool {
+        if case .outcoming(_) = direction { return true } else { return false }
+    }
+
+    public var bitcoinAmount: Double {
+        Double(bitcoinValue) / 100_000_000.0
+    }
+
+    private enum CodingKeys: String, CodingKey {
+        case direction, createdAt = "created_at", height, assetId = "asset_id", balanceBefore = "balance_before",
+             bitcoinVolume = "bitcoin_volume", assetVolume = "asset_volume", txFee = "tx_fee",
+             txid, psbt, consignment, notes, value = "asset_value", bitcoinValue = "bitcoin_value"
+    }
+}

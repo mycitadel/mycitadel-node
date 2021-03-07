@@ -44,8 +44,8 @@ use wallet::{psbt, AddressCompat, Psbt, Slice32};
 use super::Config;
 use crate::cache::{self, Driver as CacheDriver};
 use crate::model::{
-    Contract, ContractMeta, Operation, PaymentDirecton, Policy, TweakedOutput,
-    Utxo,
+    Contract, ContractMeta, Operation, PaymentDirecton, Policy, PsbtWrapper,
+    SpendingPolicy, TweakedOutput, Utxo,
 };
 use crate::rpc::{message, Reply, Request};
 use crate::storage::{self, Driver as StorageDriver};
@@ -207,15 +207,16 @@ impl Runtime {
                 );
                 self.storage
                     .add_contract(contract)
+                    .map(ContractMeta::from)
                     .map(Reply::Contract)
                     .map_err(Error::from)
             }
 
-            Request::ContractDetails(contract_id) => self
+            Request::ContractOperations(contract_id) => self
                 .storage
                 .contract_ref(contract_id)
-                .map(Contract::clone)
-                .map(Reply::Contract)
+                .map(|contract| contract.history())
+                .map(Reply::Operations)
                 .map_err(Error::from),
 
             Request::ListContracts => self
@@ -460,7 +461,7 @@ impl Runtime {
                 Ok(Reply::Success)
             },
 
-            Request::ComposeTransfer(message::ComposeTransferRequest { pay_from, amount, bitcoin_fee, transfer_info, invoice }) => {
+            Request::ComposeTransfer(message::ComposeTransferRequest { pay_from, asset_value, bitcoin_fee, transfer_info, invoice }) => {
                 let contract = self.storage.contract_ref(pay_from).map_err(Error::from)?;
                 let policy: Policy = contract.policy().clone();
 
@@ -494,8 +495,8 @@ impl Runtime {
 
                 let mut asset_change_outpoint = None;
                 let selected_utxos: Vec<Utxo> = coins.into_iter().filter_map(|utxo| {
-                    if asset_input_amount >= amount + asset_fee {
-                        debug!("Change value {} will be allocated to {}", asset_input_amount - amount - asset_fee, utxo.outpoint());
+                    if asset_input_amount >= asset_value + asset_fee {
+                        debug!("Change value {} will be allocated to {}", asset_input_amount - asset_value - asset_fee, utxo.outpoint());
                         asset_change_outpoint = asset_change_outpoint.or(Some(utxo.outpoint()));
                         return None
                     }
@@ -514,7 +515,7 @@ impl Runtime {
                         witness: vec![],
                     }
                 }).collect();
-                if asset_input_amount < amount + asset_fee {
+                if asset_input_amount < asset_value + asset_fee {
                     Err(Error::ServerFailure(Failure {
                         code: 0,
                         info: format!(
@@ -530,14 +531,14 @@ impl Runtime {
 
                 // Constructing RGB witness/bitcoin payment transaction outputs
                 let mut tx_outputs = vec![];
-                let mut bitcoin_amount = 0u64;
+                let mut bitcoin_value = 0u64;
                 let mut bitcoin_giveaway = None;
                 let rgb_endpoint = if let Some(descriptor) = transfer_info.bitcoin_descriptor() {
                     // We need this output only for bitcoin payments
-                    trace!("Adding output paying {} to {}", amount, descriptor);
-                    bitcoin_amount = amount;
+                    trace!("Adding output paying {} to {}", asset_value, descriptor);
+                    bitcoin_value = asset_value;
                     tx_outputs.push((TxOut {
-                        value: amount,
+                        value: asset_value,
                         script_pubkey: PubkeyScript::from(descriptor).into(),
                     }, None));
                     SealEndpoint::TxOutpoint(default!())
@@ -548,7 +549,7 @@ impl Runtime {
                     // We need this output only for descriptor-based RGB payments
                     trace!("Adding output paying {} bitcoin giveaway to {}", giveaway, descriptor);
                     bitcoin_giveaway = Some(giveaway);
-                    bitcoin_amount = giveaway;
+                    bitcoin_value = giveaway;
                     tx_outputs.push((TxOut {
                         value: giveaway,
                         script_pubkey: PubkeyScript::from(descriptor.clone()).into(),
@@ -581,8 +582,8 @@ impl Runtime {
 
                 // Adding bitcoin change output, if needed
                 let mut output_derivation_indexes = set![];
-                let (bitcoin_change, change_vout) = if bitcoin_input_amount > bitcoin_amount + bitcoin_fee {
-                    let change = bitcoin_input_amount - bitcoin_amount - bitcoin_fee;
+                let (bitcoin_change, change_vout) = if bitcoin_input_amount > bitcoin_value + bitcoin_fee {
+                    let change = bitcoin_input_amount - bitcoin_value - bitcoin_fee;
                     let change_index = self.cache
                         .next_unused_derivation(pay_from).map_err(Error::from)?;
                     let change_address = contract.derive_address(change_index, false).ok_or(Error::ServerFailure(Failure {
@@ -609,8 +610,8 @@ impl Runtime {
                 //     be much smarter, assigning to existing bitcoin utxos,
                 //     or creating new output for RGB change
                 let mut rgb_change = bmap! {};
-                if asset_input_amount > amount && transfer_info.is_rgb() {
-                    let change = asset_input_amount - amount;
+                if asset_input_amount > asset_value && transfer_info.is_rgb() {
+                    let change = asset_input_amount - asset_value;
                     rgb_change.insert(
                         asset_change_outpoint.map(|outpoint| SealDefinition::TxOutpoint(
                             OutpointReveal {
@@ -692,7 +693,7 @@ impl Runtime {
                     let Transfer { consignment, witness } = self.rgb20_client.transfer(
                         asset_id,
                         selected_utxos.iter().map(Utxo::outpoint).collect(),
-                        bmap! { rgb_endpoint => amount },
+                        bmap! { rgb_endpoint => asset_value },
                         rgb_change.clone(),
                         psbt.clone()
                     ).map_err(Error::from)?;
@@ -730,13 +731,13 @@ impl Runtime {
 
                     // Creation history record
                     let operation = Operation {
+                        txid: psbt.global.unsigned_tx.txid(),
                         direction: PaymentDirecton::Outcoming {
                             published: false,
                             asset_change: rgb_change.values().sum(),
                             bitcoin_change,
                             change_outputs: change_vout.into_iter().map(|vout| vout as u16).collect(),
                             giveaway: bitcoin_giveaway,
-                            amount,
                             paid_bitcoin_fee: bitcoin_fee,
                             output_derivation_indexes,
                             invoice,
@@ -747,8 +748,10 @@ impl Runtime {
                         balance_before,
                         bitcoin_volume: bitcoin_input_amount,
                         asset_volume: asset_input_amount,
+                        bitcoin_value,
+                        asset_value,
                         tx_fee: bitcoin_fee,
-                        psbt: psbt.clone(),
+                        psbt: PsbtWrapper(psbt.clone()),
                         consignment: Some(consignment.clone()),
                         notes: None
                     };
@@ -768,13 +771,13 @@ impl Runtime {
                 } else {
                     // Creation history record
                     let operation = Operation {
+                        txid: psbt.global.unsigned_tx.txid(),
                         direction: PaymentDirecton::Outcoming {
                             published: false,
                             asset_change: bitcoin_change,
                             bitcoin_change,
                             change_outputs: change_vout.into_iter().map(|vout| vout as u16).collect(),
                             giveaway: None,
-                            amount,
                             paid_bitcoin_fee: bitcoin_fee,
                             output_derivation_indexes,
                             invoice,
@@ -784,9 +787,11 @@ impl Runtime {
                         asset_id: None,
                         balance_before,
                         bitcoin_volume: bitcoin_input_amount,
-                        asset_volume: 0,
+                        asset_volume: bitcoin_input_amount,
+                        bitcoin_value,
+                        asset_value,
                         tx_fee: bitcoin_fee,
-                        psbt: psbt.clone(),
+                        psbt: PsbtWrapper(psbt.clone()),
                         consignment: None,
                         notes: None
                     };
