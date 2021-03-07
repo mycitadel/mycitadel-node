@@ -22,6 +22,7 @@ use bitcoin::hashes::hex::ToHex;
 use bitcoin::util::address::{Address, Payload};
 use bitcoin::util::bip32::{ExtendedPubKey, Fingerprint};
 use bitcoin::{OutPoint, XpubIdentifier};
+use invoice::Invoice;
 use miniscript::descriptor::{Descriptor, DescriptorType, ShInner, WshInner};
 use miniscript::{ForEach, ForEachKey};
 use wallet::bip32::{BranchStep, PubkeyChain, TerminalStep, XpubRef};
@@ -164,6 +165,15 @@ pub struct AddressInfo {
     pub witness_ver: Option<WitnessVersion>,
 }
 
+impl From<AddressInfo> for Invoice {
+    fn from(info: AddressInfo) -> Self {
+        let mut invoice = Invoice::with_address(info.address, info.value);
+        info.label.map(|label| invoice.set_merchant(label));
+        info.message.map(|message| invoice.set_purpose(message));
+        invoice
+    }
+}
+
 impl From<Address> for AddressInfo {
     fn from(address: Address) -> Self {
         let format = AddressFormat::from(address.clone());
@@ -201,7 +211,7 @@ impl FromStr for AddressInfo {
         if !s.to_lowercase().starts_with("bitcoin:") {
             return Err(());
         }
-        let s = &s[8..];
+        let s = s[8..].trim_end();
         let mut split = s.split('?');
         let address = if let Some(addr) = split.next() {
             Address::from_str(addr).map_err(|_| ())?

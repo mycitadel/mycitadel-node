@@ -4,8 +4,7 @@
 
 import Foundation
 
-
-public class WalletContract {
+public class WalletContract: Identifiable {
     internal let vault: CitadelVault
 
     public let id: String

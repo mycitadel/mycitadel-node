@@ -26,7 +26,7 @@ use wallet::bip32::PubkeyChain;
 use wallet::Psbt;
 
 use super::{descriptor_type, invoice_type};
-use crate::capi::prepared_transfer_t;
+use crate::capi::{prepared_transfer_t, AddressInfo};
 use crate::error::*;
 use crate::helpers::{TryAsStr, TryIntoRaw};
 use crate::mycitadel_client_t;
@@ -353,7 +353,12 @@ pub extern "C" fn mycitadel_invoice_pay(
         Some(v) => v,
     };
 
-    let invoice = match Invoice::from_str(invoice) {
+    let invoice = match Invoice::from_str(invoice).or_else(|err| {
+        println!("Parsing invoice as URL or bitcoin address: {}", invoice);
+        AddressInfo::from_str(invoice)
+            .map(Invoice::from)
+            .map_err(|_| err)
+    }) {
         Ok(invoice) => invoice,
         Err(err) => {
             client.set_error(err.into());
