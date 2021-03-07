@@ -165,6 +165,31 @@ impl From<lnpbp::bech32::Error> for bech32_info_t {
     }
 }
 
+#[serde_as]
+#[derive(
+    Clone, Ord, PartialOrd, Eq, PartialEq, Hash, Debug, Serialize, Deserialize,
+)]
+#[serde(rename_all = "camelCase")]
+pub struct InvoiceInfo {
+    #[serde(flatten)]
+    pub invoice: Invoice,
+
+    pub invoice_string: String,
+
+    #[serde_as(as = "Option<_>")]
+    pub rgb_contract_id: Option<rgb::ContractId>,
+}
+
+impl From<Invoice> for InvoiceInfo {
+    fn from(invoice: Invoice) -> Self {
+        InvoiceInfo {
+            rgb_contract_id: invoice.rgb_asset(),
+            invoice_string: invoice.to_string(),
+            invoice,
+        }
+    }
+}
+
 #[no_mangle]
 pub extern "C" fn lnpbp_bech32_release(info: bech32_info_t) {
     (info.details as *mut c_char).try_into_string();
@@ -186,7 +211,7 @@ pub extern "C" fn lnpbp_bech32_info(bech_str: *const c_char) -> bech32_info_t {
                 match Invoice::from_str(s) {
                     Ok(invoice) => bech32_info_t::with_value(
                         BECH32_LNPBP_INVOICE,
-                        &invoice,
+                        &InvoiceInfo::from(invoice),
                     ),
                     Err(err) => bech32_info_t::from(err),
                 }

@@ -13,6 +13,7 @@ public struct InvoiceDetails: Identifiable, Codable {
 }
 
 public struct Invoice: Codable {
+    public let invoiceString: String? = nil
     public var amountString: String = "any"
     public var assetId: String? = nil
     public let beneficiary: String
@@ -43,7 +44,7 @@ public struct Invoice: Codable {
     }
 
     private enum CodingKeys: String, CodingKey {
-        case amountString = "amount", assetId = "asset", beneficiary, merchant, purpose, details
+        case invoiceString, amountString = "amount", beneficiary, merchant, purpose, details, assetId = "rgbContractId"
     }
 }
 
