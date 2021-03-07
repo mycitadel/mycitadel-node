@@ -28,14 +28,14 @@ impl Driver for FileDriver {
     fn unspent(
         &self,
         contract_id: ContractId,
-    ) -> Result<BTreeMap<rgb::ContractId, Vec<Utxo>>, Error> {
+    ) -> Result<BTreeMap<rgb::ContractId, HashSet<Utxo>>, Error> {
         self.map_contract_or_default(contract_id, |c| c.unspent.clone())
     }
 
     fn unspent_bitcoin_only(
         &self,
         contract_id: ContractId,
-    ) -> Result<Vec<Utxo>, Error> {
+    ) -> Result<HashSet<Utxo>, Error> {
         let unspent = self.unspent(contract_id)?;
         let outpoints = self
             .allocations(contract_id)?
@@ -86,7 +86,7 @@ impl Driver for FileDriver {
     fn utxo(
         &self,
         contract_id: ContractId,
-    ) -> Result<HashSet<OutPoint>, Error> {
+    ) -> Result<BTreeSet<OutPoint>, Error> {
         self.map_contract_or_default(contract_id, |cache| cache.utxo.clone())
     }
 
@@ -95,7 +95,7 @@ impl Driver for FileDriver {
         contract_id: ContractId,
         mine_info: BTreeMap<(u32, u16), Txid>,
         updated_height: Option<u32>,
-        utxo: Vec<OutPoint>,
+        utxo: BTreeSet<OutPoint>,
         unspent: BTreeMap<rgb::ContractId, Vec<Utxo>>,
     ) -> Result<(), Error> {
         self.cache.mine_info.extend(mine_info);
@@ -104,8 +104,16 @@ impl Driver for FileDriver {
             .descriptors
             .entry(contract_id)
             .or_insert(default!());
-        cache.unspent = unspent;
-        cache.utxo = utxo.into_iter().collect();
+        cache.unspent = unspent
+            .into_iter()
+            .map(|(asset_id, utxos)| {
+                (
+                    asset_id,
+                    utxos.into_iter().filter(|utxo| utxo.value > 0).collect(),
+                )
+            })
+            .collect();
+        cache.utxo = utxo;
         if let Some(height) = updated_height {
             self.cache.known_height = height;
             cache.updated_height = height;

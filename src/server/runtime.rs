@@ -254,7 +254,7 @@ impl Runtime {
                     self.storage.policy(contract_id).map_err(Error::from)?;
 
                 let mut unspent: Vec<Utxo> = vec![];
-                let mut outpoints: Vec<OutPoint> = vec![];
+                let mut outpoints: BTreeSet<OutPoint> = bset![];
                 let mut mine_info: BTreeMap<(u32, u16), Txid> = bmap!{};
 
                 let mut index_offset = UnhardenedIndex::zero();
@@ -299,7 +299,9 @@ impl Runtime {
                             Ok(res) => {
                                 mine_info.insert((height, res.pos as u16), txid);
                                 for (vout, value, derivation_index, script, tweak) in outs {
-                                    outpoints.push(OutPoint::new(txid, vout as u32));
+                                    if !outpoints.insert(OutPoint::new(txid, vout as u32)) {
+                                        continue
+                                    }
                                     unspent.push(Utxo {
                                         value,
                                         height,
@@ -357,9 +359,15 @@ impl Runtime {
                         .outpoint_assets(*outpoint)
                         .map_err(Error::from)?
                     {
-                        let mut u = utxo.clone();
-                        u.value = amounts.iter().sum();
-                        assets.entry(asset_id).or_insert(vec![]).push(u);
+                        if amounts.is_empty() {
+                            continue;
+                        }
+                        let amount = amounts.iter().sum();
+                        if amount > 0 {
+                            let mut u = utxo.clone();
+                            u.value = amount;
+                            assets.entry(asset_id).or_insert(vec![]).push(u);
+                        }
                     }
                 }
 
@@ -480,7 +488,7 @@ impl Runtime {
                     self.cache
                         .unspent_bitcoin_only(pay_from)
                         .map_err(Error::from)?
-                };
+                }.into_iter().collect::<Vec<_>>();
 
                 // TODO: Implement more coin-selection strategies
                 coins.sort_by(|a, b| a.value.cmp(&b.value));
@@ -860,6 +868,7 @@ impl Runtime {
             Request::ContractUnspent(id) => self
                 .cache
                 .unspent(id)
+                .map(|arg| arg.into_iter().map(|(k, v)| (k, v.into_iter().collect())).collect())
                 .map(Reply::ContractUnspent)
                 .map_err(Error::from),
 

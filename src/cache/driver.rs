@@ -11,7 +11,7 @@
 // along with this software.
 // If not, see <https://www.gnu.org/licenses/agpl-3.0-standalone.html>.
 
-use std::collections::{BTreeMap, HashSet};
+use std::collections::{BTreeMap, BTreeSet, HashSet};
 
 use bitcoin::{Address, OutPoint, Txid};
 use wallet::bip32::UnhardenedIndex;
@@ -25,27 +25,29 @@ pub trait Driver {
     fn unspent(
         &self,
         contract_id: ContractId,
-    ) -> Result<BTreeMap<rgb::ContractId, Vec<Utxo>>, Error>;
+    ) -> Result<BTreeMap<rgb::ContractId, HashSet<Utxo>>, Error>;
 
     fn unspent_bitcoin_only(
         &self,
         contract_id: ContractId,
-    ) -> Result<Vec<Utxo>, Error>;
+    ) -> Result<HashSet<Utxo>, Error>;
 
     fn allocations(
         &self,
         contract_id: ContractId,
     ) -> Result<Allocations, Error>;
 
-    fn utxo(&self, contract_id: ContractId)
-        -> Result<HashSet<OutPoint>, Error>;
+    fn utxo(
+        &self,
+        contract_id: ContractId,
+    ) -> Result<BTreeSet<OutPoint>, Error>;
 
     fn update(
         &mut self,
         contract_id: ContractId,
         mine_info: BTreeMap<(u32, u16), Txid>,
         updated_height: Option<u32>,
-        utxo: Vec<OutPoint>,
+        utxo: BTreeSet<OutPoint>,
         unspent: BTreeMap<rgb::ContractId, Vec<Utxo>>,
     ) -> Result<(), Error>;
 

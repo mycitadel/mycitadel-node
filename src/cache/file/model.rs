@@ -13,7 +13,7 @@
 
 use chrono::NaiveDateTime;
 use serde_with::DisplayFromStr;
-use std::collections::{BTreeMap, HashSet};
+use std::collections::{BTreeMap, BTreeSet, HashSet};
 
 use bitcoin::{Address, BlockHash, OutPoint, Transaction, Txid};
 use wallet::bip32::UnhardenedIndex;
@@ -65,9 +65,9 @@ pub(super) struct ContractCache {
 
     pub used_address_derivations: BTreeMap<Address, UnhardenedIndex>,
 
-    #[serde_as(as = "HashSet<DisplayFromStr>")]
-    pub utxo: HashSet<OutPoint>,
+    #[serde_as(as = "BTreeSet<DisplayFromStr>")]
+    pub utxo: BTreeSet<OutPoint>,
 
-    #[serde_as(as = "BTreeMap<DisplayFromStr, Vec<_>>")]
-    pub unspent: BTreeMap<rgb::ContractId, Vec<Utxo>>,
+    #[serde_as(as = "BTreeMap<DisplayFromStr, HashSet<_>>")]
+    pub unspent: BTreeMap<rgb::ContractId, HashSet<Utxo>>,
 }

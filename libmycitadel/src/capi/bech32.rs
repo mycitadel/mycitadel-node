@@ -18,7 +18,7 @@ use std::str::FromStr;
 
 use invoice::Invoice;
 use rgb::bech32::Error;
-use rgb::Bech32;
+use rgb::{Bech32, Consignment};
 use rgb20::Asset;
 
 use crate::{TryAsStr, TryIntoRaw, TryIntoString};
@@ -49,7 +49,7 @@ pub const BECH32_RGB_SCHEMA: c_int = 0x0310;
 pub const BECH32_RGB_GENESIS: c_int = 0x0311;
 pub const BECH32_RGB_CONSIGNMENT: c_int = 0x0320;
 
-pub const BECH32_RGB20_ASSET: c_int = 0x0320;
+pub const BECH32_RGB20_ASSET: c_int = 0x0330;
 
 #[allow(non_camel_case_types)]
 #[repr(C)]
@@ -190,6 +190,35 @@ impl From<Invoice> for InvoiceInfo {
     }
 }
 
+#[serde_as]
+#[derive(Clone, Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ConsignmentInfo {
+    pub version: u16,
+    pub asset: rgb20::Asset,
+    pub schema_id: rgb::SchemaId,
+    pub endpoints_count: usize,
+    pub transactions_count: usize,
+    pub transitions_count: usize,
+    pub extensions_count: usize,
+}
+
+impl TryFrom<Consignment> for ConsignmentInfo {
+    type Error = rgb20::Error;
+
+    fn try_from(consignment: Consignment) -> Result<Self, Self::Error> {
+        Ok(ConsignmentInfo {
+            version: 0, // TODO: Use consignment.version()
+            asset: rgb20::Asset::try_from(consignment.genesis.clone())?,
+            schema_id: consignment.genesis.schema_id(),
+            endpoints_count: consignment.endpoints.len(),
+            transactions_count: consignment.txids().len(),
+            transitions_count: consignment.state_transitions.len(),
+            extensions_count: consignment.state_extensions.len(),
+        })
+    }
+}
+
 #[no_mangle]
 pub extern "C" fn lnpbp_bech32_release(info: bech32_info_t) {
     (info.details as *mut c_char).try_into_string();
@@ -214,6 +243,19 @@ pub extern "C" fn lnpbp_bech32_info(bech_str: *const c_char) -> bech32_info_t {
                         &InvoiceInfo::from(invoice),
                     ),
                     Err(err) => bech32_info_t::from(err),
+                }
+            }
+            Ok(Bech32::Other(hrp, _)) if &hrp == "consignment" => {
+                match Consignment::from_str(s)
+                    .map_err(bech32_info_t::from)
+                    .and_then(|consignment| {
+                        ConsignmentInfo::try_from(consignment)
+                            .map_err(|_| bech32_info_t::unsuported())
+                    }) {
+                    Ok(info) => {
+                        bech32_info_t::with_value(BECH32_RGB_CONSIGNMENT, &info)
+                    }
+                    Err(err) => err,
                 }
             }
             Ok(_) => bech32_info_t::unsuported(),

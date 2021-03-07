@@ -73,21 +73,21 @@ struct UTXOJson: Codable {
     }
 }
 
-struct RGB20Json: Codable {
-    let genesis: String
-    let id: String
-    let ticker: String
-    let name: String
-    let description: String?
-    let decimalPrecision: UInt8
-    let date: String
-    let knownCirculating: UInt64
-    let issueLimit: UInt64?
+public struct RGB20Json: Codable {
+    public let genesis: String
+    public let id: String
+    public let ticker: String
+    public let name: String
+    public let description: String?
+    public let decimalPrecision: UInt8
+    public let date: String
+    public let knownCirculating: UInt64
+    public let issueLimit: UInt64?
 }
 
-struct Transfer {
-    let psbt: String
-    let consignment: String?
+public struct Transfer {
+    public let psbt: String
+    public let consignment: String?
 }
 
 extension CitadelVault {
@@ -101,7 +101,7 @@ extension CitadelVault {
 
     private func processResponseToString(_ response: UnsafePointer<Int8>?) throws -> String {
         guard let response = response else {
-            guard let err = self.lastError() else {
+            guard let err = lastError() else {
                 throw CitadelError("MyCitadel C API is broken")
             }
             throw err
@@ -145,54 +145,59 @@ extension WalletContract {
 
 extension CitadelVault {
     internal func create(singleSig derivation: String, name: String, descriptorType: DescriptorType) throws -> ContractJson {
-        try self.createSeed()
-        let pubkeyChain = try self.createScopedChain(derivation: derivation)
+        print("Creating seed")
+        try createSeed()
+        let pubkeyChain = try createScopedChain(derivation: derivation)
         let response = mycitadel_single_sig_create(rpcClient, name, pubkeyChain, descriptorType.cDescriptorType());
-        return try JSONDecoder().decode(ContractJson.self, from: self.processResponse(response))
+        return try JSONDecoder().decode(ContractJson.self, from: processResponse(response))
     }
 
     internal func listContracts() throws -> [ContractJson] {
         print("Listing contracts")
         let response = mycitadel_contract_list(rpcClient)
-        return try JSONDecoder().decode([ContractJson].self, from: self.processResponse(response))
+        return try JSONDecoder().decode([ContractJson].self, from: processResponse(response))
     }
 
     internal func operations(walletId: String) throws -> [TransferOperation] {
         print("Listing operations")
         let response = mycitadel_contract_operations(rpcClient, walletId)
-        return try JSONDecoder().decode([TransferOperation].self, from: self.processResponse(response))
+        return try JSONDecoder().decode([TransferOperation].self, from: processResponse(response))
     }
 
     internal func balance(walletId: String) throws -> [String: [UTXOJson]] {
         print("Requesting balance for \(walletId)")
         let response = mycitadel_contract_balance(rpcClient, walletId, true, 20)
-        return try JSONDecoder().decode([String: [UTXOJson]].self, from: self.processResponse(response))
+        return try JSONDecoder().decode([String: [UTXOJson]].self, from: processResponse(response))
     }
 
     internal func listAssets() throws -> [RGB20Json] {
         print("Listing assets")
         let response = mycitadel_asset_list(rpcClient);
-        return try JSONDecoder().decode([RGB20Json].self, from: self.processResponse(response))
+        return try JSONDecoder().decode([RGB20Json].self, from: processResponse(response))
     }
 
     internal func importRGB(genesisBech32 genesis: String) throws -> RGB20Json {
+        print("Importing RGB asset")
         let response = mycitadel_asset_import(rpcClient, genesis);
-        return try JSONDecoder().decode(RGB20Json.self, from: self.processResponse(response))
+        return try JSONDecoder().decode(RGB20Json.self, from: processResponse(response))
     }
 
     public func nextAddress(forContractId contractId: String, useLegacySegWit legacy: Bool = false) throws -> AddressDerivation {
+        print("Generating next avaliable address")
         let response = mycitadel_address_create(rpcClient, contractId, false, legacy)
-        return try JSONDecoder().decode(AddressDerivation.self, from: self.processResponse(response))
+        return try JSONDecoder().decode(AddressDerivation.self, from: processResponse(response))
     }
 
     internal func usedAddresses(forContractId contractId: String) throws -> [AddressDerivation] {
+        print("Listing used addresses")
         let response = mycitadel_address_list(rpcClient, contractId, false, 0)
-        return try JSONDecoder().decode([String: UInt32].self, from: self.processResponse(response))
+        return try JSONDecoder().decode([String: UInt32].self, from: processResponse(response))
                 .map { (address, index) in AddressDerivation(address: address, derivation: [index]) }
     }
 
-    internal func invoice(usingFormat format: InvoiceType, receiveTo contractId: String, nominatedIn assetId: String?, value: UInt64?, useLegacySegWit legacy: Bool = false) throws -> String {
-        let invoice = mycitadel_invoice_create(rpcClient, format.cType(), contractId, assetId ?? nil, value ?? 0, nil, nil, false, legacy)
+    internal func invoice(usingFormat format: InvoiceType, receiveTo contractId: String, nominatedIn assetId: String?, value: UInt64?, from merchant: String? = nil, purpose: String? = nil, useLegacySegWit legacy: Bool = false) throws -> String {
+        print("Creating invoice")
+        let invoice = mycitadel_invoice_create(rpcClient, format.cType(), contractId, assetId ?? nil, value ?? 0, merchant ?? nil, purpose ?? nil, false, legacy)
         return try processResponseToString(invoice)
     }
 
@@ -207,9 +212,10 @@ extension CitadelVault {
      */
 
     internal func pay(from contractId: String, invoice: String, value: UInt64? = nil, fee: UInt64, giveaway: UInt64? = nil) throws -> Transfer {
+        print("Paying invoice")
         let transfer = mycitadel_invoice_pay(rpcClient, contractId, invoice, value ?? 0, fee, giveaway ?? 0)
         if !transfer.success {
-            guard let err = self.lastError() else {
+            guard let err = lastError() else {
                 throw CitadelError("MyCitadel C API is broken")
             }
             throw err
@@ -229,11 +235,13 @@ extension CitadelVault {
     }
 
     internal func publish(psbt: String) throws -> String {
+        print("Signing and publishing transaction")
         let txid = mycitadel_psbt_publish(rpcClient, psbt)
         return try processResponseToString(txid)
     }
 
     internal func accept(consignment: String) throws -> String {
+        print("Accepting consignment")
         let status = mycitadel_invoice_accept(rpcClient, consignment)
         return try processResponseToString(status)
     }

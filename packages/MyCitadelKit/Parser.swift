@@ -7,6 +7,16 @@
 
 import Foundation
 
+public struct ConsignmentInfo: Codable {
+    public let version: UInt16
+    public let asset: RGB20Json
+    public let schemaId: String
+    public let endpointsCount: UInt16
+    public let transactionsCount: UInt32
+    public let transitionsCount: UInt32
+    public let extensionsCount: UInt32
+}
+
 open class UniversalParser {
     public enum ParsedData {
         case unknown
@@ -31,7 +41,7 @@ open class UniversalParser {
         case rgbContractId
         case rgbSchema
         case rgbGenesis
-        case rgbConsignment
+        case rgbConsignment(ConsignmentInfo)
         case rgb20Asset(RGB20Asset)
 
         case outpoint(OutPoint)
@@ -92,11 +102,39 @@ open class UniversalParser {
             parsedData = .unknown
             parseStatus = parseError.type
             parseReport = parseError.message
+        } catch DecodingError.keyNotFound(let key, let context) {
+            parsedData = .unknown
+            parseStatus = .invalidJSON
+            let path = context.codingPath.count == 0 ? "self" : "\\.\(context.codingPath.map{"\($0)"}.joined(separator: "."))"
+            let details = "key `\(key.stringValue)` is not found at path `\(path)`"
+            parseReport = "Unable to recognize data from backend: \(details)"
+            print(details)
+        } catch DecodingError.typeMismatch(let type, let context) {
+            parsedData = .unknown
+            parseStatus = .invalidJSON
+            let path = context.codingPath.count == 0 ? "self" : "\\.\(context.codingPath.map{"\($0)"}.joined(separator: "."))"
+            let details = "key at `\(path)` must be of `\(type)` type"
+            parseReport = "Unable to recognize data from backend: \(details)"
+            print(details)
+        } catch DecodingError.valueNotFound(let type, let context) {
+            parsedData = .unknown
+            parseStatus = .invalidJSON
+            let path = context.codingPath.count == 0 ? "self" : "\\.\(context.codingPath.map{"\($0)"}.joined(separator: "."))"
+            let details = "value at `\(path)` of `\(type)` type is not found"
+            parseReport = "Unable to recognize data from backend: \(details)"
+            print(details)
+        } catch DecodingError.dataCorrupted(let context) {
+            parsedData = .unknown
+            parseStatus = .invalidJSON
+            let path = context.codingPath.count == 0 ? "self" : "\\.\(context.codingPath.map{"\($0)"}.joined(separator: "."))"
+            let details = "data corrupted at `\(path)`"
+            parseReport = "Unable to recognize data from backend: \(details)"
+            print(details)
         } catch {
             parsedData = .unknown
             parseStatus = .invalidJSON
-            parseReport = "Unable to recognize details from the provided JSON data"
-            print("Bech32 parse error \(error.localizedDescription)")
+            parseReport = "Internal error"
+            print("Other  \(error.localizedDescription)")
         }
 
         // TODO: Parse descriptors
@@ -121,12 +159,7 @@ open class UniversalParser {
         let jsonData = Data(jsonString.utf8)
         let decoder = JSONDecoder();
         print("Parsing JSON address data: \(jsonString)")
-        do {
-            return try decoder.decode(AddressInfo.self, from: jsonData)
-        } catch {
-            print("Error parsing address: \(error.localizedDescription)")
-            throw error
-        }
+        return try decoder.decode(AddressInfo.self, from: jsonData)
     }
 
     public static func parse(bech32: String) throws -> ParsedData {
@@ -148,6 +181,9 @@ open class UniversalParser {
         case BECH32_LNPBP_INVOICE:
             let invoice = try decoder.decode(Invoice.self, from: jsonData)
             return ParsedData.lnbpInvoice(invoice)
+        case BECH32_RGB_CONSIGNMENT:
+            let info = try decoder.decode(ConsignmentInfo.self, from: jsonData)
+            return ParsedData.rgbConsignment(info)
         default: return ParsedData.unknown
         }
     }
