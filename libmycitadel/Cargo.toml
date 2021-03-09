@@ -22,7 +22,7 @@ amplify_derive = "2.4"
 mycitadel = { path = "..", features = [ "node", "client" ] }
 # slip132 = "0.3.2"
 # strict_encoding = { version = "1.0.7", features = ["chrono", "crypto", "miniscript", "derive"] }
-lnpbp = { git = "https://github.com/LNP-BP/rust-lnpbp" }
+lnpbp = "0.4"
 lnpbp_invoice = { git = "https://github.com/LNP-BP/rust-lnpbp" }
 # lnp-core = { git = "https://github.com/LNP-BP/lnp-core" }
 rgb-core = { git = "https://github.com/rgb-org/rgb-core" }
@@ -32,7 +32,7 @@ internet2 = { git = "https://github.com/internet2-org/rust-internet2" }
 microservices = { git = "https://github.com/internet2-org/rust-internet2", default-features = false }
 bech32 = "0.7"
 bitcoin = "0.26"
-descriptor-wallet = { git = "https://github.com/LNP-BP/descriptor-wallet" }
+descriptor-wallet = "0.4"
 miniscript = "5.1"
 bip39 = "1.0.0-rc1"
 rand = "0.8.3"

@@ -424,8 +424,9 @@ dependencies = [
 
 [[package]]
 name = "client_side_validation"
-version = "0.4.0-beta"
-source = "git+https://github.com/LNP-BP/rust-lnpbp#26679a962fb221ea75c86653dde31f9548d20549"
+version = "0.4.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "69fbcc681ab39919398f924b998d939d818e732608c72d20da4c9e39b9769453"
 dependencies = [
  "amplify",
  "amplify_derive",
@@ -615,8 +616,9 @@ dependencies = [
 
 [[package]]
 name = "descriptor-wallet"
-version = "0.4.0-rc.1"
-source = "git+https://github.com/LNP-BP/descriptor-wallet#125794c2105aec5a0e4f9ced8781f42d83349b1b"
+version = "0.4.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "19e854d5d4a2875669e6885c7a1ddc760aa5dbdb25f42e4b8ccbc1bd903157f6"
 dependencies = [
  "amplify",
  "amplify_derive",
@@ -1006,7 +1008,7 @@ dependencies = [
 [[package]]
 name = "internet2"
 version = "0.4.0-alpha.2"
-source = "git+https://github.com/internet2-org/rust-internet2#946abe2fd8613e560d944ad2b1ef6d7e7573ae0a"
+source = "git+https://github.com/internet2-org/rust-internet2#cdc483c6bb838aba6eb3ac2ab0b006addfc1093a"
 dependencies = [
  "amplify",
  "amplify_derive",
@@ -1117,8 +1119,9 @@ dependencies = [
 
 [[package]]
 name = "lightning_encoding"
-version = "0.4.0-beta"
-source = "git+https://github.com/LNP-BP/lnp-core#25abfcef7061c4b6ab822b6535a13487372f58dd"
+version = "0.4.0-beta.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b5afb64e0b91319373c7030726cce1144b8e425a05f6ccdd39295c4da8fdad60"
 dependencies = [
  "amplify",
  "amplify_derive",
@@ -1130,8 +1133,9 @@ dependencies = [
 
 [[package]]
 name = "lightning_encoding_derive"
-version = "0.4.0-alpha.1"
-source = "git+https://github.com/LNP-BP/lnp-core#25abfcef7061c4b6ab822b6535a13487372f58dd"
+version = "0.4.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "483bbbb5309dec107fca8f16811e01184b2b10497c7d1933de446204742169de"
 dependencies = [
  "amplify",
  "amplify_derive_helpers",
@@ -1159,7 +1163,7 @@ checksum = "7fb9b38af92608140b86b693604b9ffcc5824240a484d1ecd4795bacb2fe88f3"
 [[package]]
 name = "lnp-core"
 version = "0.4.0-alpha.1"
-source = "git+https://github.com/LNP-BP/lnp-core#25abfcef7061c4b6ab822b6535a13487372f58dd"
+source = "git+https://github.com/LNP-BP/lnp-core#42734c166b37ed9b6ad5b5e902ccf69f8f78a564"
 dependencies = [
  "amplify",
  "amplify_derive",
@@ -1176,8 +1180,9 @@ dependencies = [
 
 [[package]]
 name = "lnpbp"
-version = "0.4.0-beta"
-source = "git+https://github.com/LNP-BP/rust-lnpbp#26679a962fb221ea75c86653dde31f9548d20549"
+version = "0.4.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "82895efc2bfbd69b26e60650a22839536ff0cfc2d2301cba76502ed51cf21f83"
 dependencies = [
  "amplify",
  "amplify_derive",
@@ -1201,7 +1206,7 @@ dependencies = [
 [[package]]
 name = "lnpbp_invoice"
 version = "0.4.0-alpha.1"
-source = "git+https://github.com/LNP-BP/rust-lnpbp#26679a962fb221ea75c86653dde31f9548d20549"
+source = "git+https://github.com/LNP-BP/rust-lnpbp#731d67c08f704356858dd7427269f46d9473ea7b"
 dependencies = [
  "amplify",
  "amplify_derive",
@@ -1281,7 +1286,7 @@ dependencies = [
 [[package]]
 name = "microservices"
 version = "0.4.0-beta"
-source = "git+https://github.com/internet2-org/rust-internet2#946abe2fd8613e560d944ad2b1ef6d7e7573ae0a"
+source = "git+https://github.com/internet2-org/rust-internet2#cdc483c6bb838aba6eb3ac2ab0b006addfc1093a"
 dependencies = [
  "amplify",
  "amplify_derive",
@@ -1866,7 +1871,7 @@ dependencies = [
 [[package]]
 name = "rgb-core"
 version = "0.4.0-beta"
-source = "git+https://github.com/rgb-org/rgb-core#28082808d72183a19a5c05a3ec448867e2dee9d9"
+source = "git+https://github.com/rgb-org/rgb-core#e3a2774eb3577d2f3808d6f919dccb305491d50e"
 dependencies = [
  "amplify",
  "amplify_derive",
@@ -1898,7 +1903,7 @@ dependencies = [
 [[package]]
 name = "rgb20"
 version = "0.4.0-beta"
-source = "git+https://github.com/rgb-org/rgb-core#28082808d72183a19a5c05a3ec448867e2dee9d9"
+source = "git+https://github.com/rgb-org/rgb-core#e3a2774eb3577d2f3808d6f919dccb305491d50e"
 dependencies = [
  "amplify",
  "amplify_derive",
@@ -1915,7 +1920,7 @@ dependencies = [
 [[package]]
 name = "rgb_node"
 version = "0.4.0-beta"
-source = "git+https://github.com/rgb-org/rgb-node#75dfce6f1da93a70fa4fae4e7db6ab9c97029186"
+source = "git+https://github.com/rgb-org/rgb-node#a710df1da996ce9028de66410dbbb08792e78393"
 dependencies = [
  "amplify",
  "amplify_derive",

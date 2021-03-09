@@ -28,8 +28,8 @@ amplify = { version = "3", features = ["serde"] }
 amplify_derive = "2.4.4"
 slip132 = { version = "0.3.2", features = ["serde"] }
 strict_encoding = { version = "1.0.7", features = ["chrono", "crypto", "miniscript", "derive"] }
-descriptor-wallet = { git = "https://github.com/LNP-BP/descriptor-wallet", features = ["serde"] }
-lnpbp = { git = "https://github.com/LNP-BP/rust-lnpbp", features = ["serde"] }
+descriptor-wallet = { version = "0.4", features = ["serde"] }
+lnpbp = { version = "0.4", features = ["serde"] }
 lnpbp_invoice = { git = "https://github.com/LNP-BP/rust-lnpbp", features = ["serde", "rgb"] }
 lnp-core = { git = "https://github.com/LNP-BP/lnp-core", features = ["serde"] }
 rgb-core = { git = "https://github.com/rgb-org/rgb-core", features = ["serde"] }
@@ -68,8 +68,8 @@ shellexpand = { version = "2", optional = true }
 [build-dependencies]
 amplify = "3"
 amplify_derive = "2.4.2"
-descriptor-wallet = { git = "https://github.com/LNP-BP/descriptor-wallet" }
-lnpbp = { git = "https://github.com/LNP-BP/rust-lnpbp" }
+descriptor-wallet = "0.4"
+lnpbp = "0.4"
 lnpbp_invoice = { git = "https://github.com/LNP-BP/rust-lnpbp" }
 bitcoin = "0.26"
 rgb-core = { git = "https://github.com/rgb-org/rgb-core", features = ["serde"] }
