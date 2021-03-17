@@ -698,7 +698,7 @@ impl Runtime {
                     Utc::now().timestamp(), 0
                 );
                 let payment_data = if let message::TransferInfo::Rgb { contract_id: asset_id, ref receiver} = transfer_info {
-                    let Transfer { consignment, witness } = self.rgb20_client.transfer(
+                    let Transfer { consignment, disclosure, witness } = self.rgb20_client.transfer(
                         asset_id,
                         selected_utxos.iter().map(Utxo::outpoint).collect(),
                         bmap! { rgb_endpoint => asset_value },
@@ -737,6 +737,9 @@ impl Runtime {
                         }
                     }
 
+                    // Self-enclosing disclosure.
+                    self.rgb20_client.enclose(disclosure.clone()).map_err(Error::from)?;
+
                     // Creation history record
                     let operation = Operation {
                         txid: psbt.global.unsigned_tx.txid(),
@@ -760,7 +763,7 @@ impl Runtime {
                         asset_value,
                         tx_fee: bitcoin_fee,
                         psbt: PsbtWrapper(psbt.clone()),
-                        consignment: Some(consignment.clone()),
+                        disclosure: Some(disclosure),
                         notes: None
                     };
                     trace!("Creating operation for the history record: {:#?}", operation);
@@ -800,7 +803,7 @@ impl Runtime {
                         asset_value,
                         tx_fee: bitcoin_fee,
                         psbt: PsbtWrapper(psbt.clone()),
-                        consignment: None,
+                        disclosure: None,
                         notes: None
                     };
                     trace!("Creating operation for the history record: {:#?}", operation);

@@ -32,8 +32,8 @@ descriptor-wallet = { version = "0.4", features = ["serde"] }
 lnpbp = { version = "0.4", features = ["serde"] }
 lnpbp_invoice = { git = "https://github.com/LNP-BP/rust-lnpbp", features = ["serde", "rgb"] }
 lnp-core = { git = "https://github.com/LNP-BP/lnp-core", features = ["serde"] }
-rgb-core = { git = "https://github.com/rgb-org/rgb-core", features = ["serde"] }
-rgb20 = { git = "https://github.com/rgb-org/rgb-core", features = ["serde"] }
+rgb-core = { version = "0.4.2", features = ["serde"] }
+rgb20 = { version = "0.4", features = ["serde"] }
 # rgb21 = { version = "0.3.0-beta.3", optional = true }
 # rgb22 = { version = "0.3.0-beta.3", optional = true }
 # rgb23 = { version = "0.3.0-beta.3", optional = true }
@@ -72,7 +72,7 @@ descriptor-wallet = "0.4"
 lnpbp = "0.4"
 lnpbp_invoice = { git = "https://github.com/LNP-BP/rust-lnpbp" }
 bitcoin = "0.26"
-rgb-core = { git = "https://github.com/rgb-org/rgb-core", features = ["serde"] }
+rgb-core = { version = "0.4.2", features = ["serde"] }
 internet2 = { git = "https://github.com/internet2-org/rust-internet2" }
 microservices = { git = "https://github.com/internet2-org/rust-internet2", default-features = false }
 lazy_static = "1.4"
@@ -131,8 +131,6 @@ vendored_openssl = ["microservices/vendored_openssl", "internet2/vendored_openss
 spec = "config_spec.toml"
 
 [patch.crates-io]
-# Required to fix Android SystemTime incorrect size
-lightning-invoice = { git = "https://github.com/LNP-BP/rust-lightning-invoice", tag = "systemtime-fix" }
 # Remove this once https://github.com/jean-airoldie/zeromq-src-rs/pull/15 got merged
 zeromq-src = { git = "https://github.com/LNP-BP/zeromq-src-rs", branch = "fix/cmake" }
 

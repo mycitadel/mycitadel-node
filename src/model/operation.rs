@@ -20,7 +20,7 @@ use std::str::FromStr;
 use bitcoin::consensus::{deserialize, serialize};
 use bitcoin::Txid;
 use invoice::Invoice;
-use rgb::Consignment;
+use rgb::Disclosure;
 use wallet::bip32::UnhardenedIndex;
 use wallet::Psbt;
 
@@ -102,7 +102,7 @@ pub struct Operation {
     pub psbt: PsbtWrapper, /* Even if we have only tx data, we wrap them in
                             * PSBT */
     #[serde_as(as = "Option<DisplayFromStr>")]
-    pub consignment: Option<Consignment>,
+    pub disclosure: Option<Disclosure>,
 
     #[serde_as(as = "Option<_>")]
     pub notes: Option<String>,
