@@ -28,13 +28,13 @@ strict_encoding = { version = "1.0.7", features = ["chrono", "crypto", "miniscri
 descriptor-wallet = { version = "0.4", features = ["serde"] }
 lnpbp = { version = "0.4", features = ["serde"] }
 lnpbp_invoice = { git = "https://github.com/LNP-BP/rust-lnpbp", features = ["serde", "rgb"] }
-lnp-core = { git = "https://github.com/LNP-BP/lnp-core", features = ["serde"] }
+lnp-core = { version = "0.3.1", features = ["serde"] }
 rgb-core = { version = "0.4.2", features = ["serde"] }
 rgb20 = { version = "0.4", features = ["serde"] }
 rgb_node = { git = "https://github.com/rgb-org/rgb-node", default-features = false, features = ["fungibles", "serde"] }
 citadel = { git = "https://github.com/mycitadel/citadel-runtime" }
-internet2 = { git = "https://github.com/internet2-org/rust-internet2" }
-microservices = { git = "https://github.com/internet2-org/rust-internet2", default-features = false }
+internet2 = "0.3.10"
+microservices = { version = "0.3.10", default-features = false }
 # Bitcoin
 bitcoin = { version = "0.26", features = ["use-serde"] }
 miniscript = { version = "5", features = ["use-serde"] }
@@ -67,8 +67,8 @@ lnpbp_invoice = { git = "https://github.com/LNP-BP/rust-lnpbp" }
 bitcoin = "0.26"
 rgb-core = { version = "0.4.2", features = ["serde"] }
 citadel = { git = "https://github.com/mycitadel/citadel-runtime" }
-internet2 = { git = "https://github.com/internet2-org/rust-internet2" }
-microservices = { git = "https://github.com/internet2-org/rust-internet2", default-features = false }
+internet2 = "0.3.10"
+microservices = { version = "0.3.10", default-features = false }
 clap = "3.0.0-beta.2"
 clap_generate = "3.0.0-beta.2"
 shellexpand = "2"
