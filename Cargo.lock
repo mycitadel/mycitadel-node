@@ -281,7 +281,7 @@ dependencies = [
 [[package]]
 name = "citadel"
 version = "0.1.0-beta"
-source = "git+https://github.com/mycitadel/citadel-runtime#3297d494357da7f7d4fa393b3ad4eefd88957c6d"
+source = "git+https://github.com/mycitadel/citadel-runtime#43d59a407468bb3d7ef291bf3548a9a8218b5a1f"
 dependencies = [
  "amplify",
  "amplify_derive",

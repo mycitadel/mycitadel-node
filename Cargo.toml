@@ -51,12 +51,12 @@ base64 = "0.12"
 # Congig & logging
 log = { version = "0.4", features = ["max_level_trace", "release_max_level_debug"] }
 env_logger = "0.7"
-clap = { version = "3.0.0-beta.2", optional = true }
-settings = { version = "0.10", package = "config", optional = true }
-configure_me = { version = "0.4", optional = true }
-dotenv = { version = "0.15", optional = true }
-colored = { version = "2", optional = true }
-shellexpand = { version = "2", optional = true }
+clap = "3.0.0-beta.2"
+settings = { version = "0.10", package = "config" }
+configure_me = "0.4"
+dotenv = "0.15"
+colored = "2"
+shellexpand = "2"
 
 [build-dependencies]
 amplify = "3"
@@ -74,7 +74,7 @@ clap_generate = "3.0.0-beta.2"
 shellexpand = "2"
 configure_me_codegen = "0.4"
 serde = { version = "1", features = ["derive"] }
-colored = { version = "2", optional = true }
+colored = "2"
 
 [package.metadata.configure_me]
 spec = "config_spec.toml"
