@@ -1689,7 +1689,7 @@ dependencies = [
 [[package]]
 name = "rgb_node"
 version = "0.4.0-beta"
-source = "git+https://github.com/rgb-org/rgb-node#ed165a19c2ae114be710399c35376283cdd1ea9c"
+source = "git+https://github.com/rgb-org/rgb-node#eaa8b2ac555f86b3dfe5de8b1ec338bf4dceaf3d"
 dependencies = [
  "amplify",
  "amplify_derive",
