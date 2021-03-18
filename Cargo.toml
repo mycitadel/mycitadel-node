@@ -1,6 +1,6 @@
 [package]
 name = "mycitadel"
-description = "Node operating MyCitadel wallet (can be embedded, self- or cloud-hosted)"
+description = "Node operating MyCitadel wallet"
 version = "0.1.0-beta"
 license = "AGPL-3.0-only"
 authors = ["Dr. Maxim Orlovsky <orlovsky@mycitadel.io>"]
@@ -8,19 +8,16 @@ keywords = ["bitcoin", "rgb", "wallet", "lightning"]
 edition = "2018"
 readme = "README.md"
 build = "build.rs"
-exclude = [".github", "/test", "/data", "Dockerfile", "/shell", "libmycitadel"]
+exclude = [".github", "Dockerfile", "/shell"]
 
 [[bin]]
 name = "mycitadel"
-required-features = ["node", "cli"]
 
 [[bin]]
 name = "mycitadeld"
-required-features = ["server"]
 
 [[bin]]
 name = "mycitadel-cli"
-required-features = ["cli"]
 
 [dependencies]
 # LNP/BP crates
@@ -34,22 +31,18 @@ lnpbp_invoice = { git = "https://github.com/LNP-BP/rust-lnpbp", features = ["ser
 lnp-core = { git = "https://github.com/LNP-BP/lnp-core", features = ["serde"] }
 rgb-core = { version = "0.4.2", features = ["serde"] }
 rgb20 = { version = "0.4", features = ["serde"] }
-# rgb21 = { version = "0.3.0-beta.3", optional = true }
-# rgb22 = { version = "0.3.0-beta.3", optional = true }
-# rgb23 = { version = "0.3.0-beta.3", optional = true }
 rgb_node = { git = "https://github.com/rgb-org/rgb-node", default-features = false, features = ["fungibles", "serde"] }
-internet2 = { git = "https://github.com/internet2-org/rust-internet2", features = ["serde"] }
-microservices = { git = "https://github.com/internet2-org/rust-internet2", default-features = false, features = ["serde"] }
+citadel = { git = "https://github.com/mycitadel/citadel-runtime" }
+internet2 = { git = "https://github.com/internet2-org/rust-internet2" }
+microservices = { git = "https://github.com/internet2-org/rust-internet2", default-features = false }
 # Bitcoin
 bitcoin = { version = "0.26", features = ["use-serde"] }
 miniscript = { version = "5", features = ["use-serde"] }
-electrum-client = { version = "0.6", optional = true }
 # Rust language
 lazy_static = "1.4"
 chrono = { version = "0.4", features = ["serde"] }
 # Serialization & parsing
 serde = { version = "1", features = ["derive"] }
-serde_with = { version = "1.5", features = ["hex", "chrono"] }
 serde_json = "1"
 serde_yaml = "0.8"
 toml = "0.5"
@@ -73,68 +66,15 @@ lnpbp = "0.4"
 lnpbp_invoice = { git = "https://github.com/LNP-BP/rust-lnpbp" }
 bitcoin = "0.26"
 rgb-core = { version = "0.4.2", features = ["serde"] }
+citadel = { git = "https://github.com/mycitadel/citadel-runtime" }
 internet2 = { git = "https://github.com/internet2-org/rust-internet2" }
 microservices = { git = "https://github.com/internet2-org/rust-internet2", default-features = false }
-lazy_static = "1.4"
 clap = "3.0.0-beta.2"
 clap_generate = "3.0.0-beta.2"
-log = { version = "0.4", features = ["max_level_trace", "release_max_level_debug"] }
 shellexpand = "2"
 configure_me_codegen = "0.4"
 serde = { version = "1", features = ["derive"] }
-serde_with = { version = "1.5", features = ["hex", "chrono"] }
 colored = { version = "2", optional = true }
-
-# Recommended set of features:
-# 1. Standalone node: `server` (=`node`+`shell`)
-# 2. Cli to remote node: `cli` (auto includes `shell` and `integration`)
-# 3. Mobile app talking to a server: `client`
-# 4. Mobile app with embedded node: `embedded` (auto includes `client` + `node`)
-# 5. Simple cli utility app: `shell`
-[features]
-default = ["server", "cli"]
-all = ["server", "cli", "tor", "sql", "nosql", "vendored_openssl"]
-
-# Server is a standalone application that runs daemon
-server = ["node", "shell", "microservices/server", "rgb_node/server"]
-# Command-line application feature
-cli = ["shell", "client", "microservices/cli", "rgb_node/cli"]
-
-# Embedded is an app that contains embedded node and that talks to it through
-# integration layer
-embedded = ["client", "node", "microservices/embedded", "rgb_node/embedded"]
-# Server node can be run as a part of mobile app and other types of clients;
-# thus `server` != `node`.
-# This feature results in building with features not required for command-line
-node = ["internet2/keygen", "bitcoin/rand", "internet2/zmq", "microservices/node", "rgb_node/node",
-    "internet2/url", "electrum-client", "_rpc"]
-# Feature is required for any applications that talks to daemon processes
-client = ["internet2/zmq", "microservices/client", "microservices/node", "rgb_node/node", "bitcoin/rand",
-    "electrum-client",
-    "internet2/url", "clap", "_rpc"]
-# Required for all apps that can be launched from command-line shell as binaries
-# (i.e. both servers and cli)
-shell = [
-    "dotenv", "clap", "settings", "configure_me",
-    "amplify/parse_arg", "microservices/shell", "rgb_node/shell", "shellexpand", "colored"
-]
-
-# Internally used features for convenience
-_rpc = []
-
-tor = ["microservices/tor", "internet2/tor", "rgb_node/tor"]
-sql = ["rgb_node/diesel"]
-nosql = ["rgb_node/hammersbald"]
-vendored_openssl = ["microservices/vendored_openssl", "internet2/vendored_openssl", "rgb_node/vendored_openssl"]
 
 [package.metadata.configure_me]
 spec = "config_spec.toml"
-
-[patch.crates-io]
-# Remove this once https://github.com/jean-airoldie/zeromq-src-rs/pull/15 got merged
-zeromq-src = { git = "https://github.com/LNP-BP/zeromq-src-rs", branch = "fix/cmake" }
-
-[workspace]
-members = [".", "libmycitadel"]
-default-members = [".", "libmycitadel"]
-exclude = ["shell"]

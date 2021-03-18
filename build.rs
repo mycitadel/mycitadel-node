@@ -13,35 +13,29 @@
 
 #[macro_use]
 extern crate amplify_derive;
-#[macro_use]
-extern crate serde_with;
 
 use clap::IntoApp;
 use clap_generate::{generate_to, generators::*};
 
-pub mod model {
-    include!("src/model/ids.rs");
-}
-
-pub mod opts {
-    include!("src/opts.rs");
+pub mod shared {
+    include!("src/shared.rs");
 }
 
 pub mod cli {
     include!("src/cli/opts.rs");
 }
-pub mod server {
-    include!("src/server/opts.rs");
+pub mod daemon {
+    include!("src/daemon.rs");
 }
 pub mod embedded {
-    include!("src/embedded/opts.rs");
+    include!("src/embedded.rs");
 }
 
 fn main() -> Result<(), configure_me_codegen::Error> {
     let outdir = "./shell";
 
     for app in [
-        server::Opts::into_app(),
+        daemon::Opts::into_app(),
         cli::Opts::into_app(),
         embedded::Opts::into_app(),
     ]

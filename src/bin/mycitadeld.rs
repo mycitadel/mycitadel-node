@@ -30,8 +30,9 @@ extern crate log;
 
 use clap::Clap;
 
+use citadel::runtime::{self, Config};
 use microservices::shell::LogLevel;
-use mycitadel::server::{self, Config, Opts};
+use mycitadel::daemon::Opts;
 
 fn main() {
     println!("mycitadeld: MyCitadel node daemon");
@@ -57,7 +58,7 @@ fn main() {
      */
 
     debug!("Starting runtime ...");
-    server::run(config).expect("Error running mycitadeld runtime");
+    runtime::run(config).expect("Error running mycitadeld runtime");
 
     unreachable!()
 }

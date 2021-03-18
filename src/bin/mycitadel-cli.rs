@@ -31,10 +31,10 @@ extern crate log;
 use clap::Clap;
 use colored::Colorize;
 
+use citadel::client::{Client, Config};
+use citadel::Error;
 use microservices::shell::{Exec, LogLevel};
 use mycitadel::cli::Opts;
-use mycitadel::client::{Client, Config};
-use mycitadel::Error;
 
 fn main() {
     let opts = Opts::parse();

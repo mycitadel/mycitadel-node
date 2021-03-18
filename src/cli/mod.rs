@@ -22,3 +22,19 @@ pub use opts::{
     WalletOpts,
 };
 pub use output::OutputFormat;
+
+// -----------------------------------------------------------------------------
+
+use citadel::client::Config;
+use std::convert::TryInto;
+
+impl From<Opts> for Config {
+    fn from(opts: crate::cli::Opts) -> Self {
+        Config {
+            rpc_endpoint: opts.shared.rpc_endpoint.try_into().expect(
+                "The provided socket address must be a valid ZMQ socket",
+            ),
+            verbose: opts.shared.verbose,
+        }
+    }
+}

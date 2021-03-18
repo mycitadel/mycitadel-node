@@ -15,6 +15,7 @@ use clap::{AppSettings, Clap, ValueHint};
 use std::ffi::OsString;
 use std::path::PathBuf;
 
+use citadel::runtime::Config;
 use internet2::ZmqSocketAddr;
 use lnpbp::Chain;
 use microservices::FileFormat;
@@ -55,7 +56,7 @@ pub struct Opts {
     /// These params can be read also from the configuration file, not just
     /// command-line args or environment variables
     #[clap(flatten)]
-    pub shared: crate::opts::SharedOpts,
+    pub shared: crate::shared::SharedOpts,
 
     /// Blockchain to use
     #[clap(
@@ -113,5 +114,19 @@ pub struct Opts {
 impl Default for Opts {
     fn default() -> Self {
         Opts::parse_from(Vec::<OsString>::new())
+    }
+}
+
+impl From<Opts> for Config {
+    fn from(opts: Opts) -> Self {
+        Config {
+            chain: opts.chain,
+            data_dir: opts.data_dir,
+            rpc_endpoint: opts.shared.rpc_endpoint,
+            rgb20_endpoint: opts.rgb20_endpoint,
+            verbose: opts.shared.verbose,
+            electrum_server: opts.electrum_server,
+            rgb_embedded: opts.rgb_embedded,
+        }
     }
 }

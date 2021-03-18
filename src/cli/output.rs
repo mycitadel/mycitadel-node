@@ -22,8 +22,9 @@ use bitcoin::hashes::{sha256t, Hash};
 use invoice::Invoice;
 use wallet::bip32::UnhardenedIndex;
 
+use citadel::model::{AddressDerivation, ContractMeta, Utxo};
+
 use super::Formatting;
-use crate::model::{AddressDerivation, ContractMeta, Utxo};
 
 pub trait OutputCompact {
     fn output_compact(&self) -> String;

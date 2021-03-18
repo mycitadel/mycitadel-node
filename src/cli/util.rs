@@ -21,8 +21,9 @@ use bitcoin::consensus::{serialize, Encodable};
 use bitcoin::hashes::hex::ToHex;
 use wallet::Psbt;
 
+use citadel::Error;
+
 use super::PsbtFormat;
-use crate::Error;
 
 pub(super) fn psbt_output(
     psbt: &Psbt,

@@ -16,12 +16,11 @@ use std::path::PathBuf;
 use std::str::FromStr;
 
 use bitcoin::Address;
+use citadel::model;
 use invoice::Invoice;
 use wallet::bip32::PubkeyChain;
 use wallet::bip32::UnhardenedIndex;
 use wallet::descriptor;
-
-use crate::model;
 
 pub const MYCITADEL_CLI_CONFIG: &'static str = "{data_dir}/mycitadel-cli.toml";
 
@@ -116,7 +115,7 @@ pub struct Opts {
     /// These params can be read also from the configuration file, not just
     /// command-line args or environment variables
     #[clap(flatten)]
-    pub shared: crate::opts::SharedOpts,
+    pub shared: crate::shared::SharedOpts,
 
     /// Path to the configuration file.
     ///

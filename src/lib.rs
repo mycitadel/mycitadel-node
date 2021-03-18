@@ -29,44 +29,10 @@
 extern crate amplify;
 #[macro_use]
 extern crate amplify_derive;
-#[macro_use]
-extern crate lnpbp;
-#[cfg_attr(feature = "_rpc", macro_use)]
-extern crate internet2;
 
-#[macro_use]
-extern crate log;
-
-#[macro_use]
-extern crate serde_with;
-
-#[cfg(feature = "cli")]
 pub mod cli;
-mod error;
-pub mod model;
-#[cfg(feature = "shell")]
-pub mod opts;
-#[cfg(feature = "_rpc")]
-pub mod rpc;
+pub mod daemon;
+pub mod embedded;
+pub mod shared;
 
-#[cfg(feature = "client")]
-pub mod client;
-#[cfg(all(feature = "cli", feature = "node"))]
-mod embedded;
-#[cfg(feature = "node")]
-pub mod server;
-
-#[cfg(feature = "node")]
-pub mod cache;
-#[cfg(feature = "node")]
-pub mod chainapi;
-#[cfg(feature = "node")]
-pub mod chainwatch;
-#[cfg(feature = "node")]
-pub mod storage;
-
-#[cfg(feature = "client")]
-pub use client::Client;
-#[cfg(all(feature = "cli", feature = "node"))]
-pub use embedded::{run_embedded, Opts as EmbeddedOpts};
-pub use error::Error;
+pub use embedded::Opts as EmbeddedOpts;
