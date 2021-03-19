@@ -1,7 +1,7 @@
 [package]
 name = "mycitadel"
 description = "Node operating MyCitadel wallet"
-version = "0.1.0-beta"
+version = "0.1.0-rc"
 license = "AGPL-3.0-only"
 authors = ["Dr. Maxim Orlovsky <orlovsky@mycitadel.io>"]
 keywords = ["bitcoin", "rgb", "wallet", "lightning"]
@@ -27,11 +27,11 @@ slip132 = { version = "0.3.2", features = ["serde"] }
 strict_encoding = { version = "1.0.7", features = ["chrono", "crypto", "miniscript", "derive"] }
 descriptor-wallet = { version = "0.4", features = ["serde"] }
 lnpbp = { version = "0.4", features = ["serde"] }
-lnpbp_invoice = { git = "https://github.com/LNP-BP/rust-lnpbp", features = ["serde", "rgb"] }
+lnpbp-invoice = { version = "0.1", features = ["serde", "rgb"] }
 lnp-core = { version = "0.3.1", features = ["serde"] }
 rgb-core = { version = "0.4.2", features = ["serde"] }
 rgb20 = { version = "0.4", features = ["serde"] }
-rgb_node = { git = "https://github.com/rgb-org/rgb-node", default-features = false, features = ["fungibles", "serde"] }
+rgb_node = { version = "0.4", default-features = false, features = ["fungibles", "serde", "server", "electrum-client"] }
 citadel = { git = "https://github.com/mycitadel/citadel-runtime" }
 internet2 = "0.3.10"
 microservices = { version = "0.3.10", default-features = false }
@@ -63,7 +63,7 @@ amplify = "3"
 amplify_derive = "2.4.2"
 descriptor-wallet = "0.4"
 lnpbp = "0.4"
-lnpbp_invoice = { git = "https://github.com/LNP-BP/rust-lnpbp" }
+lnpbp-invoice = { version = "0.1", features = ["serde", "rgb"] }
 bitcoin = "0.26"
 rgb-core = { version = "0.4.2", features = ["serde"] }
 citadel = { git = "https://github.com/mycitadel/citadel-runtime" }

@@ -280,8 +280,8 @@ dependencies = [
 
 [[package]]
 name = "citadel"
-version = "0.1.0-beta"
-source = "git+https://github.com/mycitadel/citadel-runtime#6e8d1b2b3966de86c279669bb95b23c780103f13"
+version = "0.1.0-rc"
+source = "git+https://github.com/mycitadel/citadel-runtime#8f014879b65073cf8e252426b39b5688f10f2e41"
 dependencies = [
  "amplify",
  "amplify_derive",
@@ -292,11 +292,11 @@ dependencies = [
  "descriptor-wallet",
  "electrum-client",
  "env_logger",
- "internet2 0.3.10 (registry+https://github.com/rust-lang/crates.io-index)",
+ "internet2",
  "lazy_static",
- "lnp-core 0.3.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "lnp-core",
  "lnpbp",
- "lnpbp_invoice",
+ "lnpbp-invoice",
  "log",
  "microservices",
  "miniscript",
@@ -900,27 +900,6 @@ dependencies = [
 [[package]]
 name = "internet2"
 version = "0.3.10"
-source = "git+https://github.com/internet2-org/rust-internet2#a645f332ab7ff6357620648454e3e389d6b552ad"
-dependencies = [
- "amplify",
- "amplify_derive",
- "bitcoin",
- "chacha20poly1305",
- "inet2_addr",
- "inet2_derive",
- "lazy_static",
- "lightning_encoding",
- "serde 1.0.124",
- "serde_with",
- "serde_with_macros",
- "strict_encoding",
- "url",
- "zmq",
-]
-
-[[package]]
-name = "internet2"
-version = "0.3.10"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "c2a07ae295e404b850980559ea28bd42e3bd43cdfd59ea704ad12e056bf510f7"
 dependencies = [
@@ -1032,24 +1011,6 @@ checksum = "7fb9b38af92608140b86b693604b9ffcc5824240a484d1ecd4795bacb2fe88f3"
 [[package]]
 name = "lnp-core"
 version = "0.3.1"
-source = "git+https://github.com/LNP-BP/lnp-core#e065945a73add592757f765e1898741a15cbf435"
-dependencies = [
- "amplify",
- "amplify_derive",
- "bitcoin",
- "descriptor-wallet",
- "internet2 0.3.10 (registry+https://github.com/rust-lang/crates.io-index)",
- "lazy_static",
- "lightning_encoding",
- "lnpbp",
- "serde 1.0.124",
- "serde_with",
- "strict_encoding",
-]
-
-[[package]]
-name = "lnp-core"
-version = "0.3.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "b1c0d979dd4b7da78d2711d80f20fa8d68563109dbacb356f0d774153dad080c"
 dependencies = [
@@ -1057,7 +1018,7 @@ dependencies = [
  "amplify_derive",
  "bitcoin",
  "descriptor-wallet",
- "internet2 0.3.10 (registry+https://github.com/rust-lang/crates.io-index)",
+ "internet2",
  "lazy_static",
  "lightning_encoding",
  "lnpbp",
@@ -1092,18 +1053,19 @@ dependencies = [
 ]
 
 [[package]]
-name = "lnpbp_invoice"
-version = "0.4.0-alpha.1"
-source = "git+https://github.com/LNP-BP/rust-lnpbp#5bbbd2291d35408550eae62bcbd235308070cb02"
+name = "lnpbp-invoice"
+version = "0.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "bf03b7985c55ec3a1c229bcc4fd5d072df0de12acb45f8b3f0524361148e8a35"
 dependencies = [
  "amplify",
  "amplify_derive",
  "bitcoin",
  "chrono",
  "descriptor-wallet",
- "internet2 0.3.10 (git+https://github.com/internet2-org/rust-internet2)",
+ "internet2",
  "lightning_encoding",
- "lnp-core 0.3.1 (git+https://github.com/LNP-BP/lnp-core)",
+ "lnp-core",
  "lnpbp",
  "miniscript",
  "openssl",
@@ -1167,9 +1129,9 @@ dependencies = [
  "clap",
  "config",
  "env_logger",
- "internet2 0.3.10 (registry+https://github.com/rust-lang/crates.io-index)",
+ "internet2",
  "lightning_encoding",
- "lnp-core 0.3.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "lnp-core",
  "log",
  "serde 1.0.124",
  "serde_with",
@@ -1190,7 +1152,7 @@ dependencies = [
 
 [[package]]
 name = "mycitadel"
-version = "0.1.0-beta"
+version = "0.1.0-rc"
 dependencies = [
  "amplify",
  "amplify_derive",
@@ -1208,11 +1170,11 @@ dependencies = [
  "descriptor-wallet",
  "dotenv",
  "env_logger",
- "internet2 0.3.10 (registry+https://github.com/rust-lang/crates.io-index)",
+ "internet2",
  "lazy_static",
- "lnp-core 0.3.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "lnp-core",
  "lnpbp",
- "lnpbp_invoice",
+ "lnpbp-invoice",
  "log",
  "microservices",
  "miniscript",
@@ -1730,8 +1692,9 @@ dependencies = [
 
 [[package]]
 name = "rgb_node"
-version = "0.4.0-rc"
-source = "git+https://github.com/rgb-org/rgb-node#454d6fd9a60a01e449a65db88744f2fd9e645ebb"
+version = "0.4.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "615e0bb88f1a94c3a2cc927ae882275bed80997430eec9ffc904060945551abd"
 dependencies = [
  "amplify",
  "amplify_derive",
@@ -1747,7 +1710,7 @@ dependencies = [
  "dotenv",
  "electrum-client",
  "env_logger",
- "internet2 0.3.10 (registry+https://github.com/rust-lang/crates.io-index)",
+ "internet2",
  "lazy_static",
  "lnpbp",
  "log",
