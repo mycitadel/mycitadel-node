@@ -20,7 +20,8 @@ use std::fmt::Display;
 use amplify::Wrapper;
 use bitcoin::hashes::{sha256t, Hash};
 use invoice::Invoice;
-use wallet::bip32::UnhardenedIndex;
+use wallet::blockchain::BITCOIN_GENESIS_BLOCKHASH;
+use wallet::hd::UnhardenedIndex;
 
 use citadel::model::{AddressDerivation, ContractMeta, Utxo};
 
@@ -374,7 +375,7 @@ impl OutputFormat for rgb20::Asset {
 
     fn output_fields(&self) -> Vec<String> {
         let bitcoin_id = rgb::ContractId::from_inner(
-            sha256t::Hash::from_inner(wallet::BITCOIN_GENESIS_BLOCKHASH.into()),
+            sha256t::Hash::from_inner(BITCOIN_GENESIS_BLOCKHASH.into()),
         );
         if *self.id() == default!() {
             return vec![
@@ -396,10 +397,12 @@ impl OutputFormat for rgb20::Asset {
             self.id().to_string().as_str().bright_white().to_string(),
             self.decimal_precision().to_string(),
             self.date().to_string(),
-            self.accounting_supply(rgb20::SupplyMeasure::KnownCirculating)
-                .to_string(),
-            self.accounting_supply(rgb20::SupplyMeasure::IssueLimit)
-                .to_string(),
+            self.precise_supply(rgb20::SupplyMeasure::KnownCirculating)
+                .map(|v| v.to_string())
+                .unwrap_or(s!("unknown")),
+            self.precise_supply(rgb20::SupplyMeasure::IssueLimit)
+                .map(|v| v.to_string())
+                .unwrap_or(s!("unknown")),
         ]
     }
 }

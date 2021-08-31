@@ -24,13 +24,13 @@ use microservices::shell::Exec;
 use rgb::{Consignment, Validity};
 use slip132::FromSlip132;
 use strict_encoding::StrictEncode;
-use wallet::bip32::PubkeyChain;
+use wallet::hd::PubkeyChain;
 use wallet::psbt::{Psbt, Signer};
 
 use citadel::client::InvoiceType;
 use citadel::model::SpendingPolicy;
 use citadel::rpc::Reply;
-use citadel::{Client, Error};
+use citadel::{Client, Error, SECP256K1};
 
 use super::util;
 use super::{
@@ -208,8 +208,9 @@ impl Exec for WalletCommand {
                         }
                     };
                     if let Some(xpriv) = xpriv {
-                        let signatures =
-                            psbt.sign(xpriv, true).map_err(|err| {
+                        let signatures = psbt
+                            .sign(&*SECP256K1, xpriv, true)
+                            .map_err(|err| {
                                 Error::ServerFailure(Failure {
                                     code: 0,
                                     info: err.to_string(),

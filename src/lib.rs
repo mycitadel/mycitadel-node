@@ -27,8 +27,6 @@
 
 #[macro_use]
 extern crate amplify;
-#[macro_use]
-extern crate amplify_derive;
 
 pub mod cli;
 pub mod daemon;

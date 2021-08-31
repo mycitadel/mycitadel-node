@@ -1,7 +1,7 @@
 [package]
 name = "mycitadel"
 description = "Node operating MyCitadel wallet"
-version = "0.1.0-rc"
+version = "0.2.0-beta.1"
 license = "AGPL-3.0-only"
 authors = ["Dr. Maxim Orlovsky <orlovsky@mycitadel.io>"]
 keywords = ["bitcoin", "rgb", "wallet", "lightning"]
@@ -21,57 +21,58 @@ name = "mycitadel-cli"
 
 [dependencies]
 # LNP/BP crates
-amplify = { version = "3", features = ["serde"] }
-amplify_derive = "2.4.4"
-slip132 = { version = "0.3.2", features = ["serde"] }
-strict_encoding = { version = "1.0.7", features = ["chrono", "crypto", "miniscript", "derive"] }
-descriptor-wallet = { version = "0.4", features = ["serde"] }
-lnpbp = { version = "0.4", features = ["serde"] }
-lnpbp-invoice = { version = "0.1", features = ["serde", "rgb"] }
-lnp-core = { version = "0.3.1", features = ["serde"] }
-rgb-core = { version = "0.4.2", features = ["serde"] }
-rgb20 = { version = "0.4", features = ["serde"] }
-rgb_node = { version = "0.4", default-features = false, features = ["fungibles", "serde", "server", "electrum-client"] }
-citadel = { git = "https://github.com/mycitadel/citadel-runtime" }
-internet2 = "0.3.10"
-microservices = { version = "0.3.10", default-features = false }
+amplify = { version = "3.9.1", features = ["serde"] }
+slip132 = { version = "0.5.0-beta.1", features = ["serde", "strict_encoding"] }
+commit_verify = { version = "0.5.11", features = ["serde"] }
+strict_encoding = { version = "1.7.2", features = ["chrono", "crypto", "miniscript", "derive"] }
+descriptor-wallet = { version = "0.5.0-alpha.5", features = ["serde"] }
+lnpbp = { version = "0.5.0-beta.3", features = ["serde"] }
+lnpbp-invoice = { version = "0.2.0-beta.1", features = ["serde", "rgb"] }
+bp-core = { version = "0.5.0-beta.5", features = ["serde"] }
+lnp-core = { version = "0.4.0-beta.1", features = ["serde"] }
+rgb-core = { version = "0.5.0-alpha.1", features = ["serde"] }
+rgb20 = { version = "0.5.0-alpha.3", features = ["serde"] }
+rgb_node = { version = "0.5.0-alpha.1", optional = true, default-features = false, features = ["fungibles", "serde", "server", "electrum-client"], path = "../../rgb/rgb-node" }
+citadel-runtime = { version = "0.5.0-beta.1", path = "../citadel-runtime" }
+internet2 = { version = "0.5.0-alpha.2", features = ["serde", "url", "zmq"] }
+microservices = { version = "0.5.0-beta.1", default-features = false, features = ["serde", "node"] }
 # Bitcoin
-bitcoin = { version = "0.26", features = ["use-serde"] }
-miniscript = { version = "5", features = ["use-serde"] }
+bitcoin = { version = "0.27", features = ["use-serde"] }
+miniscript = { version = "6.0.1", features = ["use-serde"] }
 # Rust language
 lazy_static = "1.4"
 chrono = { version = "0.4", features = ["serde"] }
 # Serialization & parsing
 serde = { version = "1", features = ["derive"] }
+serde_with = { version = "1.8", features = ["hex", "chrono"] }
 serde_json = "1"
 serde_yaml = "0.8"
 toml = "0.5"
-bech32 = "0.7"
+bech32 = "0.8.1"
 base64 = "0.12"
 # Congig & logging
 log = { version = "0.4", features = ["max_level_trace", "release_max_level_debug"] }
 env_logger = "0.7"
-clap = "3.0.0-beta.2"
+shellexpand = "2.1"
+clap = "3.0.0-beta.4"
 settings = { version = "0.10", package = "config" }
 configure_me = "0.4"
 dotenv = "0.15"
 colored = "2"
-shellexpand = "2"
 
 [build-dependencies]
-amplify = "3"
-amplify_derive = "2.4.2"
-descriptor-wallet = "0.4"
-lnpbp = "0.4"
-lnpbp-invoice = { version = "0.1", features = ["serde", "rgb"] }
-bitcoin = "0.26"
-rgb-core = { version = "0.4.2", features = ["serde"] }
-citadel = { git = "https://github.com/mycitadel/citadel-runtime" }
-internet2 = "0.3.10"
-microservices = { version = "0.3.10", default-features = false }
-clap = "3.0.0-beta.2"
-clap_generate = "3.0.0-beta.2"
-shellexpand = "2"
+amplify = "3.9.1"
+descriptor-wallet = "0.5.0-alpha.5"
+lnpbp = "0.5.0-beta.3"
+lnpbp-invoice = { version = "0.2.0-beta.1", features = ["serde", "rgb"] }
+bitcoin = "0.27.0"
+rgb-core = { version = "0.5.0-alpha.1", features = ["serde"] }
+citadel-runtime = { version = "0.5.0-beta.1", path = "../citadel-runtime" }
+internet2 = "0.5.0-alpha.2"
+microservices = { version = "0.5.0-beta.1", default-features = false }
+clap = "3.0.0-beta.4"
+clap_generate = "3.0.0-beta.4"
+shellexpand = "2.1"
 configure_me_codegen = "0.4"
 serde = { version = "1", features = ["derive"] }
 colored = "2"

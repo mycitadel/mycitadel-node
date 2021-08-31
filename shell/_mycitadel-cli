@@ -15,18 +15,18 @@ _mycitadel-cli() {
 
     local context curcontext="$curcontext" state line
     _arguments "${_arguments_options[@]}" \
-'*-T+[Use Tor]: :_hosts' \
-'*--tor-proxy=[Use Tor]: :_hosts' \
+'-T+[Use Tor]: :_hosts' \
+'--tor-proxy=[Use Tor]: :_hosts' \
 '-x+[ZMQ socket name/address for MyCitadel node RPC interface]: :_files' \
 '--rpc-endpoint=[ZMQ socket name/address for MyCitadel node RPC interface]: :_files' \
 '-c+[Path to the configuration file]: :_files' \
 '--config=[Path to the configuration file]: :_files' \
+'-h[Print help information]' \
+'--help[Print help information]' \
+'-V[Print version information]' \
+'--version[Print version information]' \
 '*-v[Set verbosity level]' \
 '*--verbose[Set verbosity level]' \
-'-h[Prints help information]' \
-'--help[Prints help information]' \
-'-V[Prints version information]' \
-'--version[Prints version information]' \
 ":: :_mycitadel-cli_commands" \
 "*::: :->mycitadel-cli" \
 && ret=0
@@ -38,12 +38,12 @@ _mycitadel-cli() {
         case $line[1] in
             (wallet)
 _arguments "${_arguments_options[@]}" \
+'-h[Print help information]' \
+'--help[Print help information]' \
+'-V[Print version information]' \
+'--version[Print version information]' \
 '*-v[Set verbosity level]' \
 '*--verbose[Set verbosity level]' \
-'-h[Prints help information]' \
-'--help[Prints help information]' \
-'-V[Prints version information]' \
-'--version[Prints version information]' \
 ":: :_mycitadel-cli__wallet_commands" \
 "*::: :->wallet" \
 && ret=0
@@ -57,22 +57,14 @@ case $state in
 _arguments "${_arguments_options[@]}" \
 '-f+[How the wallet list should be formatted]' \
 '--format=[How the wallet list should be formatted]' \
-'*-v[Set verbosity level]' \
-'*--verbose[Set verbosity level]' \
-'-h[Prints help information]' \
-'--help[Prints help information]' \
-'-V[Prints version information]' \
-'--version[Prints version information]' \
+'--help[Print help information]' \
+'--version[Print version information]' \
 && ret=0
 ;;
 (create)
 _arguments "${_arguments_options[@]}" \
-'*-v[Set verbosity level]' \
-'*--verbose[Set verbosity level]' \
-'-h[Prints help information]' \
-'--help[Prints help information]' \
-'-V[Prints version information]' \
-'--version[Prints version information]' \
+'--help[Print help information]' \
+'--version[Print version information]' \
 ":: :_mycitadel-cli__wallet__create_commands" \
 "*::: :->create" \
 && ret=0
@@ -84,16 +76,12 @@ case $state in
         case $line[1] in
             (single-sig)
 _arguments "${_arguments_options[@]}" \
+'--help[Print help information]' \
+'--version[Print version information]' \
 '(--legacy --segwit --taproot)--bare[Creates old "bare" wallets, where public key is kept in the explicit form within bitcoin transaction P2PK output]' \
 '(--bare --segwit --taproot)--legacy[Whether create a pre-SegWit wallet (P2PKH) rather than SegWit (P2WPKH). If you'\''d like to use legacy SegWit-style addresses (P2WPKH-in-P2SH), do not use this flag, create normal SegWit wallet instead and specify `--legacy` option when requesting new address]' \
 '(--legacy --bare --taproot)--segwit[Recommended SegWit wallet with P2WKH and P2WPKH-in-P2SH outputs]' \
 '(--legacy --segwit --bare)--taproot[Reserved for the future taproot P2TR outputs]' \
-'*-v[Set verbosity level]' \
-'*--verbose[Set verbosity level]' \
-'-h[Prints help information]' \
-'--help[Prints help information]' \
-'-V[Prints version information]' \
-'--version[Prints version information]' \
 ':name -- Wallet name:' \
 ':pubkey-chain -- Extended public key with derivation info:' \
 && ret=0
@@ -104,24 +92,16 @@ esac
 ;;
 (rename)
 _arguments "${_arguments_options[@]}" \
-'*-v[Set verbosity level]' \
-'*--verbose[Set verbosity level]' \
-'-h[Prints help information]' \
-'--help[Prints help information]' \
-'-V[Prints version information]' \
-'--version[Prints version information]' \
+'--help[Print help information]' \
+'--version[Print version information]' \
 ':wallet-id -- Wallet id to rename:' \
 ':new-name -- New name of the wallet:' \
 && ret=0
 ;;
 (delete)
 _arguments "${_arguments_options[@]}" \
-'*-v[Set verbosity level]' \
-'*--verbose[Set verbosity level]' \
-'-h[Prints help information]' \
-'--help[Prints help information]' \
-'-V[Prints version information]' \
-'--version[Prints version information]' \
+'--help[Print help information]' \
+'--version[Print version information]' \
 ':wallet-id -- Wallet id to delete:' \
 && ret=0
 ;;
@@ -130,37 +110,25 @@ _arguments "${_arguments_options[@]}" \
 '--lookup-depth=[How many addresses should be scanned at least after the final address with no transactions is reached. Defaults to 20]' \
 '-f+[How the command output should be formatted]' \
 '--format=[How the command output should be formatted]' \
+'--help[Print help information]' \
+'--version[Print version information]' \
 '-r[Whether to re-scan addresses space with Electrum server]' \
 '--rescan[Whether to re-scan addresses space with Electrum server]' \
-'*-v[Set verbosity level]' \
-'*--verbose[Set verbosity level]' \
-'-h[Prints help information]' \
-'--help[Prints help information]' \
-'-V[Prints version information]' \
-'--version[Prints version information]' \
 ':wallet-id -- Wallet id for the operation:' \
 && ret=0
 ;;
 (sign)
 _arguments "${_arguments_options[@]}" \
-'*-v[Set verbosity level]' \
-'*--verbose[Set verbosity level]' \
-'-h[Prints help information]' \
-'--help[Prints help information]' \
-'-V[Prints version information]' \
-'--version[Prints version information]' \
+'--help[Print help information]' \
+'--version[Print version information]' \
 ':wallet-id -- Wallet id to sign PSBT from:' \
 ':psbt -- PSBT data in Bech32 encoding:' \
 && ret=0
 ;;
 (publish)
 _arguments "${_arguments_options[@]}" \
-'*-v[Set verbosity level]' \
-'*--verbose[Set verbosity level]' \
-'-h[Prints help information]' \
-'--help[Prints help information]' \
-'-V[Prints version information]' \
-'--version[Prints version information]' \
+'--help[Print help information]' \
+'--version[Print version information]' \
 ':wallet-id -- Wallet id to sign PSBT from:' \
 ':psbt -- PSBT data in Bech32 encoding:' \
 && ret=0
@@ -171,12 +139,12 @@ esac
 ;;
 (address)
 _arguments "${_arguments_options[@]}" \
+'-h[Print help information]' \
+'--help[Print help information]' \
+'-V[Print version information]' \
+'--version[Print version information]' \
 '*-v[Set verbosity level]' \
 '*--verbose[Set verbosity level]' \
-'-h[Prints help information]' \
-'--help[Prints help information]' \
-'-V[Prints version information]' \
-'--version[Prints version information]' \
 ":: :_mycitadel-cli__address_commands" \
 "*::: :->address" \
 && ret=0
@@ -191,14 +159,10 @@ _arguments "${_arguments_options[@]}" \
 '--lookup-depth=[How many addresses should be scanned at least after the final address with no transactions is reached. Defaults to 20]' \
 '-f+[How the command output should be formatted]' \
 '--format=[How the command output should be formatted]' \
+'--help[Print help information]' \
+'--version[Print version information]' \
 '-r[Whether to re-scan addresses space with Electrum server]' \
 '--rescan[Whether to re-scan addresses space with Electrum server]' \
-'*-v[Set verbosity level]' \
-'*--verbose[Set verbosity level]' \
-'-h[Prints help information]' \
-'--help[Prints help information]' \
-'-V[Prints version information]' \
-'--version[Prints version information]' \
 ':wallet-id -- Wallet id for the operation:' \
 && ret=0
 ;;
@@ -208,29 +172,21 @@ _arguments "${_arguments_options[@]}" \
 '--index=[Create address at custom index number]' \
 '-f+[How the asset list output should be formatted]' \
 '--format=[How the asset list output should be formatted]' \
+'--help[Print help information]' \
+'--version[Print version information]' \
 '-u[Whether to mark address as used]' \
 '--unmark[Whether to mark address as used]' \
 '--legacy[Use SegWit legacy address format (applicable only to a SegWit wallets)]' \
-'*-v[Set verbosity level]' \
-'*--verbose[Set verbosity level]' \
-'-h[Prints help information]' \
-'--help[Prints help information]' \
-'-V[Prints version information]' \
-'--version[Prints version information]' \
 ':wallet-id -- Wallet for address generation:' \
 && ret=0
 ;;
 (mark-used)
 _arguments "${_arguments_options[@]}" \
+'--help[Print help information]' \
+'--version[Print version information]' \
 '--legacy[Use SegWit legacy address format (applicable only to a SegWit wallets)]' \
 '-u[Remove use mark (inverses the command)]' \
 '--unmark[Remove use mark (inverses the command)]' \
-'*-v[Set verbosity level]' \
-'*--verbose[Set verbosity level]' \
-'-h[Prints help information]' \
-'--help[Prints help information]' \
-'-V[Prints version information]' \
-'--version[Prints version information]' \
 ':wallet-id -- Wallet for using the address:' \
 '::index -- Index of address derivation path (use `address list` command to see address indexes:' \
 && ret=0
@@ -241,12 +197,8 @@ _arguments "${_arguments_options[@]}" \
 '--output=[File name to output PSBT. If no name is given PSBT data are output to STDOUT]' \
 '-f+[PSBT format to use for the output; if no file is specified defaults to Base64 output; otherwise defaults to binary]' \
 '--format=[PSBT format to use for the output; if no file is specified defaults to Base64 output; otherwise defaults to binary]' \
-'*-v[Set verbosity level]' \
-'*--verbose[Set verbosity level]' \
-'-h[Prints help information]' \
-'--help[Prints help information]' \
-'-V[Prints version information]' \
-'--version[Prints version information]' \
+'--help[Print help information]' \
+'--version[Print version information]' \
 ':address -- Address to pay to:' \
 ':amount -- Amount to pay to the address:' \
 ':fee -- Fee to pay, in satoshis:' \
@@ -259,12 +211,12 @@ esac
 ;;
 (asset)
 _arguments "${_arguments_options[@]}" \
+'-h[Print help information]' \
+'--help[Print help information]' \
+'-V[Print version information]' \
+'--version[Print version information]' \
 '*-v[Set verbosity level]' \
 '*--verbose[Set verbosity level]' \
-'-h[Prints help information]' \
-'--help[Prints help information]' \
-'-V[Prints version information]' \
-'--version[Prints version information]' \
 ":: :_mycitadel-cli__asset_commands" \
 "*::: :->asset" \
 && ret=0
@@ -278,22 +230,14 @@ case $state in
 _arguments "${_arguments_options[@]}" \
 '-f+[How the asset list output should be formatted]' \
 '--format=[How the asset list output should be formatted]' \
-'*-v[Set verbosity level]' \
-'*--verbose[Set verbosity level]' \
-'-h[Prints help information]' \
-'--help[Prints help information]' \
-'-V[Prints version information]' \
-'--version[Prints version information]' \
+'--help[Print help information]' \
+'--version[Print version information]' \
 && ret=0
 ;;
 (import)
 _arguments "${_arguments_options[@]}" \
-'*-v[Set verbosity level]' \
-'*--verbose[Set verbosity level]' \
-'-h[Prints help information]' \
-'--help[Prints help information]' \
-'-V[Prints version information]' \
-'--version[Prints version information]' \
+'--help[Print help information]' \
+'--version[Print version information]' \
 ':genesis -- Bech32-representation of the asset genesis (string starting with `genesis1....`:' \
 && ret=0
 ;;
@@ -303,12 +247,12 @@ esac
 ;;
 (invoice)
 _arguments "${_arguments_options[@]}" \
+'-h[Print help information]' \
+'--help[Print help information]' \
+'-V[Print version information]' \
+'--version[Print version information]' \
 '*-v[Set verbosity level]' \
 '*--verbose[Set verbosity level]' \
-'-h[Prints help information]' \
-'--help[Prints help information]' \
-'-V[Prints version information]' \
-'--version[Prints version information]' \
 ":: :_mycitadel-cli__invoice_commands" \
 "*::: :->invoice" \
 && ret=0
@@ -326,17 +270,13 @@ _arguments "${_arguments_options[@]}" \
 '--merchant=[Optional details about the merchant providing the invoice]' \
 '-p+[Information about the invoice]' \
 '--purpose=[Information about the invoice]' \
+'--help[Print help information]' \
+'--version[Print version information]' \
 '-u[Whether to mark address as used]' \
 '--unmark[Whether to mark address as used]' \
 '--legacy[Use SegWit legacy address format (applicable only to a SegWit wallets)]' \
 '(--psbt)--descriptor[Create descriptor-based invoice (not compatible with instant wallet accounts)]' \
 '(--descriptor)--psbt[Create a PSBT-based invoice (not compatible with instant wallet accounts)]' \
-'*-v[Set verbosity level]' \
-'*--verbose[Set verbosity level]' \
-'-h[Prints help information]' \
-'--help[Prints help information]' \
-'-V[Prints version information]' \
-'--version[Prints version information]' \
 ':wallet-id -- Wallet where the payment should go:' \
 ':amount -- Amount of the asset (in the smallest asset units, without floating point - i.e. for bitcoin use satoshis):' \
 && ret=0
@@ -345,12 +285,8 @@ _arguments "${_arguments_options[@]}" \
 _arguments "${_arguments_options[@]}" \
 '-f+[How invoice list should be formatted]' \
 '--format=[How invoice list should be formatted]' \
-'*-v[Set verbosity level]' \
-'*--verbose[Set verbosity level]' \
-'-h[Prints help information]' \
-'--help[Prints help information]' \
-'-V[Prints version information]' \
-'--version[Prints version information]' \
+'--help[Print help information]' \
+'--version[Print version information]' \
 ':wallet-id -- Wallet for invoice list:' \
 && ret=0
 ;;
@@ -358,12 +294,8 @@ _arguments "${_arguments_options[@]}" \
 _arguments "${_arguments_options[@]}" \
 '-f+[Format to use for the invoice representation]' \
 '--format=[Format to use for the invoice representation]' \
-'*-v[Set verbosity level]' \
-'*--verbose[Set verbosity level]' \
-'-h[Prints help information]' \
-'--help[Prints help information]' \
-'-V[Prints version information]' \
-'--version[Prints version information]' \
+'--help[Print help information]' \
+'--version[Print version information]' \
 ':invoice -- Invoice Bech32 string representation:' \
 && ret=0
 ;;
@@ -379,12 +311,8 @@ _arguments "${_arguments_options[@]}" \
 '--format=[PSBT format to use for the output; if no file is specified defaults to Base64 output; otherwise defaults to binary]' \
 '-g+[How much satoshis to give away with RGB payment; required and allowed only when paying descriptor-based RGB invoices]' \
 '--giveaway=[How much satoshis to give away with RGB payment; required and allowed only when paying descriptor-based RGB invoices]' \
-'*-v[Set verbosity level]' \
-'*--verbose[Set verbosity level]' \
-'-h[Prints help information]' \
-'--help[Prints help information]' \
-'-V[Prints version information]' \
-'--version[Prints version information]' \
+'--help[Print help information]' \
+'--version[Print version information]' \
 ':invoice -- Invoice Bech32 string representation:' \
 ':wallet-id -- Wallet to pay from:' \
 ':fee -- Fee to pay, in satoshis:' \
@@ -392,14 +320,10 @@ _arguments "${_arguments_options[@]}" \
 ;;
 (accept)
 _arguments "${_arguments_options[@]}" \
+'--help[Print help information]' \
+'--version[Print version information]' \
 '-f[Whether parameter given by consignment is a file name or a Bech32 string]' \
 '--file[Whether parameter given by consignment is a file name or a Bech32 string]' \
-'*-v[Set verbosity level]' \
-'*--verbose[Set verbosity level]' \
-'-h[Prints help information]' \
-'--help[Prints help information]' \
-'-V[Prints version information]' \
-'--version[Prints version information]' \
 ':consignment -- Consignment data to accept:' \
 && ret=0
 ;;
@@ -409,10 +333,12 @@ esac
 ;;
 (help)
 _arguments "${_arguments_options[@]}" \
-'-h[Prints help information]' \
-'--help[Prints help information]' \
-'-V[Prints version information]' \
-'--version[Prints version information]' \
+'-h[Print help information]' \
+'--help[Print help information]' \
+'-V[Print version information]' \
+'--version[Print version information]' \
+'*-v[Set verbosity level]' \
+'*--verbose[Set verbosity level]' \
 && ret=0
 ;;
         esac
@@ -423,193 +349,155 @@ esac
 (( $+functions[_mycitadel-cli_commands] )) ||
 _mycitadel-cli_commands() {
     local commands; commands=(
-        "wallet:Wallet management commands" \
-"address:Address-related commands" \
-"asset:Asset management commands" \
-"invoice:Invoice-related commands" \
-"help:Prints this message or the help of the given subcommand(s)" \
+'wallet:Wallet management commands' \
+'address:Address-related commands' \
+'asset:Asset management commands' \
+'invoice:Invoice-related commands' \
+'help:Print this message or the help of the given subcommand(s)' \
     )
     _describe -t commands 'mycitadel-cli commands' commands "$@"
 }
 (( $+functions[_mycitadel-cli__invoice__accept_commands] )) ||
 _mycitadel-cli__invoice__accept_commands() {
-    local commands; commands=(
-        
-    )
+    local commands; commands=()
     _describe -t commands 'mycitadel-cli invoice accept commands' commands "$@"
 }
 (( $+functions[_mycitadel-cli__address_commands] )) ||
 _mycitadel-cli__address_commands() {
     local commands; commands=(
-        "list-used:Print address list" \
-"create:" \
-"mark-used:" \
-"pay:" \
+'list-used:Print address list' \
+'create:' \
+'mark-used:' \
+'pay:' \
     )
     _describe -t commands 'mycitadel-cli address commands' commands "$@"
 }
 (( $+functions[_mycitadel-cli__asset_commands] )) ||
 _mycitadel-cli__asset_commands() {
     local commands; commands=(
-        "list:Lists known assets" \
-"import:Import asset genesis data" \
+'list:Lists known assets' \
+'import:Import asset genesis data' \
     )
     _describe -t commands 'mycitadel-cli asset commands' commands "$@"
 }
 (( $+functions[_mycitadel-cli__wallet__balance_commands] )) ||
 _mycitadel-cli__wallet__balance_commands() {
-    local commands; commands=(
-        
-    )
+    local commands; commands=()
     _describe -t commands 'mycitadel-cli wallet balance commands' commands "$@"
 }
 (( $+functions[_mycitadel-cli__address__create_commands] )) ||
 _mycitadel-cli__address__create_commands() {
-    local commands; commands=(
-        
-    )
+    local commands; commands=()
     _describe -t commands 'mycitadel-cli address create commands' commands "$@"
 }
 (( $+functions[_mycitadel-cli__invoice__create_commands] )) ||
 _mycitadel-cli__invoice__create_commands() {
-    local commands; commands=(
-        
-    )
+    local commands; commands=()
     _describe -t commands 'mycitadel-cli invoice create commands' commands "$@"
 }
 (( $+functions[_mycitadel-cli__wallet__create_commands] )) ||
 _mycitadel-cli__wallet__create_commands() {
     local commands; commands=(
-        "single-sig:Creates current single-sig wallet account" \
+'single-sig:Creates current single-sig wallet account' \
     )
     _describe -t commands 'mycitadel-cli wallet create commands' commands "$@"
 }
 (( $+functions[_mycitadel-cli__wallet__delete_commands] )) ||
 _mycitadel-cli__wallet__delete_commands() {
-    local commands; commands=(
-        
-    )
+    local commands; commands=()
     _describe -t commands 'mycitadel-cli wallet delete commands' commands "$@"
 }
 (( $+functions[_mycitadel-cli__help_commands] )) ||
 _mycitadel-cli__help_commands() {
-    local commands; commands=(
-        
-    )
+    local commands; commands=()
     _describe -t commands 'mycitadel-cli help commands' commands "$@"
 }
 (( $+functions[_mycitadel-cli__asset__import_commands] )) ||
 _mycitadel-cli__asset__import_commands() {
-    local commands; commands=(
-        
-    )
+    local commands; commands=()
     _describe -t commands 'mycitadel-cli asset import commands' commands "$@"
 }
 (( $+functions[_mycitadel-cli__invoice__info_commands] )) ||
 _mycitadel-cli__invoice__info_commands() {
-    local commands; commands=(
-        
-    )
+    local commands; commands=()
     _describe -t commands 'mycitadel-cli invoice info commands' commands "$@"
 }
 (( $+functions[_mycitadel-cli__invoice_commands] )) ||
 _mycitadel-cli__invoice_commands() {
     local commands; commands=(
-        "create:Create new invoice" \
-"list:List all issued invoices" \
-"info:Parse invoice and print out its detailed information" \
-"pay:Pay an invoice" \
-"accept:Accept payment for the invoice. Required only for on-chain RGB payments; Bitcoin & Lightning-network payments (including RGB lightning) are accepted automatically and does not require calling this method" \
+'create:Create new invoice' \
+'list:List all issued invoices' \
+'info:Parse invoice and print out its detailed information' \
+'pay:Pay an invoice' \
+'accept:Accept payment for the invoice. Required only for on-chain RGB payments; Bitcoin & Lightning-network payments (including RGB lightning) are accepted automatically and does not require calling this method' \
     )
     _describe -t commands 'mycitadel-cli invoice commands' commands "$@"
 }
 (( $+functions[_mycitadel-cli__asset__list_commands] )) ||
 _mycitadel-cli__asset__list_commands() {
-    local commands; commands=(
-        
-    )
+    local commands; commands=()
     _describe -t commands 'mycitadel-cli asset list commands' commands "$@"
 }
 (( $+functions[_mycitadel-cli__invoice__list_commands] )) ||
 _mycitadel-cli__invoice__list_commands() {
-    local commands; commands=(
-        
-    )
+    local commands; commands=()
     _describe -t commands 'mycitadel-cli invoice list commands' commands "$@"
 }
 (( $+functions[_mycitadel-cli__wallet__list_commands] )) ||
 _mycitadel-cli__wallet__list_commands() {
-    local commands; commands=(
-        
-    )
+    local commands; commands=()
     _describe -t commands 'mycitadel-cli wallet list commands' commands "$@"
 }
 (( $+functions[_mycitadel-cli__address__list-used_commands] )) ||
 _mycitadel-cli__address__list-used_commands() {
-    local commands; commands=(
-        
-    )
+    local commands; commands=()
     _describe -t commands 'mycitadel-cli address list-used commands' commands "$@"
 }
 (( $+functions[_mycitadel-cli__address__mark-used_commands] )) ||
 _mycitadel-cli__address__mark-used_commands() {
-    local commands; commands=(
-        
-    )
+    local commands; commands=()
     _describe -t commands 'mycitadel-cli address mark-used commands' commands "$@"
 }
 (( $+functions[_mycitadel-cli__address__pay_commands] )) ||
 _mycitadel-cli__address__pay_commands() {
-    local commands; commands=(
-        
-    )
+    local commands; commands=()
     _describe -t commands 'mycitadel-cli address pay commands' commands "$@"
 }
 (( $+functions[_mycitadel-cli__invoice__pay_commands] )) ||
 _mycitadel-cli__invoice__pay_commands() {
-    local commands; commands=(
-        
-    )
+    local commands; commands=()
     _describe -t commands 'mycitadel-cli invoice pay commands' commands "$@"
 }
 (( $+functions[_mycitadel-cli__wallet__publish_commands] )) ||
 _mycitadel-cli__wallet__publish_commands() {
-    local commands; commands=(
-        
-    )
+    local commands; commands=()
     _describe -t commands 'mycitadel-cli wallet publish commands' commands "$@"
 }
 (( $+functions[_mycitadel-cli__wallet__rename_commands] )) ||
 _mycitadel-cli__wallet__rename_commands() {
-    local commands; commands=(
-        
-    )
+    local commands; commands=()
     _describe -t commands 'mycitadel-cli wallet rename commands' commands "$@"
 }
 (( $+functions[_mycitadel-cli__wallet__sign_commands] )) ||
 _mycitadel-cli__wallet__sign_commands() {
-    local commands; commands=(
-        
-    )
+    local commands; commands=()
     _describe -t commands 'mycitadel-cli wallet sign commands' commands "$@"
 }
 (( $+functions[_mycitadel-cli__wallet__create__single-sig_commands] )) ||
 _mycitadel-cli__wallet__create__single-sig_commands() {
-    local commands; commands=(
-        
-    )
+    local commands; commands=()
     _describe -t commands 'mycitadel-cli wallet create single-sig commands' commands "$@"
 }
 (( $+functions[_mycitadel-cli__wallet_commands] )) ||
 _mycitadel-cli__wallet_commands() {
     local commands; commands=(
-        "list:Lists existing wallets" \
-"create:Creates wallet with a given name and descriptor parameters" \
-"rename:Change a name of a wallet" \
-"delete:Delete existing wallet contract" \
-"balance:Returns detailed wallet balance information" \
-"sign:Signs given PSBT with keys controlled by a wallet master extended keys" \
-"publish:Finalizes fully-signed PSBT and publishes transaction to bitcoin network, updating PSBT data stored in wallet `wallet_id`" \
+'list:Lists existing wallets' \
+'create:Creates wallet with a given name and descriptor parameters' \
+'rename:Change a name of a wallet' \
+'delete:Delete existing wallet contract' \
+'balance:Returns detailed wallet balance information' \
+'sign:Signs given PSBT with keys controlled by a wallet master extended keys' \
+'publish:Finalizes fully-signed PSBT and publishes transaction to bitcoin network, updating PSBT data stored in wallet `wallet_id`' \
     )
     _describe -t commands 'mycitadel-cli wallet commands' commands "$@"
 }

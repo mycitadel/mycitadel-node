@@ -17,7 +17,7 @@ use std::path::PathBuf;
 
 use citadel::runtime::Config;
 use internet2::ZmqSocketAddr;
-use lnpbp::Chain;
+use lnpbp::chain::Chain;
 use microservices::FileFormat;
 
 #[cfg(any(target_os = "linux"))]

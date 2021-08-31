@@ -77,7 +77,7 @@ _mycitadel-cli() {
 
     case "${cmd}" in
         mycitadel__cli)
-            opts=" -v -T -x -c -h -V  --verbose --tor-proxy --rpc-endpoint --config --help --version  wallet address asset invoice help"
+            opts=" -h -V -v -T -x -c  --help --version --verbose --tor-proxy --rpc-endpoint --config  wallet address asset invoice help"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 1 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -88,7 +88,7 @@ _mycitadel-cli() {
                     COMPREPLY=($(compgen -f "${cur}"))
                     return 0
                     ;;
-                    -T)
+                -T)
                     COMPREPLY=($(compgen -f "${cur}"))
                     return 0
                     ;;
@@ -96,7 +96,7 @@ _mycitadel-cli() {
                     COMPREPLY=($(compgen -f "${cur}"))
                     return 0
                     ;;
-                    -x)
+                -x)
                     COMPREPLY=($(compgen -f "${cur}"))
                     return 0
                     ;;
@@ -104,7 +104,7 @@ _mycitadel-cli() {
                     COMPREPLY=($(compgen -f "${cur}"))
                     return 0
                     ;;
-                    -c)
+                -c)
                     COMPREPLY=($(compgen -f "${cur}"))
                     return 0
                     ;;
@@ -117,7 +117,7 @@ _mycitadel-cli() {
             ;;
         
         mycitadel__cli__address)
-            opts=" -v -h -V  --verbose --help --version  list-used create mark-used pay"
+            opts=" -h -V -v  --help --version --verbose  list-used create mark-used pay"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -132,7 +132,7 @@ _mycitadel-cli() {
             return 0
             ;;
         mycitadel__cli__address__create)
-            opts=" -i -u -f -v -h -V  --index --unmark --legacy --format --verbose --help --version  <wallet-id> "
+            opts=" -i -u -f  --help --version --index --unmark --legacy --format  <WALLET_ID> "
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -143,7 +143,7 @@ _mycitadel-cli() {
                     COMPREPLY=($(compgen -f "${cur}"))
                     return 0
                     ;;
-                    -i)
+                -i)
                     COMPREPLY=($(compgen -f "${cur}"))
                     return 0
                     ;;
@@ -151,7 +151,7 @@ _mycitadel-cli() {
                     COMPREPLY=($(compgen -f "${cur}"))
                     return 0
                     ;;
-                    -f)
+                -f)
                     COMPREPLY=($(compgen -f "${cur}"))
                     return 0
                     ;;
@@ -163,7 +163,7 @@ _mycitadel-cli() {
             return 0
             ;;
         mycitadel__cli__address__list__used)
-            opts=" -r -f -v -h -V  --rescan --lookup-depth --format --verbose --help --version  <wallet-id> "
+            opts=" -r -f  --help --version --rescan --lookup-depth --format  <WALLET_ID> "
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -178,7 +178,7 @@ _mycitadel-cli() {
                     COMPREPLY=($(compgen -f "${cur}"))
                     return 0
                     ;;
-                    -f)
+                -f)
                     COMPREPLY=($(compgen -f "${cur}"))
                     return 0
                     ;;
@@ -190,7 +190,7 @@ _mycitadel-cli() {
             return 0
             ;;
         mycitadel__cli__address__mark__used)
-            opts=" -u -v -h -V  --legacy --unmark --verbose --help --version  <wallet-id> <index> "
+            opts=" -u  --help --version --legacy --unmark  <WALLET_ID> <INDEX> "
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -205,7 +205,7 @@ _mycitadel-cli() {
             return 0
             ;;
         mycitadel__cli__address__pay)
-            opts=" -o -f -v -h -V  --output --format --verbose --help --version  <address> <amount> <fee> <pay-from> "
+            opts=" -o -f  --help --version --output --format  <ADDRESS> <AMOUNT> <FEE> <PAY_FROM> "
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -216,7 +216,7 @@ _mycitadel-cli() {
                     COMPREPLY=($(compgen -f "${cur}"))
                     return 0
                     ;;
-                    -o)
+                -o)
                     COMPREPLY=($(compgen -f "${cur}"))
                     return 0
                     ;;
@@ -224,7 +224,7 @@ _mycitadel-cli() {
                     COMPREPLY=($(compgen -f "${cur}"))
                     return 0
                     ;;
-                    -f)
+                -f)
                     COMPREPLY=($(compgen -f "${cur}"))
                     return 0
                     ;;
@@ -236,7 +236,7 @@ _mycitadel-cli() {
             return 0
             ;;
         mycitadel__cli__asset)
-            opts=" -v -h -V  --verbose --help --version  list import"
+            opts=" -h -V -v  --help --version --verbose  list import"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -251,7 +251,7 @@ _mycitadel-cli() {
             return 0
             ;;
         mycitadel__cli__asset__import)
-            opts=" -v -h -V  --verbose --help --version  <genesis> "
+            opts="  --help --version  <GENESIS> "
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -266,7 +266,7 @@ _mycitadel-cli() {
             return 0
             ;;
         mycitadel__cli__asset__list)
-            opts=" -f -v -h -V  --format --verbose --help --version  "
+            opts=" -f  --help --version --format  "
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -277,7 +277,7 @@ _mycitadel-cli() {
                     COMPREPLY=($(compgen -f "${cur}"))
                     return 0
                     ;;
-                    -f)
+                -f)
                     COMPREPLY=($(compgen -f "${cur}"))
                     return 0
                     ;;
@@ -289,7 +289,7 @@ _mycitadel-cli() {
             return 0
             ;;
         mycitadel__cli__help)
-            opts=" -h -V  --help --version  "
+            opts=" -h -V -v  --help --version --verbose  "
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -304,7 +304,7 @@ _mycitadel-cli() {
             return 0
             ;;
         mycitadel__cli__invoice)
-            opts=" -v -h -V  --verbose --help --version  create list info pay accept"
+            opts=" -h -V -v  --help --version --verbose  create list info pay accept"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -319,7 +319,7 @@ _mycitadel-cli() {
             return 0
             ;;
         mycitadel__cli__invoice__accept)
-            opts=" -f -v -h -V  --file --verbose --help --version  <consignment> "
+            opts=" -f  --help --version --file  <CONSIGNMENT> "
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -334,7 +334,7 @@ _mycitadel-cli() {
             return 0
             ;;
         mycitadel__cli__invoice__create)
-            opts=" -a -m -p -u -v -h -V  --asset --merchant --purpose --unmark --legacy --descriptor --psbt --verbose --help --version  <wallet-id> <amount> "
+            opts=" -a -m -p -u  --help --version --asset --merchant --purpose --unmark --legacy --descriptor --psbt  <WALLET_ID> <AMOUNT> "
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -345,7 +345,7 @@ _mycitadel-cli() {
                     COMPREPLY=($(compgen -f "${cur}"))
                     return 0
                     ;;
-                    -a)
+                -a)
                     COMPREPLY=($(compgen -f "${cur}"))
                     return 0
                     ;;
@@ -353,7 +353,7 @@ _mycitadel-cli() {
                     COMPREPLY=($(compgen -f "${cur}"))
                     return 0
                     ;;
-                    -m)
+                -m)
                     COMPREPLY=($(compgen -f "${cur}"))
                     return 0
                     ;;
@@ -361,7 +361,7 @@ _mycitadel-cli() {
                     COMPREPLY=($(compgen -f "${cur}"))
                     return 0
                     ;;
-                    -p)
+                -p)
                     COMPREPLY=($(compgen -f "${cur}"))
                     return 0
                     ;;
@@ -373,7 +373,7 @@ _mycitadel-cli() {
             return 0
             ;;
         mycitadel__cli__invoice__info)
-            opts=" -f -v -h -V  --format --verbose --help --version  <invoice> "
+            opts=" -f  --help --version --format  <INVOICE> "
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -384,7 +384,7 @@ _mycitadel-cli() {
                     COMPREPLY=($(compgen -f "${cur}"))
                     return 0
                     ;;
-                    -f)
+                -f)
                     COMPREPLY=($(compgen -f "${cur}"))
                     return 0
                     ;;
@@ -396,7 +396,7 @@ _mycitadel-cli() {
             return 0
             ;;
         mycitadel__cli__invoice__list)
-            opts=" -f -v -h -V  --format --verbose --help --version  <wallet-id> "
+            opts=" -f  --help --version --format  <WALLET_ID> "
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -407,7 +407,7 @@ _mycitadel-cli() {
                     COMPREPLY=($(compgen -f "${cur}"))
                     return 0
                     ;;
-                    -f)
+                -f)
                     COMPREPLY=($(compgen -f "${cur}"))
                     return 0
                     ;;
@@ -419,7 +419,7 @@ _mycitadel-cli() {
             return 0
             ;;
         mycitadel__cli__invoice__pay)
-            opts=" -a -o -c -f -g -v -h -V  --amount --output --consignment --format --giveaway --verbose --help --version  <invoice> <wallet-id> <fee> "
+            opts=" -a -o -c -f -g  --help --version --amount --output --consignment --format --giveaway  <INVOICE> <WALLET_ID> <FEE> "
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -430,7 +430,7 @@ _mycitadel-cli() {
                     COMPREPLY=($(compgen -f "${cur}"))
                     return 0
                     ;;
-                    -a)
+                -a)
                     COMPREPLY=($(compgen -f "${cur}"))
                     return 0
                     ;;
@@ -438,7 +438,7 @@ _mycitadel-cli() {
                     COMPREPLY=($(compgen -f "${cur}"))
                     return 0
                     ;;
-                    -o)
+                -o)
                     COMPREPLY=($(compgen -f "${cur}"))
                     return 0
                     ;;
@@ -446,7 +446,7 @@ _mycitadel-cli() {
                     COMPREPLY=($(compgen -f "${cur}"))
                     return 0
                     ;;
-                    -c)
+                -c)
                     COMPREPLY=($(compgen -f "${cur}"))
                     return 0
                     ;;
@@ -454,7 +454,7 @@ _mycitadel-cli() {
                     COMPREPLY=($(compgen -f "${cur}"))
                     return 0
                     ;;
-                    -f)
+                -f)
                     COMPREPLY=($(compgen -f "${cur}"))
                     return 0
                     ;;
@@ -462,7 +462,7 @@ _mycitadel-cli() {
                     COMPREPLY=($(compgen -f "${cur}"))
                     return 0
                     ;;
-                    -g)
+                -g)
                     COMPREPLY=($(compgen -f "${cur}"))
                     return 0
                     ;;
@@ -474,7 +474,7 @@ _mycitadel-cli() {
             return 0
             ;;
         mycitadel__cli__wallet)
-            opts=" -v -h -V  --verbose --help --version  list create rename delete balance sign publish"
+            opts=" -h -V -v  --help --version --verbose  list create rename delete balance sign publish"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -489,7 +489,7 @@ _mycitadel-cli() {
             return 0
             ;;
         mycitadel__cli__wallet__balance)
-            opts=" -r -f -v -h -V  --rescan --lookup-depth --format --verbose --help --version  <wallet-id> "
+            opts=" -r -f  --help --version --rescan --lookup-depth --format  <WALLET_ID> "
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -504,7 +504,7 @@ _mycitadel-cli() {
                     COMPREPLY=($(compgen -f "${cur}"))
                     return 0
                     ;;
-                    -f)
+                -f)
                     COMPREPLY=($(compgen -f "${cur}"))
                     return 0
                     ;;
@@ -516,7 +516,7 @@ _mycitadel-cli() {
             return 0
             ;;
         mycitadel__cli__wallet__create)
-            opts=" -v -h -V  --verbose --help --version  single-sig"
+            opts="  --help --version  single-sig"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -531,7 +531,7 @@ _mycitadel-cli() {
             return 0
             ;;
         mycitadel__cli__wallet__create__single__sig)
-            opts=" -v -h -V  --bare --legacy --segwit --taproot --verbose --help --version  <name> <pubkey-chain> "
+            opts="  --help --version --bare --legacy --segwit --taproot  <NAME> <PUBKEY_CHAIN> "
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 4 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -546,7 +546,7 @@ _mycitadel-cli() {
             return 0
             ;;
         mycitadel__cli__wallet__delete)
-            opts=" -v -h -V  --verbose --help --version  <wallet-id> "
+            opts="  --help --version  <WALLET_ID> "
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -561,7 +561,7 @@ _mycitadel-cli() {
             return 0
             ;;
         mycitadel__cli__wallet__list)
-            opts=" -f -v -h -V  --format --verbose --help --version  "
+            opts=" -f  --help --version --format  "
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -572,7 +572,7 @@ _mycitadel-cli() {
                     COMPREPLY=($(compgen -f "${cur}"))
                     return 0
                     ;;
-                    -f)
+                -f)
                     COMPREPLY=($(compgen -f "${cur}"))
                     return 0
                     ;;
@@ -584,7 +584,7 @@ _mycitadel-cli() {
             return 0
             ;;
         mycitadel__cli__wallet__publish)
-            opts=" -v -h -V  --verbose --help --version  <wallet-id> <psbt> "
+            opts="  --help --version  <WALLET_ID> <PSBT> "
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -599,7 +599,7 @@ _mycitadel-cli() {
             return 0
             ;;
         mycitadel__cli__wallet__rename)
-            opts=" -v -h -V  --verbose --help --version  <wallet-id> <new-name> "
+            opts="  --help --version  <WALLET_ID> <NEW_NAME> "
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -614,7 +614,7 @@ _mycitadel-cli() {
             return 0
             ;;
         mycitadel__cli__wallet__sign)
-            opts=" -v -h -V  --verbose --help --version  <wallet-id> <psbt> "
+            opts="  --help --version  <WALLET_ID> <PSBT> "
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0

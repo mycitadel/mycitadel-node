@@ -19,7 +19,7 @@ use std::path::PathBuf;
 use base64::display::Base64Display;
 use bitcoin::consensus::{serialize, Encodable};
 use bitcoin::hashes::hex::ToHex;
-use wallet::Psbt;
+use wallet::psbt::Psbt;
 
 use citadel::Error;
 

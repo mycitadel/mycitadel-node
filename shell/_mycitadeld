@@ -15,8 +15,8 @@ _mycitadeld() {
 
     local context curcontext="$curcontext" state line
     _arguments "${_arguments_options[@]}" \
-'*-T+[Use Tor]: :_hosts' \
-'*--tor-proxy=[Use Tor]: :_hosts' \
+'-T+[Use Tor]: :_hosts' \
+'--tor-proxy=[Use Tor]: :_hosts' \
 '-x+[ZMQ socket name/address for MyCitadel node RPC interface]: :_files' \
 '--rpc-endpoint=[ZMQ socket name/address for MyCitadel node RPC interface]: :_files' \
 '-n+[Blockchain to use]' \
@@ -27,23 +27,21 @@ _mycitadeld() {
 '--rgb20-endpoint=[RGB node connection string]' \
 '-c+[Path to the configuration file]: :_files' \
 '--config=[Path to the configuration file]: :_files' \
+'-h[Print help information]' \
+'--help[Print help information]' \
+'-V[Print version information]' \
+'--version[Print version information]' \
 '*-v[Set verbosity level]' \
 '*--verbose[Set verbosity level]' \
 '--init[Initializes config file with the default values]' \
 '--rgb-embedded[]' \
-'-h[Prints help information]' \
-'--help[Prints help information]' \
-'-V[Prints version information]' \
-'--version[Prints version information]' \
 && ret=0
     
 }
 
 (( $+functions[_mycitadeld_commands] )) ||
 _mycitadeld_commands() {
-    local commands; commands=(
-        
-    )
+    local commands; commands=()
     _describe -t commands 'mycitadeld commands' commands "$@"
 }
 

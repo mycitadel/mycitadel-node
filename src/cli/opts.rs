@@ -18,9 +18,9 @@ use std::str::FromStr;
 use bitcoin::Address;
 use citadel::model;
 use invoice::Invoice;
-use wallet::bip32::PubkeyChain;
-use wallet::bip32::UnhardenedIndex;
-use wallet::descriptor;
+use wallet::descriptors;
+use wallet::hd::PubkeyChain;
+use wallet::hd::UnhardenedIndex;
 
 pub const MYCITADEL_CLI_CONFIG: &'static str = "{data_dir}/mycitadel-cli.toml";
 
@@ -536,15 +536,15 @@ pub struct DescriptorOpts {
 }
 
 impl DescriptorOpts {
-    pub fn descriptor_category(self) -> descriptor::ContentType {
+    pub fn descriptor_category(self) -> descriptors::ContentType {
         if self.bare {
-            descriptor::ContentType::Bare
+            descriptors::ContentType::Bare
         } else if self.legacy {
-            descriptor::ContentType::Hashed
+            descriptors::ContentType::Hashed
         } else if self.taproot {
-            descriptor::ContentType::Taproot
+            descriptors::ContentType::Taproot
         } else {
-            descriptor::ContentType::SegWit
+            descriptors::ContentType::SegWit
         }
     }
 }
